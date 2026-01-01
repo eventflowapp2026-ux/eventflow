@@ -1,0 +1,1039 @@
+{% extends "base.html" %}
+{% block title %}Admin - Feedback Viewer{% endblock %}
+
+{% block page_title %}📊 User Feedback Dashboard{% endblock %}
+{% block page_subtitle %}
+<p class="lead text-muted mb-0">View and manage all user feedback submitted through EventFlow</p>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card-glass">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h5 class="mb-1">Feedback Analytics</h5>
+                        <p class="text-muted mb-0">Total feedback: <span class="fw-bold">{{ feedback_data|length }}</span></p>
+                    </div>
+                    <div class="btn-group" role="group">
+                        <button class="btn btn-outline-glow" onclick="exportFeedback('csv')">
+                            <i class="bi bi-file-earmark-arrow-down me-2"></i>Export CSV
+                        </button>
+                        <button class="btn btn-outline-glow" onclick="exportFeedback('json')">
+                            <i class="bi bi-filetype-json me-2"></i>Export JSON
+                        </button>
+                        <button class="btn btn-danger-glow" onclick="confirmClearAll()">
+                            <i class="bi bi-trash me-2"></i>Clear All
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <div class="feature-card text-center p-3">
+                            <div class="display-6 fw-bold gradient-text">{{ feedback_data|selectattr('rating', 'equalto', 5)|list|length }}</div>
+                            <p class="text-muted mb-0">⭐ 5-Star Ratings</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="feature-card text-center p-3">
+                            <div class="display-6 fw-bold gradient-text">{{ feedback_data|selectattr('type', 'equalto', 'suggestion')|list|length }}</div>
+                            <p class="text-muted mb-0">💡 Feature Suggestions</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="feature-card text-center p-3">
+                            <div class="display-6 fw-bold gradient-text">{{ feedback_data|selectattr('type', 'equalto', 'bug')|list|length }}</div>
+                            <p class="text-muted mb-0">🐛 Bug Reports</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="feature-card text-center p-3">
+                            <div class="display-6 fw-bold gradient-text">{{ feedback_data|selectattr('type', 'equalto', 'praise')|list|length }}</div>
+                            <p class="text-muted mb-0">🎉 Positive Feedback</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Controls -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card-glass">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">Filter by Type</label>
+                        <select class="form-control-modern" id="filterType">
+                            <option value="all">All Types</option>
+                            <option value="suggestion">Feature Suggestions</option>
+                            <option value="bug">Bug Reports</option>
+                            <option value="improvement">Improvement Ideas</option>
+                            <option value="general">General Feedback</option>
+                            <option value="praise">Praise/Compliments</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">Filter by Rating</label>
+                        <select class="form-control-modern" id="filterRating">
+                            <option value="all">All Ratings</option>
+                            <option value="5">⭐⭐⭐⭐⭐ (5 stars)</option>
+                            <option value="4">⭐⭐⭐⭐ (4 stars)</option>
+                            <option value="3">⭐⭐⭐ (3 stars)</option>
+                            <option value="2">⭐⭐ (2 stars)</option>
+                            <option value="1">⭐ (1 star)</option>
+                            <option value="0">No Rating</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">Sort By</label>
+                        <select class="form-control-modern" id="sortBy">
+                            <option value="newest">Newest First</option>
+                            <option value="oldest">Oldest First</option>
+                            <option value="rating_high">Highest Rating</option>
+                            <option value="rating_low">Lowest Rating</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">Search</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control-modern" id="searchInput" placeholder="Search feedback...">
+                            <button class="btn btn-primary-glow" onclick="applyFilters()">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Feedback Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card-glass">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-glass" id="feedbackTable">
+                        <thead>
+                            <tr>
+                                <th width="60">
+                                    <input type="checkbox" class="form-check-input" id="selectAll">
+                                </th>
+                                <th width="80">Rating</th>
+                                <th width="120">Type</th>
+                                <th>Name & Feedback</th>
+                                <th width="150">Contact</th>
+                                <th width="150">Source</th>
+                                <th width="180">Date</th>
+                                <th width="120">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for feedback in feedback_data %}
+                            <tr class="feedback-row" 
+                                data-type="{{ feedback.type }}" 
+                                data-rating="{{ feedback.rating }}" 
+                                data-date="{{ feedback.timestamp }}">
+                                <td>
+                                    <input type="checkbox" class="form-check-input feedback-checkbox" value="{{ feedback.id }}">
+                                </td>
+                                <td>
+                                    {% if feedback.rating > 0 %}
+                                    <div class="rating-display">
+                                        {% for i in range(1, 6) %}
+                                            {% if i <= feedback.rating %}
+                                            <i class="bi bi-star-fill text-warning"></i>
+                                            {% else %}
+                                            <i class="bi bi-star text-muted"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                        <small class="text-muted d-block">({{ feedback.rating }}/5)</small>
+                                    </div>
+                                    {% else %}
+                                    <span class="badge bg-secondary">No rating</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge badge-type-{{ feedback.type }} p-2">
+                                        {% if feedback.type == 'suggestion' %}
+                                        <i class="bi bi-lightbulb me-1"></i> Suggestion
+                                        {% elif feedback.type == 'bug' %}
+                                        <i class="bi bi-bug me-1"></i> Bug
+                                        {% elif feedback.type == 'improvement' %}
+                                        <i class="bi bi-gear me-1"></i> Improvement
+                                        {% elif feedback.type == 'general' %}
+                                        <i class="bi bi-chat-left me-1"></i> General
+                                        {% elif feedback.type == 'praise' %}
+                                        <i class="bi bi-heart me-1"></i> Praise
+                                        {% else %}
+                                        <i class="bi bi-question-circle me-1"></i> {{ feedback.type }}
+                                        {% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-start">
+                                        <div class="avatar-placeholder me-3">
+                                            <div class="feature-icon" style="width: 40px; height: 40px; font-size: 1rem;">
+                                                <i class="bi bi-person"></i>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="fw-medium mb-1">{{ feedback.name }}</div>
+                                            <div class="text-muted feedback-message">
+                                                {{ feedback.message[:150] }}{% if feedback.message|length > 150 %}...{% endif %}
+                                                {% if feedback.message|length > 150 %}
+                                                <a href="#" class="text-primary read-more" data-bs-toggle="collapse" 
+                                                   data-bs-target="#message{{ loop.index }}" aria-expanded="false">
+                                                    Read more
+                                                </a>
+                                                <div class="collapse mt-2" id="message{{ loop.index }}">
+                                                    {{ feedback.message[150:] }}
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if feedback.email %}
+                                    <div class="mb-1">
+                                        <i class="bi bi-envelope me-1"></i>
+                                        <a href="mailto:{{ feedback.email }}" class="text-decoration-none">
+                                            {{ feedback.email|truncate(20) }}
+                                        </a>
+                                    </div>
+                                    {% endif %}
+                                    {% if feedback.user_id %}
+                                    <div>
+                                        <i class="bi bi-person-circle me-1"></i>
+                                        <small class="text-muted">User: {{ feedback.user_id[:8] }}...</small>
+                                    </div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ feedback.source or 'Not specified' }}</small>
+                                </td>
+                                <td>
+                                    <div class="text-muted">
+                                        {{ feedback.timestamp|format_date }}
+                                    </div>
+                                    {% if feedback.created %}
+                                    <small class="text-muted">{{ feedback.created|relative_time }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <button class="btn btn-outline-glow" onclick="viewFeedback('{{ feedback.id }}')" 
+                                                title="View Details">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                        {% if feedback.email %}
+                                        <a href="mailto:{{ feedback.email }}?subject=Re: Your EventFlow Feedback" 
+                                           class="btn btn-outline-glow" title="Reply">
+                                            <i class="bi bi-reply"></i>
+                                        </a>
+                                        {% endif %}
+                                        <button class="btn btn-outline-danger" onclick="deleteFeedback('{{ feedback.id }}')" 
+                                                title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center py-5">
+                                    <div class="feature-icon mx-auto mb-3" style="width: 80px; height: 80px;">
+                                        <i class="bi bi-chat-dots display-4"></i>
+                                    </div>
+                                    <h4 class="mb-3">No feedback yet</h4>
+                                    <p class="text-muted mb-4">User feedback will appear here once submitted</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                {% if feedback_data|length > 10 %}
+                <nav aria-label="Feedback pagination">
+                    <ul class="pagination justify-content-center mt-4">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" tabindex="-1">Previous</a>
+                        </li>
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Summary Card -->
+<div class="row mt-4">
+    <div class="col-md-8">
+        <div class="card-glass">
+            <div class="card-body">
+                <h5 class="mb-3">📈 Feedback Trends</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Rating Distribution</h6>
+                        <div class="mb-3">
+                            {% set ratings = {5: 0, 4: 0, 3: 0, 2: 0, 1: 0, 0: 0} %}
+                            {% for fb in feedback_data %}
+                                {% set _ = ratings.update({fb.rating: ratings[fb.rating] + 1}) %}
+                            {% endfor %}
+                            
+                            {% for rating, count in ratings.items() if rating > 0 %}
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="me-2" style="width: 60px;">
+                                    {% for i in range(1, 6) %}
+                                        {% if i <= rating %}
+                                        <i class="bi bi-star-fill text-warning" style="font-size: 0.8rem;"></i>
+                                        {% else %}
+                                        <i class="bi bi-star text-muted" style="font-size: 0.8rem;"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="progress" style="height: 8px;">
+                                        {% if feedback_data|length > 0 %}
+                                        <div class="progress-bar bg-warning" style="width: {{ (count / feedback_data|length * 100)|int }}%"></div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="ms-2" style="width: 40px;">
+                                    <small class="text-muted">{{ count }}</small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Type Distribution</h6>
+                        <div>
+                            {% set types = {} %}
+                            {% for fb in feedback_data %}
+                                {% if fb.type not in types %}
+                                    {% set _ = types.update({fb.type: 1}) %}
+                                {% else %}
+                                    {% set _ = types.update({fb.type: types[fb.type] + 1}) %}
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% for type, count in types.items() %}
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div>
+                                    {% if type == 'suggestion' %}
+                                    <i class="bi bi-lightbulb text-primary me-1"></i>
+                                    {% elif type == 'bug' %}
+                                    <i class="bi bi-bug text-danger me-1"></i>
+                                    {% elif type == 'improvement' %}
+                                    <i class="bi bi-gear text-info me-1"></i>
+                                    {% elif type == 'general' %}
+                                    <i class="bi bi-chat-left text-secondary me-1"></i>
+                                    {% elif type == 'praise' %}
+                                    <i class="bi bi-heart text-success me-1"></i>
+                                    {% else %}
+                                    <i class="bi bi-question-circle text-muted me-1"></i>
+                                    {% endif %}
+                                    <span class="text-capitalize">{{ type }}</span>
+                                </div>
+                                <div>
+                                    <span class="badge bg-light text-dark">{{ count }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card-glass h-100">
+            <div class="card-body">
+                <h5 class="mb-3">⚡ Quick Actions</h5>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-primary-glow" onclick="exportSelected()">
+                        <i class="bi bi-download me-2"></i> Export Selected
+                    </button>
+                    <button class="btn btn-outline-glow" onclick="markAsReviewed()">
+                        <i class="bi bi-check-circle me-2"></i> Mark as Reviewed
+                    </button>
+                    <button class="btn btn-info-glow" onclick="generateReport()">
+                        <i class="bi bi-file-text me-2"></i> Generate Report
+                    </button>
+                    <button class="btn btn-warning-glow" onclick="refreshData()">
+                        <i class="bi bi-arrow-clockwise me-2"></i> Refresh Data
+                    </button>
+                </div>
+                
+                <div class="mt-4">
+                    <h6>📊 Summary</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="bi bi-people text-primary me-2"></i>
+                            <span>Unique users: <strong>{{ unique_users|length }}</strong></span>
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-calendar text-primary me-2"></i>
+                            <span>Last 7 days: <strong>{{ recent_count }}</strong></span>
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-star text-primary me-2"></i>
+                            <span>Avg rating: <strong>{{ avg_rating|round(1) if avg_rating else 'N/A' }}</strong></span>
+                        </li>
+                        <li>
+                            <i class="bi bi-envelope text-primary me-2"></i>
+                            <span>With email: <strong>{{ with_email_count }}</strong></span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Feedback Modal -->
+<div class="modal fade" id="viewFeedbackModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Feedback Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="feedbackDetails">
+                <!-- Dynamic content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary-glow" id="replyBtn" disabled>
+                    <i class="bi bi-reply me-2"></i> Reply via Email
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.badge-type-suggestion { background: var(--primary-light); color: var(--primary); }
+.badge-type-bug { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+.badge-type-improvement { background: rgba(6, 182, 212, 0.1); color: var(--accent); }
+.badge-type-general { background: rgba(100, 116, 139, 0.1); color: var(--gray-500); }
+.badge-type-praise { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+
+.rating-display { text-align: center; }
+.feedback-row:hover { background: rgba(108, 99, 255, 0.03); }
+.avatar-placeholder { flex-shrink: 0; }
+
+.progress { background-color: rgba(0,0,0,0.05); }
+.read-more { cursor: pointer; font-size: 0.85rem; }
+</style>
+
+<script>
+let allFeedback = {{ feedback_data|tojson }};
+
+function applyFilters() {
+    const typeFilter = document.getElementById('filterType').value;
+    const ratingFilter = document.getElementById('filterRating').value;
+    const sortBy = document.getElementById('sortBy').value;
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    
+    let filtered = [...allFeedback];
+    
+    // Apply type filter
+    if (typeFilter !== 'all') {
+        filtered = filtered.filter(fb => fb.type === typeFilter);
+    }
+    
+    // Apply rating filter
+    if (ratingFilter !== 'all') {
+        const rating = parseInt(ratingFilter);
+        filtered = filtered.filter(fb => fb.rating === rating);
+    }
+    
+    // Apply search filter
+    if (searchTerm) {
+        filtered = filtered.filter(fb => 
+            fb.name.toLowerCase().includes(searchTerm) ||
+            fb.message.toLowerCase().includes(searchTerm) ||
+            (fb.email && fb.email.toLowerCase().includes(searchTerm))
+        );
+    }
+    
+    // Apply sorting
+    switch(sortBy) {
+        case 'newest':
+            filtered.sort((a, b) => new Date(b.timestamp || b.created) - new Date(a.timestamp || a.created));
+            break;
+        case 'oldest':
+            filtered.sort((a, b) => new Date(a.timestamp || a.created) - new Date(b.timestamp || b.created));
+            break;
+        case 'rating_high':
+            filtered.sort((a, b) => b.rating - a.rating);
+            break;
+        case 'rating_low':
+            filtered.sort((a, b) => a.rating - b.rating);
+            break;
+    }
+    
+    renderTable(filtered);
+}
+
+function renderTable(feedback) {
+    const tbody = document.querySelector('#feedbackTable tbody');
+    if (feedback.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8" class="text-center py-5">
+                    <div class="feature-icon mx-auto mb-3" style="width: 80px; height: 80px;">
+                                        <i class="bi bi-search display-4"></i>
+                                    </div>
+                    <h4 class="mb-3">No matching feedback</h4>
+                    <p class="text-muted">Try changing your filters or search terms</p>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    let html = '';
+    feedback.forEach((fb, index) => {
+        html += `
+            <tr class="feedback-row" 
+                data-type="${fb.type}" 
+                data-rating="${fb.rating}" 
+                data-date="${fb.timestamp || fb.created}">
+                <td>
+                    <input type="checkbox" class="form-check-input feedback-checkbox" value="${fb.id}">
+                </td>
+                <td>
+                    ${fb.rating > 0 ? `
+                        <div class="rating-display">
+                            ${Array(5).fill().map((_, i) => 
+                                `<i class="bi bi-star${i < fb.rating ? '-fill' : ''} ${i < fb.rating ? 'text-warning' : 'text-muted'}"></i>`
+                            ).join('')}
+                            <small class="text-muted d-block">(${fb.rating}/5)</small>
+                        </div>
+                    ` : `<span class="badge bg-secondary">No rating</span>`}
+                </td>
+                <td>
+                    <span class="badge badge-type-${fb.type} p-2">
+                        ${getTypeIcon(fb.type)} ${fb.type.charAt(0).toUpperCase() + fb.type.slice(1)}
+                    </span>
+                </td>
+                <td>
+                    <div class="d-flex align-items-start">
+                        <div class="avatar-placeholder me-3">
+                            <div class="feature-icon" style="width: 40px; height: 40px; font-size: 1rem;">
+                                <i class="bi bi-person"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="fw-medium mb-1">${escapeHtml(fb.name)}</div>
+                            <div class="text-muted feedback-message">
+                                ${escapeHtml(fb.message.substring(0, 150))}${fb.message.length > 150 ? '...' : ''}
+                                ${fb.message.length > 150 ? `
+                                <a href="#" class="text-primary read-more" data-bs-toggle="collapse" 
+                                   data-bs-target="#message${index}" aria-expanded="false">
+                                    Read more
+                                </a>
+                                <div class="collapse mt-2" id="message${index}">
+                                    ${escapeHtml(fb.message.substring(150))}
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    ${fb.email ? `
+                    <div class="mb-1">
+                        <i class="bi bi-envelope me-1"></i>
+                        <a href="mailto:${fb.email}" class="text-decoration-none">
+                            ${fb.email.length > 20 ? fb.email.substring(0, 20) + '...' : fb.email}
+                        </a>
+                    </div>
+                    ` : ''}
+                    ${fb.user_id ? `
+                    <div>
+                        <i class="bi bi-person-circle me-1"></i>
+                        <small class="text-muted">User: ${fb.user_id.substring(0, 8)}...</small>
+                    </div>
+                    ` : ''}
+                </td>
+                <td>
+                    <small class="text-muted">${fb.source || 'Not specified'}</small>
+                </td>
+                <td>
+                    <div class="text-muted">
+                        ${formatDate(fb.timestamp || fb.created)}
+                    </div>
+                    ${fb.created ? `<small class="text-muted">${relativeTime(fb.created)}</small>` : ''}
+                </td>
+                <td>
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button class="btn btn-outline-glow" onclick="viewFeedback('${fb.id}')" title="View Details">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        ${fb.email ? `
+                        <a href="mailto:${fb.email}?subject=Re: Your EventFlow Feedback" 
+                           class="btn btn-outline-glow" title="Reply">
+                            <i class="bi bi-reply"></i>
+                        </a>
+                        ` : ''}
+                        <button class="btn btn-outline-danger" onclick="deleteFeedback('${fb.id}')" title="Delete">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+    
+    tbody.innerHTML = html;
+    attachCheckboxEvents();
+}
+
+function getTypeIcon(type) {
+    const icons = {
+        'suggestion': '<i class="bi bi-lightbulb me-1"></i>',
+        'bug': '<i class="bi bi-bug me-1"></i>',
+        'improvement': '<i class="bi bi-gear me-1"></i>',
+        'general': '<i class="bi bi-chat-left me-1"></i>',
+        'praise': '<i class="bi bi-heart me-1"></i>'
+    };
+    return icons[type] || '<i class="bi bi-question-circle me-1"></i>';
+}
+
+function viewFeedback(feedbackId) {
+    const feedback = allFeedback.find(fb => fb.id === feedbackId);
+    if (!feedback) return;
+    
+    const modalBody = document.getElementById('feedbackDetails');
+    const replyBtn = document.getElementById('replyBtn');
+    
+    modalBody.innerHTML = `
+        <div class="row">
+            <div class="col-md-8">
+                <h6 class="text-muted mb-2">Feedback Details</h6>
+                <div class="mb-4">
+                    <h4>${escapeHtml(feedback.name)}</h4>
+                    <p class="text-muted mb-0">
+                        <i class="bi bi-calendar me-1"></i> ${formatDate(feedback.timestamp || feedback.created)}
+                        ${feedback.created ? `<span class="ms-3"><i class="bi bi-clock me-1"></i>${relativeTime(feedback.created)}</span>` : ''}
+                    </p>
+                </div>
+                
+                <div class="mb-4">
+                    <h6>Message</h6>
+                    <div class="card-glass p-3">
+                        <p style="white-space: pre-wrap;">${escapeHtml(feedback.message)}</p>
+                    </div>
+                </div>
+                
+                ${feedback.source ? `
+                <div class="mb-3">
+                    <h6>How they heard about us:</h6>
+                    <p class="text-muted">${escapeHtml(feedback.source)}</p>
+                </div>
+                ` : ''}
+            </div>
+            
+            <div class="col-md-4">
+                <h6 class="text-muted mb-2">Metadata</h6>
+                
+                <div class="card-glass p-3 mb-3">
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="badge badge-type-${feedback.type} p-2 me-2">
+                            ${getTypeIcon(feedback.type)} ${feedback.type.charAt(0).toUpperCase() + feedback.type.slice(1)}
+                        </span>
+                        ${feedback.rating > 0 ? `
+                        <div class="rating-display">
+                            ${Array(5).fill().map((_, i) => 
+                                `<i class="bi bi-star${i < feedback.rating ? '-fill' : ''} ${i < feedback.rating ? 'text-warning' : 'text-muted'}"></i>`
+                            ).join('')}
+                            <small class="text-muted">(${feedback.rating}/5)</small>
+                        </div>
+                        ` : '<span class="badge bg-secondary">No rating</span>'}
+                    </div>
+                    
+                    ${feedback.email ? `
+                    <div class="mb-2">
+                        <i class="bi bi-envelope me-2"></i>
+                        <a href="mailto:${feedback.email}">${feedback.email}</a>
+                    </div>
+                    ` : ''}
+                    
+                    ${feedback.user_id ? `
+                    <div class="mb-2">
+                        <i class="bi bi-person-circle me-2"></i>
+                        <span class="text-muted">User ID: ${feedback.user_id}</span>
+                    </div>
+                    ` : ''}
+                    
+                    <div>
+                        <i class="bi bi-hash me-2"></i>
+                        <span class="text-muted">Feedback ID: ${feedback.id}</span>
+                    </div>
+                </div>
+                
+                <div class="card-glass p-3">
+                    <h6 class="mb-3">Quick Actions</h6>
+                    <div class="d-grid gap-2">
+                        ${feedback.email ? `
+                        <a href="mailto:${feedback.email}?subject=Re: Your EventFlow Feedback" 
+                           class="btn btn-primary-glow">
+                            <i class="bi bi-reply me-2"></i> Reply via Email
+                        </a>
+                        ` : '<button class="btn btn-secondary" disabled>No email to reply</button>'}
+                        <button class="btn btn-outline-glow" onclick="copyFeedbackId('${feedback.id}')">
+                            <i class="bi bi-clipboard me-2"></i> Copy ID
+                        </button>
+                        <button class="btn btn-outline-danger" onclick="deleteFeedback('${feedback.id}', true)">
+                            <i class="bi bi-trash me-2"></i> Delete Feedback
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    replyBtn.disabled = !feedback.email;
+    if (feedback.email) {
+        replyBtn.onclick = () => {
+            window.location.href = `mailto:${feedback.email}?subject=Re: Your EventFlow Feedback`;
+        };
+    }
+    
+    new bootstrap.Modal(document.getElementById('viewFeedbackModal')).show();
+}
+
+function deleteFeedback(feedbackId, fromModal = false) {
+    if (!confirm('Are you sure you want to delete this feedback?')) return;
+    
+    fetch('/admin/delete_feedback/' + feedbackId, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRFToken': getCSRFToken()
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Remove from local data
+            allFeedback = allFeedback.filter(fb => fb.id !== feedbackId);
+            applyFilters();
+            
+            if (fromModal) {
+                bootstrap.Modal.getInstance(document.getElementById('viewFeedbackModal')).hide();
+            }
+            
+            showToast('✅ Feedback deleted successfully', 'success');
+        } else {
+            showToast('❌ Error deleting feedback: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        showToast('❌ Network error: ' + error, 'error');
+    });
+}
+
+function exportFeedback(format) {
+    let data = allFeedback;
+    let filename, content;
+    
+    if (format === 'csv') {
+        const headers = ['ID', 'Name', 'Email', 'Rating', 'Type', 'Message', 'Source', 'Timestamp'];
+        const rows = data.map(fb => [
+            fb.id,
+            `"${fb.name.replace(/"/g, '""')}"`,
+            `"${fb.email || ''}"`,
+            fb.rating,
+            fb.type,
+            `"${fb.message.replace(/"/g, '""')}"`,
+            `"${fb.source || ''}"`,
+            fb.timestamp || fb.created
+        ]);
+        
+        content = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+        filename = `feedback_${new Date().toISOString().split('T')[0]}.csv`;
+        
+    } else if (format === 'json') {
+        content = JSON.stringify(data, null, 2);
+        filename = `feedback_${new Date().toISOString().split('T')[0]}.json`;
+    }
+    
+    const blob = new Blob([content], { type: format === 'csv' ? 'text/csv' : 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+}
+
+function exportSelected() {
+    const selected = getSelectedFeedback();
+    if (selected.length === 0) {
+        alert('Please select at least one feedback item to export.');
+        return;
+    }
+    
+    let format = prompt('Export format? (csv/json)', 'json');
+    if (!format || !['csv', 'json'].includes(format.toLowerCase())) {
+        return;
+    }
+    
+    const selectedData = allFeedback.filter(fb => selected.includes(fb.id));
+    let filename, content;
+    
+    if (format === 'csv') {
+        const headers = ['ID', 'Name', 'Email', 'Rating', 'Type', 'Message', 'Source', 'Timestamp'];
+        const rows = selectedData.map(fb => [
+            fb.id,
+            `"${fb.name.replace(/"/g, '""')}"`,
+            `"${fb.email || ''}"`,
+            fb.rating,
+            fb.type,
+            `"${fb.message.replace(/"/g, '""')}"`,
+            `"${fb.source || ''}"`,
+            fb.timestamp || fb.created
+        ]);
+        
+        content = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+        filename = `selected_feedback_${new Date().toISOString().split('T')[0]}.csv`;
+        
+    } else if (format === 'json') {
+        content = JSON.stringify(selectedData, null, 2);
+        filename = `selected_feedback_${new Date().toISOString().split('T')[0]}.json`;
+    }
+    
+    const blob = new Blob([content], { type: format === 'csv' ? 'text/csv' : 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+}
+
+function markAsReviewed() {
+    const selected = getSelectedFeedback();
+    if (selected.length === 0) {
+        alert('Please select feedback items to mark as reviewed.');
+        return;
+    }
+    
+    fetch('/admin/mark_feedback_reviewed', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({ feedback_ids: selected })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(`✅ ${selected.length} feedback item(s) marked as reviewed`, 'success');
+            // Refresh the page after a delay
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showToast('❌ Error marking as reviewed: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        showToast('❌ Network error: ' + error, 'error');
+    });
+}
+
+function generateReport() {
+    if (!confirm('Generate a comprehensive feedback report?')) return;
+    
+    const reportData = {
+        generated_at: new Date().toISOString(),
+        total_feedback: allFeedback.length,
+        avg_rating: {{ avg_rating|round(1) if avg_rating else 0 }},
+        summary: {
+            by_type: {},
+            by_rating: {1: 0, 2: 0, 3: 0, 4: 0, 5: 0},
+            recent_count: {{ recent_count }},
+            with_email_count: {{ with_email_count }}
+        },
+        sample_feedback: allFeedback.slice(0, 5)
+    };
+    
+    // Calculate type distribution
+    allFeedback.forEach(fb => {
+        reportData.summary.by_type[fb.type] = (reportData.summary.by_type[fb.type] || 0) + 1;
+        if (fb.rating > 0) {
+            reportData.summary.by_rating[fb.rating]++;
+        }
+    });
+    
+    const content = JSON.stringify(reportData, null, 2);
+    const filename = `feedback_report_${new Date().toISOString().split('T')[0]}.json`;
+    
+    const blob = new Blob([content], { type: 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+}
+
+function confirmClearAll() {
+    if (!confirm('⚠️ WARNING: This will delete ALL feedback permanently!\n\nAre you absolutely sure?')) return;
+    
+    const password = prompt('Please enter admin password to confirm:');
+    if (!password) return;
+    
+    fetch('/admin/clear_all_feedback', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({ password: password })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast('✅ All feedback cleared successfully', 'success');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showToast('❌ ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        showToast('❌ Network error: ' + error, 'error');
+    });
+}
+
+function getSelectedFeedback() {
+    const checkboxes = document.querySelectorAll('.feedback-checkbox:checked');
+    return Array.from(checkboxes).map(cb => cb.value);
+}
+
+function copyFeedbackId(feedbackId) {
+    navigator.clipboard.writeText(feedbackId)
+        .then(() => showToast('✅ Feedback ID copied to clipboard', 'success'))
+        .catch(() => showToast('❌ Failed to copy to clipboard', 'error'));
+}
+
+function refreshData() {
+    fetch('/admin/get_feedback')
+        .then(response => response.json())
+        .then(data => {
+            allFeedback = data;
+            applyFilters();
+            showToast('✅ Data refreshed successfully', 'success');
+        })
+        .catch(error => {
+            showToast('❌ Error refreshing data: ' + error, 'error');
+        });
+}
+
+function attachCheckboxEvents() {
+    // Select all checkbox
+    document.getElementById('selectAll').addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('.feedback-checkbox');
+        checkboxes.forEach(cb => cb.checked = this.checked);
+    });
+}
+
+// Utility functions
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function formatDate(dateString) {
+    if (!dateString) return 'Unknown';
+    const date = new Date(dateString);
+    return date.toLocaleString();
+}
+
+function relativeTime(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    if (diffMins < 1) return 'just now';
+    if (diffMins < 60) return `${diffMins} minute${diffMins === 1 ? '' : 's'} ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`;
+    if (diffDays < 7) return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
+    return date.toLocaleDateString();
+}
+
+function getCSRFToken() {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]');
+    return csrfToken ? csrfToken.getAttribute('content') : '';
+}
+
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center text-bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'primary'} border-0`;
+    toast.setAttribute('role', 'alert');
+    toast.setAttribute('aria-live', 'assertive');
+    toast.setAttribute('aria-atomic', 'true');
+    
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">${message}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    const bsToast = new bootstrap.Toast(toast, { delay: 3000 });
+    bsToast.show();
+    
+    toast.addEventListener('hidden.bs.toast', () => {
+        document.body.removeChild(toast);
+    });
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    applyFilters();
+    attachCheckboxEvents();
+    
+    // Set up event listeners for filters
+    document.getElementById('filterType').addEventListener('change', applyFilters);
+    document.getElementById('filterRating').addEventListener('change', applyFilters);
+    document.getElementById('sortBy').addEventListener('change', applyFilters);
+    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') applyFilters();
+    });
+});
+</script>
+{% endblock %}

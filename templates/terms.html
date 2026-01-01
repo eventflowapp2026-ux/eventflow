@@ -1,0 +1,173 @@
+<!-- terms.html -->
+{% extends "base.html" %}
+{% block title %}Terms of Service{% endblock %}
+
+{% block page_title %}Terms of Service{% endblock %}
+{% block page_subtitle %}
+<p class="text-muted mb-0">Last Updated: {{ now.strftime('%B %d, %Y') }}</p>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card-modern">
+            <div class="card-header-modern">
+                <h4 class="mb-0"><i class="bi bi-file-text me-2"></i>Terms & Conditions</h4>
+            </div>
+
+            <div class="card-body-modern" style="max-height: 600px; overflow-y: auto;">
+
+                <div class="alert alert-warning mb-4">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>Beta Disclaimer:</strong> EventFlow is an independent educational project currently
+                    under development. Features may change, break, or be discontinued at any time.
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">1. Acceptance of Terms</h5>
+                    <p>
+                        By accessing or using EventFlow ("the Service"), you agree to be bound by these Terms.
+                        If you do not agree, you must not use the Service.
+                    </p>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">2. Description of Service</h5>
+                    <p>
+                        EventFlow is a web-based platform that allows users to create and manage event
+                        registration forms, send email invitations, and collect responses.
+                        The Service is provided on a best-effort basis.
+                    </p>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">3. User Accounts</h5>
+                    <ul>
+                        <li>You must provide accurate and current information</li>
+                        <li>You are responsible for maintaining the security of your account</li>
+                        <li>You are responsible for all activities under your account</li>
+                        <li>You must notify us of unauthorized access</li>
+                    </ul>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">4. Acceptable Use</h5>
+                    <p>You agree not to use the Service to:</p>
+                    <ul>
+                        <li>Violate any applicable Indian laws or regulations</li>
+                        <li>Collect personal data without consent</li>
+                        <li>Send spam or misuse email services</li>
+                        <li>Upload malicious, harmful, or illegal content</li>
+                        <li>Impersonate individuals or organizations</li>
+                        <li>Create forms for illegal or deceptive activities</li>
+                    </ul>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">5. Content Ownership</h5>
+                    <p>
+                        You retain ownership of content you submit.
+                        By using the Service, you grant EventFlow permission to store and process content
+                        solely for providing the Service.
+                    </p>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">6. Data Responsibility</h5>
+                    <p>
+                        If you collect personal data using EventFlow, you are responsible for:
+                    </p>
+                    <ul>
+                        <li>Obtaining valid consent from respondents</li>
+                        <li>Handling data responsibly and securely</li>
+                        <li>Complying with applicable Indian data protection laws</li>
+                    </ul>
+                    <p>
+                        EventFlow acts only as a technical platform and does not control how collected data is used.
+                    </p>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">7. Email Usage</h5>
+                    <p>
+                        You agree to use email features responsibly and not for spam, harassment,
+                        or unlawful communication.
+                    </p>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">8. Service Availability</h5>
+                    <p>
+                        The Service may be unavailable due to maintenance, technical issues,
+                        or development changes. Availability is not guaranteed.
+                    </p>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">9. Termination</h5>
+                    <p>
+                        Access to the Service may be suspended or terminated if these Terms are violated
+                        or if continued operation becomes impractical.
+                    </p>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">10. Limitation of Liability</h5>
+                    <p>
+                        The Service is provided "as is". EventFlow is not liable for data loss,
+                        service interruptions, or damages arising from use of the Service.
+                    </p>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">11. Legal Compliance (India)</h5>
+                    <p>
+                        These Terms are governed by the laws of India, including but not limited to:
+                    </p>
+                    <ul>
+                        <li>The Information Technology Act, 2000</li>
+                        <li>The Information Technology (Intermediary Guidelines) Rules</li>
+                        <li>The Digital Personal Data Protection Act, 2023 (where applicable)</li>
+                    </ul>
+                    <p>
+                        Compliance is implemented on a best-effort basis appropriate to the
+                        educational and non-commercial nature of the project.
+                    </p>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">12. Changes to Terms</h5>
+                    <p>
+                        These Terms may be updated as the project evolves.
+                        Continued use of the Service indicates acceptance of the updated Terms.
+                    </p>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">13. Contact</h5>
+                    <p>
+                        <strong>EventFlow</strong><br>
+                        Email: u687418@gmail.com
+                    </p>
+                </div>
+
+                <div class="alert alert-info mt-4">
+                    <i class="bi bi-info-circle me-2"></i>
+                    By using EventFlow, you acknowledge that this is a beta educational project.
+                </div>
+
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="{{ url_for('signup') }}" class="btn btn-outline-primary btn-modern me-2">
+                <i class="bi bi-arrow-left"></i> Back to Sign Up
+            </a>
+            <a href="{{ url_for('privacy_policy') }}" class="btn btn-primary-modern btn-modern">
+                <i class="bi bi-shield-check"></i> View Privacy Policy
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}{{ form.title }}{% endblock %}
+
+{% block page_title %}{{ form.title }}{% endblock %}
+{% block page_subtitle %}
+<p class="text-muted mb-0">{{ event.description|truncate(100) }}</p>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card-modern">
+            <div class="card-header-modern text-center">
+                <h4 class="mb-0">{{ form.title }}</h4>
+                <p class="mb-0 text-muted">{{ event.name }}</p>
+            </div>
+            <div class="card-body-modern">
+                <form method="POST" action="/submit_form/{{ form.id }}" enctype="multipart/form-data">
+                    {% for question in form.questions %}
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">
+                            {{ question.text }}
+                            {% if question.required %}<span class="text-danger">*</span>{% endif %}
+                        </label>
+                        
+                        {% if question.type == 'text' %}
+                        <input type="text" class="form-control form-control-modern" name="q_{{ question.id }}" 
+                               {% if question.required %}required{% endif %}
+                               placeholder="Enter your answer">
+                        
+                        {% elif question.type == 'number' %}
+                        <input type="number" class="form-control form-control-modern" name="q_{{ question.id }}"
+                               {% if question.required %}required{% endif %}
+                               placeholder="Enter a number">
+                        
+                        {% elif question.type == 'email' %}
+                        <input type="email" class="form-control form-control-modern" name="q_{{ question.id }}"
+                               {% if question.required %}required{% endif %}
+                               placeholder="name@example.com">
+                        
+                        {% elif question.type == 'date' %}
+                        <input type="date" class="form-control form-control-modern" name="q_{{ question.id }}"
+                               {% if question.required %}required{% endif %}>
+                        
+                        {% elif question.type == 'textarea' %}
+                        <textarea class="form-control form-control-modern" name="q_{{ question.id }}" rows="3"
+                                  {% if question.required %}required{% endif %}
+                                  placeholder="Enter detailed answer..."></textarea>
+                        
+                        {% elif question.type == 'radio' %}
+                        <div class="list-group list-group-flush">
+                            {% for option in question.options %}
+                            <label class="list-group-item list-group-item-action border-0 px-0 py-2">
+                                <input class="form-check-input me-2" type="radio" name="q_{{ question.id }}" 
+                                       value="{{ option }}" id="q{{ question.id }}_{{ loop.index }}"
+                                       {% if question.required %}required{% endif %}>
+                                {{ option }}
+                            </label>
+                            {% endfor %}
+                        </div>
+                        
+                        {% elif question.type == 'checkbox' %}
+                        <div class="list-group list-group-flush">
+                            {% for option in question.options %}
+                            <label class="list-group-item list-group-item-action border-0 px-0 py-2">
+                                <input class="form-check-input me-2" type="checkbox" name="q_{{ question.id }}" 
+                                       value="{{ option }}" id="q{{ question.id }}_{{ loop.index }}">
+                                {{ option }}
+                            </label>
+                            {% endfor %}
+                        </div>
+                        
+                        {% elif question.type == 'dropdown' %}
+                        <select class="form-select form-control-modern" name="q_{{ question.id }}"
+                                {% if question.required %}required{% endif %}>
+                            <option value="" selected disabled>Select an option</option>
+                            {% for option in question.options %}
+                            <option value="{{ option }}">{{ option }}</option>
+                            {% endfor %}
+                        </select>
+                        
+                        {% elif question.type == 'file' %}
+                        <input type="file" class="form-control form-control-modern" name="file_{{ question.id }}"
+                               {% if question.required %}required{% endif %}
+                               accept=".png,.jpg,.jpeg,.gif,.pdf,.doc,.docx,.txt,.csv,.xls,.xlsx,.ppt,.pptx,.zip,.rar">
+                        <div class="form-text">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Allowed files: Images, PDF, Documents, Spreadsheets, Presentations, Archives (Max: 16MB)
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-shield-check me-2"></i>
+                        <small>
+                            Your information is secure. Uploaded files are only accessible to the event organizer.
+                        </small>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary-modern btn-modern">
+                            <i class="bi bi-send"></i> Submit Form
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card-modern mt-4">
+            <div class="card-body-modern text-center">
+                <h6 class="mb-3">About This Form</h6>
+                <p class="text-muted small mb-0">
+                    This form was created using Event Registration System. 
+                    All responses are collected securely and only shared with the event organizer.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

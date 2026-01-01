@@ -1,0 +1,480 @@
+[2025-12-27 22:39:05] [INFO] Starting email test to: edwinveedon@gmail.com
+[2025-12-27 22:39:05] [INFO] Connecting to SMTP server: smtp.gmail.com:587
+[2025-12-27 22:39:07] [INFO] Logging in as: edwinveedon@gmail.com
+[2025-12-27 22:39:07] [INFO] Sending email to: edwinveedon@gmail.com
+[2025-12-27 22:39:09] [INFO] Email sent successfully to: edwinveedon@gmail.com
+[2025-12-27 22:39:09] [INFO] Test email sent successfully
+[2025-12-27 23:06:00] Sending email to: edwinveedon@gmail.com
+[2025-12-27 23:06:05] ✅ Email sent to: edwinveedon@gmail.com
+[2025-12-27 23:09:33] Sending email to: edwinveedon@gmail.com
+[2025-12-27 23:09:37] ✅ Email sent to: edwinveedon@gmail.com
+[2025-12-28 08:59:02] [INFO] 🧪 STARTING EMAIL TEST
+[2025-12-28 08:59:02] [INFO] 📧 Starting email to: edwinveedon@gmail.com
+[2025-12-28 08:59:06] [SUCCESS] ✅ Email sent successfully to: edwinveedon@gmail.com
+[2025-12-28 13:16:52] [INFO] 🧪 STARTING EMAIL TEST - IMMEDIATE SENDING
+[2025-12-28 13:16:52] [INFO] 📧 Starting email to: edwinveedon@gmail.com
+[2025-12-28 13:16:57] [SUCCESS] ✅ Email sent successfully to: edwinveedon@gmail.com
+[2025-12-28 13:29:07] [INFO] 🧪 STARTING EMAIL TEST - FIXED VERSION
+[2025-12-28 13:29:07] [INFO] 📧 Starting email to: edwinveedon@gmail.com
+[2025-12-28 13:29:11] [SUCCESS] ✅ Email sent successfully to: edwinveedon@gmail.com
+[2025-12-28 13:59:53] [DEBUG] 🔍 DEBUGGING email to: edwinveedon@gmail.com
+[2025-12-28 13:59:53] [DEBUG] 🔍 Connecting to smtp.gmail.com:587
+[2025-12-28 13:59:55] [DEBUG] 🔍 Logging in as: edwinveedon@gmail.com
+[2025-12-28 13:59:55] [DEBUG] 🔍 Sending to: edwinveedon@gmail.com
+[2025-12-28 13:59:57] [SUCCESS] ✅ DEBUG: Email sent successfully to edwinveedon@gmail.com
+[2025-12-28 14:09:13] [INFO] 🧪 STARTING SIMPLE EMAIL TEST
+[2025-12-28 14:09:17] [SUCCESS] ✅ SIMPLE: Email sent to edwinveedon@gmail.com
+[2025-12-28 14:12:21] [INFO] 🧪 STARTING SIMPLE EMAIL TEST
+[2025-12-28 14:12:25] [SUCCESS] ✅ SIMPLE: Email sent to edwinveedon@gmail.com
+[2025-12-28 14:14:26] [INFO] 🧪 STARTING SIMPLE EMAIL TEST
+[2025-12-28 14:14:30] [SUCCESS] ✅ SIMPLE: Email sent to edwinveedon@gmail.com
+[2025-12-28 14:29:42] [INFO] 🧪 STARTING IDENTICAL TEST EMAIL - USING REAL EMAIL CONFIG
+[2025-12-28 14:29:46] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-28 14:29:58] [INFO] 🧪 STARTING IDENTICAL TEST EMAIL - USING REAL EMAIL CONFIG
+[2025-12-28 14:30:02] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-28 14:30:18] [INFO] 🧪 STARTING IDENTICAL TEST EMAIL - USING REAL EMAIL CONFIG
+[2025-12-28 14:30:21] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-28 14:32:37] [INFO] 🔬 COMPARING TEST vs REAL EMAIL CONFIGURATIONS
+[2025-12-28 14:32:41] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-28 14:32:47] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-28 14:34:08] [INFO] 🧪 STARTING IDENTICAL TEST EMAIL - USING REAL EMAIL CONFIG
+[2025-12-28 14:34:12] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-28 14:57:56] [INFO] 🧪 STARTING IDENTICAL TEST EMAIL - USING REAL EMAIL CONFIG
+[2025-12-28 14:57:59] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-28 14:59:17] [DEBUG] 🔧 DEBUG_SHARE_FORM: Testing exact share form email
+[2025-12-28 14:59:17] [DEBUG] 🔧 DEBUG_SHARE_FORM: To: edwinveedon@gmail.com
+[2025-12-28 14:59:17] [DEBUG] 🔧 DEBUG_SHARE_FORM: Form URL: http://overpotent-bianca-foamy.ngrok-free.dev/form/c2cfdd2e-1830-4a29-896b-0f078cde0d58
+[2025-12-28 14:59:17] [DEBUG] 🔧 DEBUG_SHARE_FORM: Form Title: Registration Form for Christmas Event
+[2025-12-28 14:59:17] [DEBUG] 🔧 DEBUG_SHARE_FORM: Event Name: Christmas Event
+[2025-12-28 14:59:20] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-28 15:00:25] [DEBUG] 🔧 DEBUG_SHARE_FORM: Testing exact share form email
+[2025-12-28 15:00:25] [DEBUG] 🔧 DEBUG_SHARE_FORM: To: u687418@gmail.com
+[2025-12-28 15:00:25] [DEBUG] 🔧 DEBUG_SHARE_FORM: Form URL: http://overpotent-bianca-foamy.ngrok-free.dev/form/c2cfdd2e-1830-4a29-896b-0f078cde0d58
+[2025-12-28 15:00:25] [DEBUG] 🔧 DEBUG_SHARE_FORM: Form Title: Registration Form for Christmas Event
+[2025-12-28 15:00:25] [DEBUG] 🔧 DEBUG_SHARE_FORM: Event Name: Christmas Event
+[2025-12-28 15:00:28] [SUCCESS] ✅ Email sent to u687418@gmail.com
+[2025-12-28 15:13:07] [DEBUG] 🔍 SHARE_FORM: POST request received
+[2025-12-28 15:13:07] [DEBUG] 🔍 SHARE_FORM: Form keys: ['send_email', 'recipient_emails', 'custom_message']
+[2025-12-28 15:13:07] [DEBUG] 🔍 SHARE_FORM: Has 'send_email'? True
+[2025-12-28 15:13:07] [DEBUG] 🔍 SHARE_FORM: Has 'recipient_emails'? True
+[2025-12-28 15:13:07] [DEBUG] 🔍 SHARE_FORM: Processing email submission
+[2025-12-28 15:13:07] [DEBUG] 🔍 SHARE_FORM: Recipient emails: u687418@gmail.com
+[2025-12-28 15:13:07] [DEBUG] 🔍 SHARE_FORM: Starting email send for form c2cfdd2e-1830-4a29-896b-0f078cde0d58
+[2025-12-28 15:13:07] [DEBUG] 🔍 SHARE_FORM: Form URL: http://overpotent-bianca-foamy.ngrok-free.dev/form/c2cfdd2e-1830-4a29-896b-0f078cde0d58
+[2025-12-28 15:13:07] [DEBUG] 🔍 SHARE_FORM: Form Title: Registration Form for Christmas Event
+[2025-12-28 15:13:07] [DEBUG] 🔍 SHARE_FORM: Event Name: Christmas Event
+[2025-12-28 15:13:07] [DEBUG] 🔍 SHARE_FORM: Sender: edwin
+[2025-12-28 15:13:07] [DEBUG] 🔍 SHARE_FORM: Recipients: ['u687418@gmail.com']
+[2025-12-28 15:13:12] [SUCCESS] ✅ Email sent to u687418@gmail.com
+[2025-12-28 15:13:12] [SUCCESS] ✅ SHARE_FORM: Sent to u687418@gmail.com - Message: Email sent successfully
+[2025-12-28 15:17:54] [DEBUG] 🔍 SHARE_FORM: POST request received
+[2025-12-28 15:17:54] [DEBUG] 🔍 SHARE_FORM: Form keys: ['send_email', 'recipient_emails', 'custom_message']
+[2025-12-28 15:17:54] [DEBUG] 🔍 SHARE_FORM: Has 'send_email'? True
+[2025-12-28 15:17:54] [DEBUG] 🔍 SHARE_FORM: Has 'recipient_emails'? True
+[2025-12-28 15:17:54] [DEBUG] 🔍 SHARE_FORM: Processing email submission
+[2025-12-28 15:17:54] [DEBUG] 🔍 SHARE_FORM: Recipient emails: u687418@gmail.com
+[2025-12-28 15:17:54] [DEBUG] 🔍 SHARE_FORM: Starting email send for form c2cfdd2e-1830-4a29-896b-0f078cde0d58
+[2025-12-28 15:17:54] [DEBUG] 🔍 SHARE_FORM: Form URL: http://overpotent-bianca-foamy.ngrok-free.dev/form/c2cfdd2e-1830-4a29-896b-0f078cde0d58
+[2025-12-28 15:17:54] [DEBUG] 🔍 SHARE_FORM: Form Title: Registration Form for Christmas Event
+[2025-12-28 15:17:54] [DEBUG] 🔍 SHARE_FORM: Event Name: Christmas Event
+[2025-12-28 15:17:54] [DEBUG] 🔍 SHARE_FORM: Sender: edwin
+[2025-12-28 15:17:54] [DEBUG] 🔍 SHARE_FORM: Recipients: ['u687418@gmail.com']
+[2025-12-28 15:17:58] [SUCCESS] ✅ Email sent to u687418@gmail.com
+[2025-12-28 15:17:58] [SUCCESS] ✅ SHARE_FORM: Sent to u687418@gmail.com - Message: Email sent successfully
+[2025-12-28 15:20:59] [DEBUG] 🔍 SHARE_FORM: POST request received
+[2025-12-28 15:20:59] [DEBUG] 🔍 SHARE_FORM: Form keys: ['send_email', 'recipient_emails', 'custom_message']
+[2025-12-28 15:20:59] [DEBUG] 🔍 SHARE_FORM: Has 'send_email'? True
+[2025-12-28 15:20:59] [DEBUG] 🔍 SHARE_FORM: Has 'recipient_emails'? True
+[2025-12-28 15:20:59] [DEBUG] 🔍 SHARE_FORM: Processing email submission
+[2025-12-28 15:20:59] [DEBUG] 🔍 SHARE_FORM: Recipient emails: edwinveedon@gmail.com
+[2025-12-28 15:20:59] [DEBUG] 🔍 SHARE_FORM: Starting email send for form c2cfdd2e-1830-4a29-896b-0f078cde0d58
+[2025-12-28 15:20:59] [DEBUG] 🔍 SHARE_FORM: Form URL: http://127.0.0.1:5000/form/c2cfdd2e-1830-4a29-896b-0f078cde0d58
+[2025-12-28 15:20:59] [DEBUG] 🔍 SHARE_FORM: Form Title: Registration Form for Christmas Event
+[2025-12-28 15:20:59] [DEBUG] 🔍 SHARE_FORM: Event Name: Christmas Event
+[2025-12-28 15:20:59] [DEBUG] 🔍 SHARE_FORM: Sender: edwin
+[2025-12-28 15:20:59] [DEBUG] 🔍 SHARE_FORM: Recipients: ['edwinveedon@gmail.com']
+[2025-12-28 15:21:03] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-28 15:21:03] [SUCCESS] ✅ SHARE_FORM: Sent to edwinveedon@gmail.com - Message: Email sent successfully
+[2025-12-28 17:18:21] [DEBUG] 🔍 SHARE_FORM: POST request received
+[2025-12-28 17:18:21] [DEBUG] 🔍 SHARE_FORM: Form keys: ['send_email', 'recipient_emails', 'custom_message']
+[2025-12-28 17:18:21] [DEBUG] 🔍 SHARE_FORM: Has 'send_email'? True
+[2025-12-28 17:18:21] [DEBUG] 🔍 SHARE_FORM: Has 'recipient_emails'? True
+[2025-12-28 17:18:21] [DEBUG] 🔍 SHARE_FORM: Processing email submission
+[2025-12-28 17:18:21] [DEBUG] 🔍 SHARE_FORM: Recipient emails: u687418@gmail.com
+[2025-12-28 17:18:21] [DEBUG] 🔍 SHARE_FORM: Starting email send for form b91d365a-5fe1-42b1-aa57-1bb24e1260bd
+[2025-12-28 17:18:21] [DEBUG] 🔍 SHARE_FORM: Form URL: http://overpotent-bianca-foamy.ngrok-free.dev/form/b91d365a-5fe1-42b1-aa57-1bb24e1260bd
+[2025-12-28 17:18:21] [DEBUG] 🔍 SHARE_FORM: Form Title: Registration Form for Test
+[2025-12-28 17:18:21] [DEBUG] 🔍 SHARE_FORM: Event Name: Test
+[2025-12-28 17:18:21] [DEBUG] 🔍 SHARE_FORM: Sender: Edwin 
+[2025-12-28 17:18:21] [DEBUG] 🔍 SHARE_FORM: Recipients: ['u687418@gmail.com']
+[2025-12-28 17:18:25] [SUCCESS] ✅ Email sent to u687418@gmail.com
+[2025-12-28 17:18:25] [SUCCESS] ✅ SHARE_FORM: Sent to u687418@gmail.com - Message: Email sent successfully
+[2025-12-28 18:03:47] [DEBUG] 🔍 SHARE_FORM: POST request received
+[2025-12-28 18:03:47] [DEBUG] 🔍 SHARE_FORM: Form keys: ['send_email', 'recipient_emails', 'custom_message']
+[2025-12-28 18:03:47] [DEBUG] 🔍 SHARE_FORM: Has 'send_email'? True
+[2025-12-28 18:03:47] [DEBUG] 🔍 SHARE_FORM: Has 'recipient_emails'? True
+[2025-12-28 18:03:47] [DEBUG] 🔍 SHARE_FORM: Processing email submission
+[2025-12-28 18:03:47] [DEBUG] 🔍 SHARE_FORM: Recipient emails: edwinveedon@gmail.com
+[2025-12-28 18:03:47] [DEBUG] 🔍 SHARE_FORM: Starting email send for form b91d365a-5fe1-42b1-aa57-1bb24e1260bd
+[2025-12-28 18:03:47] [DEBUG] 🔍 SHARE_FORM: Form URL: http://overpotent-bianca-foamy.ngrok-free.dev/form/b91d365a-5fe1-42b1-aa57-1bb24e1260bd
+[2025-12-28 18:03:47] [DEBUG] 🔍 SHARE_FORM: Form Title: Registration Form for Test
+[2025-12-28 18:03:47] [DEBUG] 🔍 SHARE_FORM: Event Name: Test
+[2025-12-28 18:03:47] [DEBUG] 🔍 SHARE_FORM: Sender: Edwin 
+[2025-12-28 18:03:47] [DEBUG] 🔍 SHARE_FORM: Recipients: ['edwinveedon@gmail.com']
+[2025-12-28 18:03:51] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-28 18:03:51] [SUCCESS] ✅ SHARE_FORM: Sent to edwinveedon@gmail.com - Message: Email sent successfully
+[2025-12-28 18:49:25] [DEBUG] 🔍 SHARE_FORM: POST request received
+[2025-12-28 18:49:25] [DEBUG] 🔍 SHARE_FORM: Form keys: ['send_email', 'recipient_emails', 'custom_message']
+[2025-12-28 18:49:25] [DEBUG] 🔍 SHARE_FORM: Has 'send_email'? True
+[2025-12-28 18:49:25] [DEBUG] 🔍 SHARE_FORM: Has 'recipient_emails'? True
+[2025-12-28 18:49:25] [DEBUG] 🔍 SHARE_FORM: Processing email submission
+[2025-12-28 18:49:25] [DEBUG] 🔍 SHARE_FORM: Recipient emails: u687418@gmail.com
+[2025-12-28 18:49:25] [DEBUG] 🔍 SHARE_FORM: Starting email send for form 49f5cca3-6f8f-4c39-a75c-7538a9df1096
+[2025-12-28 18:49:25] [DEBUG] 🔍 SHARE_FORM: Form URL: http://overpotent-bianca-foamy.ngrok-free.dev/form/49f5cca3-6f8f-4c39-a75c-7538a9df1096
+[2025-12-28 18:49:25] [DEBUG] 🔍 SHARE_FORM: Form Title: Registration Form for Test
+[2025-12-28 18:49:25] [DEBUG] 🔍 SHARE_FORM: Event Name: Test
+[2025-12-28 18:49:25] [DEBUG] 🔍 SHARE_FORM: Sender: edwin
+[2025-12-28 18:49:25] [DEBUG] 🔍 SHARE_FORM: Recipients: ['u687418@gmail.com']
+[2025-12-28 18:49:29] [SUCCESS] ✅ Email sent to u687418@gmail.com
+[2025-12-28 18:49:29] [SUCCESS] ✅ SHARE_FORM: Sent to u687418@gmail.com - Message: Email sent successfully
+[2025-12-28 21:55:51] [DEBUG] 🔍 SHARE_FORM: POST request received
+[2025-12-28 21:55:51] [DEBUG] 🔍 SHARE_FORM: Form keys: ['send_email', 'recipient_emails', 'custom_message']
+[2025-12-28 21:55:51] [DEBUG] 🔍 SHARE_FORM: Has 'send_email'? True
+[2025-12-28 21:55:51] [DEBUG] 🔍 SHARE_FORM: Has 'recipient_emails'? True
+[2025-12-28 21:55:51] [DEBUG] 🔍 SHARE_FORM: Processing email submission
+[2025-12-28 21:55:51] [DEBUG] 🔍 SHARE_FORM: Recipient emails: edwinveedon@gmail.com
+[2025-12-28 21:55:51] [DEBUG] 🔍 SHARE_FORM: Starting email send for form 49f5cca3-6f8f-4c39-a75c-7538a9df1096
+[2025-12-28 21:55:51] [DEBUG] 🔍 SHARE_FORM: Form URL: http://overpotent-bianca-foamy.ngrok-free.dev/form/49f5cca3-6f8f-4c39-a75c-7538a9df1096
+[2025-12-28 21:55:51] [DEBUG] 🔍 SHARE_FORM: Form Title: Registration Form for Test
+[2025-12-28 21:55:51] [DEBUG] 🔍 SHARE_FORM: Event Name: Test
+[2025-12-28 21:55:51] [DEBUG] 🔍 SHARE_FORM: Sender: edwin
+[2025-12-28 21:55:51] [DEBUG] 🔍 SHARE_FORM: Recipients: ['edwinveedon@gmail.com']
+[2025-12-28 21:55:55] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-28 21:55:55] [SUCCESS] ✅ SHARE_FORM: Sent to edwinveedon@gmail.com - Message: Email sent successfully
+[2025-12-28 22:23:31] [DEBUG] 🔍 SHARE_FORM: POST request received
+[2025-12-28 22:23:31] [DEBUG] 🔍 SHARE_FORM: Form keys: ['send_email', 'recipient_emails', 'custom_message']
+[2025-12-28 22:23:31] [DEBUG] 🔍 SHARE_FORM: Has 'send_email'? True
+[2025-12-28 22:23:31] [DEBUG] 🔍 SHARE_FORM: Has 'recipient_emails'? True
+[2025-12-28 22:23:31] [DEBUG] 🔍 SHARE_FORM: Processing email submission
+[2025-12-28 22:23:31] [DEBUG] 🔍 SHARE_FORM: Recipient emails: edwinveedon@gmail.com
+[2025-12-28 22:23:31] [DEBUG] 🔍 SHARE_FORM: Starting email send for form 49f5cca3-6f8f-4c39-a75c-7538a9df1096
+[2025-12-28 22:23:31] [DEBUG] 🔍 SHARE_FORM: Form URL: http://overpotent-bianca-foamy.ngrok-free.dev/form/49f5cca3-6f8f-4c39-a75c-7538a9df1096
+[2025-12-28 22:23:31] [DEBUG] 🔍 SHARE_FORM: Form Title: Registration Form for Test
+[2025-12-28 22:23:31] [DEBUG] 🔍 SHARE_FORM: Event Name: Test
+[2025-12-28 22:23:31] [DEBUG] 🔍 SHARE_FORM: Sender: edwin
+[2025-12-28 22:23:31] [DEBUG] 🔍 SHARE_FORM: Recipients: ['edwinveedon@gmail.com']
+[2025-12-28 22:23:34] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-28 22:23:34] [SUCCESS] ✅ SHARE_FORM: Sent to edwinveedon@gmail.com - Message: Email sent successfully
+[2025-12-29 12:43:50] [DEBUG] 🔍 SHARE_FORM: POST request received
+[2025-12-29 12:43:50] [DEBUG] 🔍 SHARE_FORM: Form keys: ['send_email', 'recipient_emails', 'custom_message']
+[2025-12-29 12:43:50] [DEBUG] 🔍 SHARE_FORM: Has 'send_email'? True
+[2025-12-29 12:43:50] [DEBUG] 🔍 SHARE_FORM: Has 'recipient_emails'? True
+[2025-12-29 12:43:50] [DEBUG] 🔍 SHARE_FORM: Processing email submission
+[2025-12-29 12:43:50] [DEBUG] 🔍 SHARE_FORM: Recipient emails: edwinveedon@gmail.com
+[2025-12-29 12:43:50] [DEBUG] 🔍 SHARE_FORM: Starting email send for form 689b7ea3-2f05-4df2-9e97-80570059624e
+[2025-12-29 12:43:50] [DEBUG] 🔍 SHARE_FORM: Form URL: http://overpotent-bianca-foamy.ngrok-free.dev/form/689b7ea3-2f05-4df2-9e97-80570059624e
+[2025-12-29 12:43:50] [DEBUG] 🔍 SHARE_FORM: Form Title: Registration Form for Christmas Event
+[2025-12-29 12:43:50] [DEBUG] 🔍 SHARE_FORM: Event Name: Christmas Event
+[2025-12-29 12:43:50] [DEBUG] 🔍 SHARE_FORM: Sender: edwinveedon
+[2025-12-29 12:43:50] [DEBUG] 🔍 SHARE_FORM: Recipients: ['edwinveedon@gmail.com']
+[2025-12-29 12:43:54] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-29 12:43:54] [SUCCESS] ✅ SHARE_FORM: Sent to edwinveedon@gmail.com - Message: Email sent successfully
+[2025-12-29 14:10:54] [SUCCESS] ✅ Email sent to u687418@gmail.com
+[2025-12-29 14:10:54] [SUCCESS] ✅ OTP email sent to u687418@gmail.com
+[2025-12-29 14:16:57] [ERROR] ❌ Email Error: Error: [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1029)
+[2025-12-29 14:16:57] [ERROR] ❌ Failed to send OTP email to u687418@gmail.com: Error: [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1029)
+[2025-12-29 14:17:51] [SUCCESS] ✅ Email sent to u687418@gmail.com
+[2025-12-29 14:17:51] [SUCCESS] ✅ OTP email sent to u687418@gmail.com
+[2025-12-29 15:33:44] [DEBUG] 🔍 SHARE_FORM: POST request received
+[2025-12-29 15:33:44] [DEBUG] 🔍 SHARE_FORM: Form keys: ['send_email', 'recipient_emails', 'custom_message']
+[2025-12-29 15:33:44] [DEBUG] 🔍 SHARE_FORM: Has 'send_email'? True
+[2025-12-29 15:33:44] [DEBUG] 🔍 SHARE_FORM: Has 'recipient_emails'? True
+[2025-12-29 15:33:44] [DEBUG] 🔍 SHARE_FORM: Processing email submission
+[2025-12-29 15:33:44] [DEBUG] 🔍 SHARE_FORM: Recipient emails: edwinveedon@gmail.com
+[2025-12-29 15:33:44] [DEBUG] 🔍 SHARE_FORM: Starting email send for form 448e8602-23ff-4a95-9c86-8dd1aedce5d2
+[2025-12-29 15:33:44] [DEBUG] 🔍 SHARE_FORM: Form URL: http://overpotent-bianca-foamy.ngrok-free.dev/form/448e8602-23ff-4a95-9c86-8dd1aedce5d2
+[2025-12-29 15:33:44] [DEBUG] 🔍 SHARE_FORM: Form Title: Registration Form for Christmas Event
+[2025-12-29 15:33:44] [DEBUG] 🔍 SHARE_FORM: Event Name: Christmas Event
+[2025-12-29 15:33:44] [DEBUG] 🔍 SHARE_FORM: Sender: ura
+[2025-12-29 15:33:44] [DEBUG] 🔍 SHARE_FORM: Recipients: ['edwinveedon@gmail.com']
+[2025-12-29 15:33:50] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-29 15:33:50] [SUCCESS] ✅ SHARE_FORM: Sent to edwinveedon@gmail.com - Message: Email sent successfully
+[2025-12-29 16:32:01] [WARNING] CSRF token mismatch for login
+[2025-12-29 16:42:59] [INFO] Feedback submitted by edwinveedon (edwinveedon@gmail.com) - Type: improvement, Rating: 4
+[2025-12-29 16:43:03] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-29 16:43:03] [INFO] Feedback notification sent to edwinveedon@gmail.com
+[2025-12-29 16:43:06] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-29 16:43:06] [INFO] Thank you email sent to edwinveedon@gmail.com
+[2025-12-29 17:44:14] [SUCCESS] ✅ Email sent to abc@gmail.com
+[2025-12-29 17:44:14] [SUCCESS] ✅ OTP email sent to abc@gmail.com
+[2025-12-29 20:20:57] [WARNING] CSRF token validation failed for user ef9af7bf-af62-486e-9439-88ac3d6972f6 on create_event
+[2025-12-29 20:21:56] [WARNING] CSRF token validation failed for user ef9af7bf-af62-486e-9439-88ac3d6972f6 on create_event
+[2025-12-29 21:19:13] [SUCCESS] ✅ Email sent to u687418@gmail.com
+[2025-12-29 21:19:13] [SUCCESS] ✅ OTP email sent to u687418@gmail.com
+[2025-12-30 16:13:05] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on create_event
+[2025-12-30 16:13:19] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on create_event
+[2025-12-30 16:13:45] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on create_event
+[2025-12-30 16:14:11] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on create_event
+[2025-12-30 16:16:06] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on create_event
+[2025-12-30 16:26:15] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on create_event
+[2025-12-30 16:31:32] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on create_event
+[2025-12-30 17:19:57] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on create_event
+[2025-12-30 17:21:35] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on create_event
+[2025-12-30 17:22:03] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on create_event
+[2025-12-30 17:22:44] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on create_event
+[2025-12-30 17:25:01] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on create_event
+[2025-12-30 17:32:37] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on create_event
+[2025-12-30 17:32:59] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on create_event
+[2025-12-30 18:07:54] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on share_form
+[2025-12-30 18:08:29] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on share_form
+[2025-12-30 18:09:37] [INFO] 🧪 STARTING IDENTICAL TEST EMAIL - USING REAL EMAIL CONFIG
+[2025-12-30 18:09:40] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-30 18:10:00] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on share_form
+[2025-12-30 18:10:32] [INFO] 🔬 COMPARING TEST vs REAL EMAIL CONFIGURATIONS
+[2025-12-30 18:10:36] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-30 18:10:42] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-30 18:11:15] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on share_form
+[2025-12-30 18:12:38] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on share_form
+[2025-12-30 18:12:56] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on share_form
+[2025-12-30 18:13:12] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on share_form
+[2025-12-30 18:14:31] [DEBUG] 🔍 SHARE_FORM: POST request received
+[2025-12-30 18:14:31] [DEBUG] 🔍 SHARE_FORM: Form keys: ['csrf_token', 'send_email', 'recipient_emails', 'custom_message']
+[2025-12-30 18:14:31] [DEBUG] 🔍 SHARE_FORM: Has 'send_email'? True
+[2025-12-30 18:14:31] [DEBUG] 🔍 SHARE_FORM: Has 'recipient_emails'? True
+[2025-12-30 18:14:31] [DEBUG] 🔍 SHARE_FORM: Processing email submission
+[2025-12-30 18:14:31] [DEBUG] 🔍 SHARE_FORM: Recipient emails: edwinveedon@gmail.com
+[2025-12-30 18:14:31] [DEBUG] 🔍 SHARE_FORM: Starting email send for form 3c337cb2-8240-41dc-8852-d594bf1ed8aa
+[2025-12-30 18:14:31] [DEBUG] 🔍 SHARE_FORM: Form URL: http://overpotent-bianca-foamy.ngrok-free.dev/form/3c337cb2-8240-41dc-8852-d594bf1ed8aa
+[2025-12-30 18:14:31] [DEBUG] 🔍 SHARE_FORM: Form Title: Registration Form for Christmas 
+[2025-12-30 18:14:31] [DEBUG] 🔍 SHARE_FORM: Event Name: Christmas 
+[2025-12-30 18:14:31] [DEBUG] 🔍 SHARE_FORM: Sender: u687418
+[2025-12-30 18:14:31] [DEBUG] 🔍 SHARE_FORM: Recipients: ['edwinveedon@gmail.com']
+[2025-12-30 18:14:35] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-30 18:14:35] [SUCCESS] ✅ SHARE_FORM: Sent to edwinveedon@gmail.com - Message: Email sent successfully
+[2025-12-31 09:02:49] [INFO] Feedback submitted by edwin tony (edwinveedon@gmail.com) - Type: praise, Rating: 5
+[2025-12-31 09:02:49] [ERROR] Error sending feedback notification: Could not build url for endpoint 'feedback_viewer'. Did you mean 'mark_feedback_reviewed' instead?
+[2025-12-31 09:02:53] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-31 09:02:53] [INFO] Thank you email sent to edwinveedon@gmail.com
+[2025-12-31 09:22:40] [INFO] 🧪 STARTING IDENTICAL TEST EMAIL - USING REAL EMAIL CONFIG
+[2025-12-31 09:22:44] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-31 09:24:27] [INFO] Feedback submitted by Edwin (edwinveedon@gmail.com) - Type: suggestion, Rating: 5
+[2025-12-31 09:24:31] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-31 09:24:31] [INFO] Feedback notification sent to edwinveedon@gmail.com
+[2025-12-31 09:24:34] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-31 09:24:34] [INFO] Thank you email sent to edwinveedon@gmail.com
+[2025-12-31 10:05:25] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on mark_feedback_read
+[2025-12-31 10:05:29] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on mark_feedback_read
+[2025-12-31 10:05:29] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on mark_feedback_read
+[2025-12-31 10:06:25] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on delete_feedback
+[2025-12-31 10:06:25] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:25] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:25] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:25] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:25] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:25] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:25] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:26] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:26] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:26] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:26] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:26] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:26] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:26] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:26] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:26] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:27] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:27] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:27] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:27] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:28] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on delete_feedback
+[2025-12-31 10:06:28] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:29] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:29] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:29] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:29] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:29] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:29] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:29] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:29] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:30] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on delete_feedback
+[2025-12-31 10:06:30] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:31] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:31] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:31] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:31] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:31] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:31] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:31] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:31] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:31] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:31] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:31] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:31] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:31] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:31] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:31] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:32] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:32] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:32] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:32] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:32] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:32] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:32] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:32] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:35] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on delete_feedback
+[2025-12-31 10:06:35] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:35] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:36] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:36] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:36] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:36] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:36] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:36] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:36] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:36] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:36] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:37] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:37] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:37] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:37] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:37] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:37] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:37] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:37] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:06:38] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:07:40] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on delete_feedback
+[2025-12-31 10:07:40] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:07:40] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:07:40] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:07:41] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:07:41] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:07:41] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:07:41] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:07:41] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:07:41] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:07:42] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on delete_feedback
+[2025-12-31 10:07:42] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:07:42] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:07:42] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:07:43] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:07:43] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:07:43] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:07:43] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:07:43] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:07:43] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:07:43] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:07:43] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:07:43] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:07:43] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:07:43] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:07:43] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:07:43] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:07:43] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:07:43] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:07:43] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:07:43] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:07:43] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:07:44] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on delete_feedback
+[2025-12-31 10:07:44] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:07:44] [WARNING] CSRF token validation failed for user 08576130-5cd1-4e6a-9c28-d607ee1ba48e on None
+[2025-12-31 10:12:57] [INFO] User 08576130-5cd1-4e6a-9c28-d607ee1ba48e deleted their feedback feb05f9b-8bb4-4b82-875f-dd382f0e2e64
+[2025-12-31 10:13:01] [INFO] User 08576130-5cd1-4e6a-9c28-d607ee1ba48e deleted their feedback c9048443-768e-4e7a-ae38-432bc20e8a75
+[2025-12-31 10:19:36] [INFO] Feedback submitted by Edwin (edwinveedon@gmail.com) - Type: suggestion, Rating: 5
+[2025-12-31 10:19:40] [SUCCESS] ✅ Email sent to u687418@gmail.com
+[2025-12-31 10:19:40] [INFO] Feedback notification sent to u687418@gmail.com
+[2025-12-31 10:19:44] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-31 10:19:44] [INFO] Thank you email sent to edwinveedon@gmail.com
+[2025-12-31 10:39:10] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-31 10:39:10] [INFO] Follow-up notification sent to edwinveedon@gmail.com
+[2025-12-31 10:39:10] [INFO] User 08576130-5cd1-4e6a-9c28-d607ee1ba48e sent follow-up for feedback e05ea08f-ac79-40a7-b8b7-3fa8ecd8809f
+[2025-12-31 11:00:04] [INFO] Feedback submitted by Edwin (edwinveedon@gmail.com) - Type: suggestion, Rating: 5
+[2025-12-31 11:00:08] [SUCCESS] ✅ Email sent to u687418@gmail.com
+[2025-12-31 11:00:08] [INFO] Feedback notification sent to u687418@gmail.com
+[2025-12-31 11:00:11] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-31 11:00:11] [INFO] Thank you email sent to edwinveedon@gmail.com
+[2025-12-31 11:07:01] [INFO] 🧪 STARTING IDENTICAL TEST EMAIL - USING REAL EMAIL CONFIG
+[2025-12-31 11:07:04] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-31 11:33:36] [SUCCESS] ✅ Email sent to u687418@gmail.com
+[2025-12-31 11:33:36] [SUCCESS] ✅ OTP email sent to u687418@gmail.com
+[2025-12-31 11:40:00] [INFO] Feedback submitted by Edwin (edwinveedon@gmail.com) - Type: suggestion, Rating: 5
+[2025-12-31 11:40:04] [SUCCESS] ✅ Email sent to u687418@gmail.com
+[2025-12-31 11:40:04] [INFO] Feedback notification sent to u687418@gmail.com
+[2025-12-31 11:40:07] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-31 11:40:07] [INFO] Thank you email sent to edwinveedon@gmail.com
+[2025-12-31 11:45:12] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-31 11:45:12] [INFO] Admin replied to feedback 4e29c12a-0dd5-4b37-935d-ee341af535d8
+[2025-12-31 11:45:14] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-31 11:45:14] [INFO] Admin replied to feedback 4e29c12a-0dd5-4b37-935d-ee341af535d8
+[2025-12-31 12:23:21] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-31 12:23:22] [INFO] Admin replied to feedback 4e29c12a-0dd5-4b37-935d-ee341af535d8
+[2025-12-31 12:24:08] [INFO] 0 feedback items marked as reviewed by admin
+[2025-12-31 12:24:19] [INFO] 0 feedback items marked as reviewed by admin
+[2025-12-31 12:28:46] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-31 12:28:46] [SUCCESS] ✅ OTP email sent to edwinveedon@gmail.com
+[2025-12-31 12:30:39] [INFO] 0 feedback items marked as reviewed by admin
+[2025-12-31 13:59:15] [INFO] 🧪 STARTING IDENTICAL TEST EMAIL - USING REAL EMAIL CONFIG
+[2025-12-31 13:59:21] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-31 14:23:34] [SUCCESS] ✅ Email sent to aaronveedon@gmail.com
+[2025-12-31 14:23:34] [SUCCESS] ✅ OTP email sent to aaronveedon@gmail.com
+[2025-12-31 14:35:32] [DEBUG] 🔍 SHARE_FORM: POST request received
+[2025-12-31 14:35:32] [DEBUG] 🔍 SHARE_FORM: Form keys: ['csrf_token', 'send_email', 'recipient_emails', 'custom_message']
+[2025-12-31 14:35:32] [DEBUG] 🔍 SHARE_FORM: Has 'send_email'? True
+[2025-12-31 14:35:32] [DEBUG] 🔍 SHARE_FORM: Has 'recipient_emails'? True
+[2025-12-31 14:35:32] [DEBUG] 🔍 SHARE_FORM: Processing email submission
+[2025-12-31 14:35:32] [DEBUG] 🔍 SHARE_FORM: Recipient emails: edwinveedon@gmail.com
+[2025-12-31 14:35:32] [DEBUG] 🔍 SHARE_FORM: Starting email send for form e401090d-6db8-46e5-9d82-33d2b45296a6
+[2025-12-31 14:35:32] [DEBUG] 🔍 SHARE_FORM: Form URL: http://overpotent-bianca-foamy.ngrok-free.dev/form/e401090d-6db8-46e5-9d82-33d2b45296a6
+[2025-12-31 14:35:32] [DEBUG] 🔍 SHARE_FORM: Form Title: Registration Form for Christmas 
+[2025-12-31 14:35:32] [DEBUG] 🔍 SHARE_FORM: Event Name: Christmas 
+[2025-12-31 14:35:32] [DEBUG] 🔍 SHARE_FORM: Sender: Aaron_pixel
+[2025-12-31 14:35:32] [DEBUG] 🔍 SHARE_FORM: Recipients: ['edwinveedon@gmail.com']
+[2025-12-31 14:35:36] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-31 14:35:36] [SUCCESS] ✅ SHARE_FORM: Sent to edwinveedon@gmail.com - Message: Email sent successfully
+[2025-12-31 14:38:01] [INFO] Feedback submitted by Edwin (edwinveedon@gmail.com) - Type: bug, Rating: 1
+[2025-12-31 14:38:05] [SUCCESS] ✅ Email sent to u687418@gmail.com
+[2025-12-31 14:38:05] [INFO] Feedback notification sent to u687418@gmail.com
+[2025-12-31 14:38:09] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-31 14:38:09] [INFO] Thank you email sent to edwinveedon@gmail.com
+[2025-12-31 14:40:32] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-31 14:40:32] [INFO] Admin replied to feedback f5831e3b-5cbc-485a-86f4-7b451ca2d968
+[2025-12-31 14:43:14] [INFO] 🧪 STARTING IDENTICAL TEST EMAIL - USING REAL EMAIL CONFIG
+[2025-12-31 14:43:19] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-31 14:56:59] [WARNING] CSRF token validation failed for user admin on delete_feedback
+[2025-12-31 14:56:59] [WARNING] CSRF token validation failed for user admin on None
+[2025-12-31 14:56:59] [WARNING] CSRF token validation failed for user admin on None
+[2025-12-31 15:46:32] [WARNING] CSRF token validation failed for user 240f8074-19bd-445f-a5c5-6c41279e1b65 on mark_feedback_read
+[2025-12-31 15:46:33] [WARNING] CSRF token validation failed for user 240f8074-19bd-445f-a5c5-6c41279e1b65 on mark_feedback_read
+[2025-12-31 15:46:34] [WARNING] CSRF token validation failed for user 240f8074-19bd-445f-a5c5-6c41279e1b65 on mark_feedback_read
+[2025-12-31 20:41:34] [INFO] Feedback submitted by Edwin (edwinveedon@gmail.com) - Type: praise, Rating: 5
+[2025-12-31 20:41:46] [SUCCESS] ✅ Email sent to u687418@gmail.com
+[2025-12-31 20:41:46] [INFO] Feedback notification sent to u687418@gmail.com
+[2025-12-31 20:41:50] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-31 20:41:50] [INFO] Thank you email sent to edwinveedon@gmail.com
+[2025-12-31 20:43:19] [INFO] Feedback submitted by Edwin (edwinveedon@gmail.com) - Type: praise, Rating: 5
+[2025-12-31 20:43:24] [SUCCESS] ✅ Email sent to u687418@gmail.com
+[2025-12-31 20:43:24] [INFO] Feedback notification sent to u687418@gmail.com
+[2025-12-31 20:43:27] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-31 20:43:27] [INFO] Thank you email sent to edwinveedon@gmail.com
+[2025-12-31 20:47:48] [INFO] Feedback submitted by Edwin (edwinveedon@gmail.com) - Type: praise, Rating: 5
+[2025-12-31 20:47:51] [SUCCESS] ✅ Email sent to eventflow.app2026@gmail.com
+[2025-12-31 20:47:51] [INFO] Feedback notification sent to eventflow.app2026@gmail.com
+[2025-12-31 20:47:55] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-31 20:47:55] [INFO] Thank you email sent to edwinveedon@gmail.com
+[2025-12-31 20:49:45] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-31 20:49:45] [SUCCESS] ✅ OTP email sent to edwinveedon@gmail.com
+[2025-12-31 21:14:35] [INFO] Feedback submitted by Edwin (edwinveedon@gmail.com) - Type: praise, Rating: 5
+[2025-12-31 21:14:38] [SUCCESS] ✅ Email sent to eventflow.app2026@gmail.com
+[2025-12-31 21:14:38] [INFO] Feedback notification sent to eventflow.app2026@gmail.com
+[2025-12-31 21:14:41] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-31 21:14:41] [INFO] Thank you email sent to edwinveedon@gmail.com
+[2025-12-31 21:16:56] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2025-12-31 21:16:56] [SUCCESS] ✅ OTP email sent to edwinveedon@gmail.com
+[2026-01-01 10:15:25] [INFO] Feedback submitted by Edwin (edwinveedon@gmail.com) - Type: praise, Rating: 5
+[2026-01-01 10:15:30] [SUCCESS] ✅ Email sent to eventflow.app2026@gmail.com
+[2026-01-01 10:15:30] [INFO] Feedback notification sent to eventflow.app2026@gmail.com
+[2026-01-01 10:15:33] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2026-01-01 10:15:33] [INFO] Thank you email sent to edwinveedon@gmail.com
+[2026-01-01 10:30:21] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2026-01-01 10:30:21] [INFO] Admin replied to feedback 01ff70f5-2af2-4ea1-8901-d6605dcce30f
+[2026-01-01 10:37:41] [SUCCESS] ✅ Email sent to edwinveedon@gmail.com
+[2026-01-01 10:37:41] [INFO] Admin sent follow-up to edwinveedon@gmail.com

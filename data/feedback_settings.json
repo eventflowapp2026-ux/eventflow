@@ -1,0 +1,14 @@
+{
+  "send_thank_you_emails": true,
+  "notify_admin_on_feedback": true,
+  "admin_email": "eventflow.app2026@gmail.com",
+  "auto_reply_enabled": true,
+  "auto_reply_message": "Thank you for your feedback! We've received your submission and will review it soon.",
+  "feedback_categories": [
+    "bug",
+    "suggestion",
+    "praise",
+    "general",
+    "feature"
+  ]
+}

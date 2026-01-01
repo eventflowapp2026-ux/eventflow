@@ -1,0 +1,37 @@
+{
+    "pending_verifications": {
+        "45164d04-7954-4bb4-8c6a-355a723c0833": {
+            "email": "edwinveedon@gmail.com",
+            "otp_hash": "268d461a64ced64a1b9ffe9bb013f75faaf7935a26235760bc2ef88a96c06f65",
+            "created_at": "2025-12-29T09:40:09.788674",
+            "expires_at": "2025-12-29T09:50:09.788728",
+            "attempts": 0,
+            "resends": 0,
+            "verified": false,
+            "user_data": {
+                "username": "edwinveedon",
+                "email": "edwinveedon@gmail.com",
+                "mobile": "9061054750",
+                "password": "123456",
+                "created_at": "2025-12-29T09:40:09.785958"
+            }
+        },
+        "35422636-5eb8-4efb-9f7b-5a2aa0800582": {
+            "email": "edwinveedon@gmail.com",
+            "otp_hash": "2e142ac0d04a92d197a01c9e5b938a731a90a39d3cccc29469406ef355d95b00",
+            "created_at": "2025-12-29T09:44:58.888352",
+            "expires_at": "2025-12-29T09:54:58.888413",
+            "attempts": 0,
+            "resends": 0,
+            "verified": false,
+            "user_data": {
+                "username": "edwinveedon",
+                "email": "edwinveedon@gmail.com",
+                "mobile": "9061054750",
+                "password": "123456",
+                "created_at": "2025-12-29T09:44:58.885700"
+            }
+        }
+    },
+    "verified_users": {}
+}

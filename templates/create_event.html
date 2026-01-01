@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Create Event{% endblock %}
+
+{% block page_title %}Create New Event{% endblock %}
+{% block page_subtitle %}
+<p class="text-muted mb-0">Start by creating your event</p>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card-modern">
+            <div class="card-header-modern">
+                <h4 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Create Event</h4>
+            </div>
+            <div class="card-body-modern">
+                <form method="POST" action="{{ url_for('create_event') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Event Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control form-control-modern" 
+                               name="event_name" required 
+                               placeholder="Enter event name (e.g., Annual Conference 2024)">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Description <span class="text-danger">*</span></label>
+                        <textarea class="form-control form-control-modern" 
+                                  name="description" rows="4" required 
+                                  placeholder="Describe your event..."></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label fw-semibold">Event Category</label>
+                            <select class="form-select form-control-modern" name="category">
+                                <option value="" selected disabled>Select category</option>
+                                <option value="conference">Conference</option>
+                                <option value="workshop">Workshop</option>
+                                <option value="seminar">Seminar</option>
+                                <option value="meeting">Meeting</option>
+                                <option value="social">Social Event</option>
+                                <option value="sports">Sports Event</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label fw-semibold">Event Type</label>
+                            <select class="form-select form-control-modern" name="event_type">
+                                <option value="" selected disabled>Select type</option>
+                                <option value="physical">Physical Event</option>
+                                <option value="virtual">Virtual Event</option>
+                                <option value="hybrid">Hybrid Event</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Additional Notes (Optional)</label>
+                        <textarea class="form-control form-control-modern" 
+                                  name="notes" rows="2" 
+                                  placeholder="Any additional information..."></textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary btn-modern">
+                            <i class="bi bi-arrow-left"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary-modern btn-modern">
+                            <i class="bi bi-check-circle"></i> Create Event
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

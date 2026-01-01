@@ -1,0 +1,257 @@
+<!-- signup.html -->
+{% extends "base.html" %}
+{% block title %}Sign Up{% endblock %}
+
+{% block page_title %}Create Account{% endblock %}
+{% block page_subtitle %}
+<p class="text-muted mb-0">Join our event registration platform</p>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card-modern">
+            <div class="card-header-modern">
+                <h4 class="mb-0"><i class="bi bi-person-plus me-2"></i>Sign Up</h4>
+            </div>
+            <div class="card-body-modern">
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-modern">
+                                <i class="bi {% if category == 'success' %}bi-check-circle{% elif category == 'error' %}bi-exclamation-triangle{% else %}bi-info-circle{% endif %} me-2"></i>
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <form method="POST" action="{{ url_for('signup') }}" id="signupForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label fw-semibold">Username <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-modern" name="username" required 
+                                   placeholder="Choose a username" id="username">
+                            <div class="form-text">This will be displayed on your events</div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label fw-semibold">Email Address <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control form-control-modern" name="email" required 
+                                   placeholder="Enter your email" id="email">
+                            <div class="form-text">We'll send a verification code</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label fw-semibold">Mobile Number <span class="text-danger">*</span></label>
+                            <input type="tel" class="form-control form-control-modern" name="mobile" required 
+                                   placeholder="Enter mobile number" id="mobile">
+                            <div class="form-text">Format: 10-15 digits</div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label fw-semibold">Password <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="password" class="form-control form-control-modern" name="password" required 
+                                       placeholder="Create a password" id="password">
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            <div class="form-text">At least 6 characters</div>
+                            
+                            <!-- Password strength meter -->
+                            <div class="mt-2">
+                                <div class="progress" style="height: 4px;">
+                                    <div class="progress-bar" id="passwordStrength" role="progressbar" style="width: 0%"></div>
+                                </div>
+                                <small id="passwordStrengthText" class="text-muted"></small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="terms" required>
+                            <label class="form-check-label" for="terms">
+                                I agree to the 
+                                <a href="{{ url_for('terms') }}" target="_blank">Terms of Service</a> 
+                                and 
+                                <a href="{{ url_for('privacy_policy') }}" target="_blank">Privacy Policy</a>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary-modern btn-modern w-100" id="submitBtn">
+                        <i class="bi bi-person-plus me-2"></i> Create Account
+                    </button>
+                    
+                    <div class="text-center mt-3">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            You'll receive a verification code by email
+                        </small>
+                    </div>
+                </form>
+                
+                <div class="text-center mt-4">
+                    <p class="text-muted mb-2">Already have an account?</p>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-primary btn-modern">
+                        <i class="bi bi-box-arrow-in-right"></i> Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Toggle password visibility
+    document.getElementById('togglePassword').addEventListener('click', function() {
+        const passwordInput = document.getElementById('password');
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        this.innerHTML = type === 'password' ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>';
+    });
+    
+    // Password strength indicator
+    document.getElementById('password').addEventListener('input', function() {
+        const password = this.value;
+        const strengthBar = document.getElementById('passwordStrength');
+        const strengthText = document.getElementById('passwordStrengthText');
+        
+        let strength = 0;
+        let text = '';
+        let color = '';
+        
+        if (password.length >= 6) strength += 25;
+        if (password.length >= 8) strength += 15;
+        if (/[A-Z]/.test(password)) strength += 20;
+        if (/[a-z]/.test(password)) strength += 20;
+        if (/[0-9]/.test(password)) strength += 20;
+        if (/[^A-Za-z0-9]/.test(password)) strength += 20;
+        
+        strength = Math.min(strength, 100);
+        
+        if (strength < 30) {
+            color = 'danger';
+            text = 'Weak';
+        } else if (strength < 60) {
+            color = 'warning';
+            text = 'Fair';
+        } else if (strength < 80) {
+            color = 'info';
+            text = 'Good';
+        } else {
+            color = 'success';
+            text = 'Strong';
+        }
+        
+        strengthBar.style.width = strength + '%';
+        strengthBar.className = 'progress-bar bg-' + color;
+        strengthText.textContent = text + ' password';
+        strengthText.className = 'text-' + color;
+    });
+    
+    // Form validation with better UX
+    document.getElementById('signupForm').addEventListener('submit', function(e) {
+        const username = document.getElementById('username').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const mobile = document.getElementById('mobile').value.trim();
+        const password = document.getElementById('password').value;
+        const submitBtn = document.getElementById('submitBtn');
+        
+        // Basic validation
+        if (username.length < 3) {
+            e.preventDefault();
+            showAlert('Username must be at least 3 characters long.', 'danger');
+            document.getElementById('username').focus();
+            return false;
+        }
+        
+        if (!email.includes('@') || !email.includes('.')) {
+            e.preventDefault();
+            showAlert('Please enter a valid email address.', 'danger');
+            document.getElementById('email').focus();
+            return false;
+        }
+        
+        const mobileDigits = mobile.replace(/\D/g, '');
+        if (mobileDigits.length < 10) {
+            e.preventDefault();
+            showAlert('Please enter a valid mobile number (at least 10 digits).', 'danger');
+            document.getElementById('mobile').focus();
+            return false;
+        }
+        
+        if (password.length < 6) {
+            e.preventDefault();
+            showAlert('Password must be at least 6 characters long.', 'danger');
+            document.getElementById('password').focus();
+            return false;
+        }
+        
+        if (!document.getElementById('terms').checked) {
+            e.preventDefault();
+            showAlert('You must agree to the terms and conditions.', 'danger');
+            return false;
+        }
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Creating Account...';
+        
+        return true;
+    });
+    
+    function showAlert(message, type) {
+        // Remove existing alerts
+        const existingAlerts = document.querySelectorAll('.alert-modern');
+        existingAlerts.forEach(alert => alert.remove());
+        
+        // Create new alert
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-modern fade show`;
+        alertDiv.innerHTML = `
+            <i class="bi ${type === 'danger' ? 'bi-exclamation-triangle' : 'bi-info-circle'} me-2"></i>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        // Insert after the form header
+        const cardBody = document.querySelector('.card-body-modern');
+        cardBody.insertBefore(alertDiv, cardBody.firstChild);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.classList.remove('show');
+                setTimeout(() => alertDiv.remove(), 300);
+            }
+        }, 5000);
+    }
+    
+    // Auto-format mobile number
+    document.getElementById('mobile').addEventListener('input', function(e) {
+        let value = this.value.replace(/\D/g, '');
+        
+        if (value.length > 10) {
+            value = value.slice(0, 15); // Limit to 15 digits
+        }
+        
+        // Format with spaces every 3-4 digits
+        if (value.length > 3) {
+            value = value.replace(/^(\d{3})(\d+)/, '$1 $2');
+        }
+        if (value.length > 7) {
+            value = value.replace(/^(\d{3}) (\d{3})(\d+)/, '$1 $2 $3');
+        }
+        if (value.length > 10) {
+            value = value.replace(/^(\d{3}) (\d{3}) (\d{4})(\d+)/, '$1 $2 $3 $4');
+        }
+        
+        this.value = value;
+    });
+</script>
+{% endblock %}

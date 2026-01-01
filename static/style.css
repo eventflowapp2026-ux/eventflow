@@ -1,0 +1,49 @@
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.card {
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.card-header {
+    background-color: #4a6baf;
+    color: white;
+    border-radius: 10px 10px 0 0 !important;
+}
+
+.btn-primary {
+    background-color: #4a6baf;
+    border-color: #4a6baf;
+}
+
+.btn-primary:hover {
+    background-color: #3a5a9f;
+    border-color: #3a5a9f;
+}
+
+.question-item {
+    border-left: 4px solid #4a6baf;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #4a6baf;
+    box-shadow: 0 0 0 0.25rem rgba(74, 107, 175, 0.25);
+}
+
+.table th {
+    background-color: #4a6baf;
+    color: white;
+}
+
+.alert {
+    border-radius: 8px;
+}

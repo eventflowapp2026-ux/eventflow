@@ -1,0 +1,22 @@
+[
+  {
+    "id": "01ff70f5-2af2-4ea1-8901-d6605dcce30f",
+    "name": "Edwin",
+    "email": "edwinveedon@gmail.com",
+    "rating": 5,
+    "type": "praise",
+    "message": "This is a great app",
+    "source": "",
+    "context": "",
+    "can_contact": true,
+    "user_id": "4a9ccf63-1f3a-4c79-8c43-7224e5e390f9",
+    "timestamp": "2026-01-01T10:15:25.571510",
+    "status": "responded",
+    "reviewed": false,
+    "reviewed_at": null,
+    "reviewed_by": null,
+    "responded_at": "2026-01-01T10:37:41.425189",
+    "responded_by": "admin",
+    "response_message": "Follow-up sent: Thank you so much for your wonderful feedback! ❤️\n\nWe're absolutely thrilled to hear that you're enj..."
+  }
+]

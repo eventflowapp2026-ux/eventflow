@@ -1,0 +1,54 @@
+{
+    "id": "f3eee2fb-573b-4d08-950d-989dc05f19ac",
+    "name": "Mangalavartha retreat ",
+    "description": "Retreat for pregnant woman and couples ",
+    "category": "conference",
+    "type": "physical",
+    "notes": "",
+    "creator_id": "4a9ccf63-1f3a-4c79-8c43-7224e5e390f9",
+    "created_at": "2026-01-01T09:50:24.303063",
+    "forms": [
+        {
+            "id": "9935ae3b-b57b-4ff7-affe-8686829f6653",
+            "title": "Registration Form for Mangalavartha retreat ",
+            "event_id": "f3eee2fb-573b-4d08-950d-989dc05f19ac",
+            "questions": [
+                {
+                    "id": 0,
+                    "text": "Name",
+                    "type": "text",
+                    "required": true
+                },
+                {
+                    "id": 1,
+                    "text": "Are you interested in the Retreat ",
+                    "type": "dropdown",
+                    "required": true,
+                    "options": [
+                        "Yes",
+                        "No"
+                    ]
+                },
+                {
+                    "id": 2,
+                    "text": "Parish (format: st George church Aruvithura)",
+                    "type": "text",
+                    "required": true
+                },
+                {
+                    "id": 3,
+                    "text": "Mobile number",
+                    "type": "number",
+                    "required": true
+                },
+                {
+                    "id": 4,
+                    "text": "What are your expectations ",
+                    "type": "text",
+                    "required": false
+                }
+            ],
+            "created_at": "2026-01-01T09:53:46.961737"
+        }
+    ]
+}

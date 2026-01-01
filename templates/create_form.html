@@ -1,0 +1,389 @@
+{% extends "base.html" %}
+{% block title %}Create Form - {{ event.name }}{% endblock %}
+
+{% block page_title %}Create Registration Form{% endblock %}
+{% block page_subtitle %}
+<p class="text-muted mb-0">Event: {{ event.name }}</p>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card-modern">
+            <div class="card-header-modern">
+                <h4 class="mb-0"><i class="bi bi-file-text me-2"></i>Create Form</h4>
+            </div>
+            <div class="card-body-modern">
+                <form method="POST" action="{{ url_for('create_form', event_id=event.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Form Title <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control form-control-modern" name="form_title" required 
+                               value="Registration Form for {{ event.name }}">
+                        <div class="form-text">Give your form a descriptive title</div>
+                    </div>
+                    
+                    <h5 class="mb-3"><i class="bi bi-question-circle me-2"></i>Form Questions</h5>
+                    
+                    <div id="questions-container">
+                        <!-- Question 1 -->
+                        <div class="card-modern mb-3 question-item">
+                            <div class="card-body-modern">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="mb-0">Question 1</h6>
+                                    <span class="badge bg-primary">Required</span>
+                                </div>
+                                
+                                <div class="row g-3">
+                                    <div class="col-md-8">
+                                        <label class="form-label">Question Text</label>
+                                        <input type="text" class="form-control form-control-modern" name="question_0" 
+                                               placeholder="Enter question text" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Question Type</label>
+                                        <select class="form-select form-control-modern" name="type_0" onchange="toggleOptions(this, 0)">
+                                            <option value="text">Text</option>
+                                            <option value="number">Number</option>
+                                            <option value="email">Email</option>
+                                            <option value="date">Date</option>
+                                            <option value="textarea">Long Text</option>
+                                            <option value="radio">Multiple Choice</option>
+                                            <option value="checkbox">Checkboxes</option>
+                                            <option value="dropdown">Dropdown</option>
+                                            <option value="file">File Upload</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="required_0" id="required_0" checked>
+                                            <label class="form-check-label" for="required_0">
+                                                Required field
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mt-3" id="options_0" style="display: none;">
+                                    <div class="col-12">
+                                        <label class="form-label">Options (comma separated)</label>
+                                        <input type="text" class="form-control form-control-modern" name="options_0" 
+                                               placeholder="Option 1, Option 2, Option 3">
+                                        <div class="form-text">Separate options with commas</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mt-3" id="file_info_0" style="display: none;">
+                                    <div class="col-12">
+                                        <div class="alert alert-info p-3">
+                                            <i class="bi bi-info-circle me-2"></i>
+                                            <small>
+                                                <strong>File Upload Settings:</strong><br>
+                                                Allowed file types: Images (PNG, JPG, JPEG, GIF), PDF, Documents (DOC, DOCX, TXT), 
+                                                Spreadsheets (CSV, XLS, XLSX), Presentations (PPT, PPTX), Archives (ZIP, RAR)<br>
+                                                Max file size: 16MB
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <button type="button" class="btn btn-outline-primary btn-modern me-2" onclick="addQuestion()">
+                            <i class="bi bi-plus-circle"></i> Add Question
+                        </button>
+                        <button type="button" class="btn btn-outline-danger btn-modern" onclick="removeQuestion()">
+                            <i class="bi bi-trash"></i> Remove Last Question
+                        </button>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary btn-modern">
+                            <i class="bi bi-arrow-left"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary-modern btn-modern">
+                            <i class="bi bi-check-circle"></i> Create Form
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card-modern mt-4">
+            <div class="card-header-modern">
+                <h5 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Tips for Great Forms</h5>
+            </div>
+            <div class="card-body-modern">
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-2">✓ <strong>Keep it simple</strong> - Ask only what you need</li>
+                            <li class="mb-2">✓ <strong>Logical order</strong> - Start with basic info</li>
+                            <li class="mb-2">✓ <strong>Clear questions</strong> - Avoid ambiguity</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-2">✓ <strong>Use required fields</strong> - For essential info</li>
+                            <li class="mb-2">✓ <strong>Test your form</strong> - Before sharing</li>
+                            <li class="mb-2">✓ <strong>Mobile friendly</strong> - Most users are on mobile</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card-modern mb-4">
+            <div class="card-header-modern">
+                <h5 class="mb-0"><i class="bi bi-eye me-2"></i>Live Preview</h5>
+            </div>
+            <div class="card-body-modern">
+                <h6 class="border-bottom pb-2 mb-3">Registration Form for {{ event.name }}</h6>
+                
+                <div id="preview-container">
+                    <div class="mb-3">
+                        <label class="form-label">Question 1 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control form-control-modern" placeholder="Text answer" disabled>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <button class="btn btn-outline-secondary btn-sm" disabled>Submit Form</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-modern">
+            <div class="card-header-modern">
+                <h5 class="mb-0"><i class="bi bi-question-diamond me-2"></i>Question Types</h5>
+            </div>
+            <div class="card-body-modern">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item border-0 px-0 py-2">
+                        <strong>Text</strong>
+                        <small class="text-muted d-block">Short text answers</small>
+                    </div>
+                    <div class="list-group-item border-0 px-0 py-2">
+                        <strong>Number</strong>
+                        <small class="text-muted d-block">Numeric values only</small>
+                    </div>
+                    <div class="list-group-item border-0 px-0 py-2">
+                        <strong>Email</strong>
+                        <small class="text-muted d-block">Email address validation</small>
+                    </div>
+                    <div class="list-group-item border-0 px-0 py-2">
+                        <strong>Date</strong>
+                        <small class="text-muted d-block">Date picker</small>
+                    </div>
+                    <div class="list-group-item border-0 px-0 py-2">
+                        <strong>Long Text</strong>
+                        <small class="text-muted d-block">Multi-line text area</small>
+                    </div>
+                    <div class="list-group-item border-0 px-0 py-2">
+                        <strong>Multiple Choice</strong>
+                        <small class="text-muted d-block">Radio buttons (single select)</small>
+                    </div>
+                    <div class="list-group-item border-0 px-0 py-2">
+                        <strong>Checkboxes</strong>
+                        <small class="text-muted d-block">Multiple selections</small>
+                    </div>
+                    <div class="list-group-item border-0 px-0 py-2">
+                        <strong>Dropdown</strong>
+                        <small class="text-muted d-block">Select from list</small>
+                    </div>
+                    <div class="list-group-item border-0 px-0 py-2">
+                        <strong>File Upload</strong>
+                        <small class="text-muted d-block">Upload documents/images</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let questionCount = 1;
+
+function addQuestion() {
+    const container = document.getElementById('questions-container');
+    const newQuestion = document.createElement('div');
+    newQuestion.className = 'card-modern mb-3 question-item';
+    newQuestion.innerHTML = `
+        <div class="card-body-modern">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="mb-0">Question ${questionCount + 1}</h6>
+                <span class="badge bg-primary">Required</span>
+            </div>
+            
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <label class="form-label">Question Text</label>
+                    <input type="text" class="form-control form-control-modern" name="question_${questionCount}" 
+                           placeholder="Enter question text" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Question Type</label>
+                    <select class="form-select form-control-modern" name="type_${questionCount}" onchange="toggleOptions(this, ${questionCount})">
+                        <option value="text">Text</option>
+                        <option value="number">Number</option>
+                        <option value="email">Email</option>
+                        <option value="date">Date</option>
+                        <option value="textarea">Long Text</option>
+                        <option value="radio">Multiple Choice</option>
+                        <option value="checkbox">Checkboxes</option>
+                        <option value="dropdown">Dropdown</option>
+                        <option value="file">File Upload</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="required_${questionCount}" id="required_${questionCount}" checked>
+                        <label class="form-check-label" for="required_${questionCount}">
+                            Required field
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-3" id="options_${questionCount}" style="display: none;">
+                <div class="col-12">
+                    <label class="form-label">Options (comma separated)</label>
+                    <input type="text" class="form-control form-control-modern" name="options_${questionCount}" 
+                           placeholder="Option 1, Option 2, Option 3">
+                    <div class="form-text">Separate options with commas</div>
+                </div>
+            </div>
+            
+            <div class="row mt-3" id="file_info_${questionCount}" style="display: none;">
+                <div class="col-12">
+                    <div class="alert alert-info p-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <small>
+                            <strong>File Upload Settings:</strong><br>
+                            Allowed file types: Images (PNG, JPG, JPEG, GIF), PDF, Documents (DOC, DOCX, TXT), 
+                            Spreadsheets (CSV, XLS, XLSX), Presentations (PPT, PPTX), Archives (ZIP, RAR)<br>
+                            Max file size: 16MB
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    container.appendChild(newQuestion);
+    updatePreview();
+    questionCount++;
+}
+
+function removeQuestion() {
+    if (questionCount > 1) {
+        const container = document.getElementById('questions-container');
+        container.removeChild(container.lastChild);
+        questionCount--;
+        updatePreview();
+    }
+}
+
+function toggleOptions(selectElement, index) {
+    const optionsDiv = document.getElementById(`options_${index}`);
+    const fileInfoDiv = document.getElementById(`file_info_${index}`);
+    const showFor = ['radio', 'checkbox', 'dropdown'];
+    
+    optionsDiv.style.display = showFor.includes(selectElement.value) ? 'block' : 'none';
+    fileInfoDiv.style.display = selectElement.value === 'file' ? 'block' : 'none';
+    
+    updatePreview();
+}
+
+function updatePreview() {
+    const previewContainer = document.getElementById('preview-container');
+    const questions = document.querySelectorAll('.question-item');
+    
+    previewContainer.innerHTML = '';
+    
+    questions.forEach((question, index) => {
+        const questionText = question.querySelector(`[name="question_${index}"]`).value || 'Untitled Question';
+        const questionType = question.querySelector(`[name="type_${index}"]`).value;
+        const isRequired = question.querySelector(`[name="required_${index}"]`).checked;
+        const options = question.querySelector(`[name="options_${index}"]`)?.value || '';
+        
+        const previewItem = document.createElement('div');
+        previewItem.className = 'mb-3';
+        
+        let inputHtml = '';
+        
+        switch(questionType) {
+            case 'text':
+                inputHtml = `<input type="text" class="form-control form-control-modern" placeholder="Text answer" disabled>`;
+                break;
+            case 'number':
+                inputHtml = `<input type="number" class="form-control form-control-modern" placeholder="Number" disabled>`;
+                break;
+            case 'email':
+                inputHtml = `<input type="email" class="form-control form-control-modern" placeholder="Email address" disabled>`;
+                break;
+            case 'date':
+                inputHtml = `<input type="date" class="form-control form-control-modern" disabled>`;
+                break;
+            case 'textarea':
+                inputHtml = `<textarea class="form-control form-control-modern" rows="2" placeholder="Long text answer" disabled></textarea>`;
+                break;
+            case 'radio':
+                inputHtml = options.split(',').map(opt => opt.trim()).filter(opt => opt).map(opt => 
+                    `<div class="form-check"><input class="form-check-input" type="radio" disabled><label class="form-check-label">${opt}</label></div>`
+                ).join('');
+                break;
+            case 'checkbox':
+                inputHtml = options.split(',').map(opt => opt.trim()).filter(opt => opt).map(opt => 
+                    `<div class="form-check"><input class="form-check-input" type="checkbox" disabled><label class="form-check-label">${opt}</label></div>`
+                ).join('');
+                break;
+            case 'dropdown':
+                inputHtml = `<select class="form-select form-control-modern" disabled><option selected disabled>Select option</option>` +
+                    options.split(',').map(opt => opt.trim()).filter(opt => opt).map(opt => 
+                        `<option>${opt}</option>`
+                    ).join('') + `</select>`;
+                break;
+            case 'file':
+                inputHtml = `<input type="file" class="form-control form-control-modern" disabled>`;
+                break;
+            default:
+                inputHtml = `<input type="text" class="form-control form-control-modern" placeholder="Answer" disabled>`;
+        }
+        
+        previewItem.innerHTML = `
+            <label class="form-label">${questionText} ${isRequired ? '<span class="text-danger">*</span>' : ''}</label>
+            ${inputHtml}
+        `;
+        
+        previewContainer.appendChild(previewItem);
+    });
+}
+
+// Initialize preview
+document.addEventListener('DOMContentLoaded', function() {
+    // Add event listeners to existing question
+    document.querySelector('[name="type_0"]').addEventListener('change', function() {
+        toggleOptions(this, 0);
+    });
+    
+    // Update preview when inputs change
+    document.querySelectorAll('[name^="question_"], [name^="type_"], [name^="required_"], [name^="options_"]').forEach(input => {
+        input.addEventListener('input', updatePreview);
+        input.addEventListener('change', updatePreview);
+    });
+    
+    updatePreview();
+});
+</script>
+{% endblock %}

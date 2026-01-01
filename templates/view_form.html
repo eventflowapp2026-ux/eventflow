@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+{% block title %}{{ form.title }}{% endblock %}
+
+{% block page_title %}{{ form.title }}{% endblock %}
+{% block page_subtitle %}
+<p class="text-muted mb-0">Event: {{ event.name }}</p>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card-modern mb-4">
+            <div class="card-header-modern">
+                <h5 class="mb-0"><i class="bi bi-share me-2"></i>Share Your Form</h5>
+            </div>
+            <div class="card-body-modern">
+                <div class="row align-items-center">
+                    <div class="col-md-8 mb-3 mb-md-0">
+                        <label class="form-label fw-semibold">Form Link</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control form-control-modern" id="formLink" value="{{ form_url }}" readonly>
+                            <button class="btn btn-primary-modern" type="button" onclick="copyLink()">
+                                <i class="bi bi-copy"></i> Copy
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="/share_form/{{ event.id }}/{{ form.id }}" class="btn btn-warning-modern btn-modern w-100">
+                            <i class="bi bi-share"></i> Share Options
+                        </a>
+                    </div>
+                </div>
+                
+                {% if qr_code %}
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">QR Code</label>
+                        <div class="text-center">
+                            <img src="{{ qr_code }}" alt="QR Code" class="img-fluid rounded" style="max-width: 200px;">
+                            <div class="mt-2">
+                                <button class="btn btn-outline-primary btn-sm" onclick="downloadQRCode()">
+                                    <i class="bi bi-download"></i> Download QR
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card-modern mb-4">
+            <div class="card-header-modern d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-download me-2"></i>Export Data</h5>
+                <span class="badge bg-info">{{ responses|length }} responses</span>
+            </div>
+            <div class="card-body-modern">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <a href="/download_csv/{{ event.id }}/{{ form.id }}" class="btn btn-success-modern btn-modern w-100">
+                            <i class="bi bi-file-earmark-excel"></i> CSV
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="/download_pdf/{{ event.id }}/{{ form.id }}" class="btn btn-danger-modern btn-modern w-100">
+                            <i class="bi bi-file-earmark-text"></i> HTML Report
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="/preview_pdf/{{ event.id }}/{{ form.id }}" class="btn btn-info-modern btn-modern w-100" target="_blank">
+                            <i class="bi bi-eye"></i> Preview
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="/view_uploads/{{ event.id }}/{{ form.id }}" class="btn btn-warning-modern btn-modern w-100">
+                            <i class="bi bi-folder"></i> Files ({{ uploaded_files|length }})
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info mt-3">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <small>The HTML report can be printed as PDF using your browser's print function (Ctrl+P). Select "Save as PDF" as the printer destination.</small>
+                </div>
+            </div>
+        </div>
+        
+        {% if responses %}
+        <div class="card-modern">
+            <div class="card-header-modern d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-table me-2"></i>Responses</h5>
+                <span class="badge bg-success">{{ responses|length }} total</span>
+            </div>
+            <div class="card-body-modern">
+                <div class="table-responsive">
+                    <table class="table table-modern">
+                        <thead>
+                            <tr>
+                                {% for header in responses[0].keys() %}
+                                <th>{{ header|truncate(15) }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in responses %}
+                            <tr>
+                                {% for header, value in row.items() %}
+                                <td>
+                                    {% if 'upload' in header|lower or 'file' in header|lower %}
+                                        {% if value %}
+                                            {% if value.endswith('.png') or value.endswith('.jpg') or value.endswith('.jpeg') or value.endswith('.gif') %}
+                                                <a href="/download_file/{{ event.id }}/{{ form.id }}/{{ value }}" target="_blank" class="text-decoration-none">
+                                                    <i class="bi bi-image text-primary me-1"></i>
+                                                    {{ value|truncate(20) }}
+                                                </a>
+                                            {% else %}
+                                                <a href="/download_file/{{ event.id }}/{{ form.id }}/{{ value }}" target="_blank" class="text-decoration-none">
+                                                    <i class="bi bi-file-earmark text-success me-1"></i>
+                                                    {{ value|truncate(20) }}
+                                                </a>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-muted">No file</span>
+                                        {% endif %}
+                                    {% else %}
+                                        {{ value|truncate(30) }}
+                                    {% endif %}
+                                </td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card-modern mb-4">
+            <div class="card-header-modern">
+                <h5 class="mb-0"><i class="bi bi-eye me-2"></i>Form Preview</h5>
+            </div>
+            <div class="card-body-modern">
+                {% for question in form.questions %}
+                <div class="mb-3">
+                    <label class="form-label">
+                        {{ question.text }}
+                        {% if question.required %}<span class="text-danger">*</span>{% endif %}
+                    </label>
+                    
+                    {% if question.type == 'text' %}
+                    <input type="text" class="form-control form-control-modern" disabled>
+                    
+                    {% elif question.type == 'number' %}
+                    <input type="number" class="form-control form-control-modern" disabled>
+                    
+                    {% elif question.type == 'email' %}
+                    <input type="email" class="form-control form-control-modern" disabled>
+                    
+                    {% elif question.type == 'date' %}
+                    <input type="date" class="form-control form-control-modern" disabled>
+                    
+                    {% elif question.type == 'textarea' %}
+                    <textarea class="form-control form-control-modern" disabled rows="2"></textarea>
+                    
+                    {% elif question.type == 'radio' %}
+                    {% for option in question.options %}
+                    <div class="form-check">
+                        <input type="radio" class="form-check-input" disabled>
+                        <label class="form-check-label">{{ option }}</label>
+                    </div>
+                    {% endfor %}
+                    
+                    {% elif question.type == 'checkbox' %}
+                    {% for option in question.options %}
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" disabled>
+                        <label class="form-check-label">{{ option }}</label>
+                    </div>
+                    {% endfor %}
+                    
+                    {% elif question.type == 'dropdown' %}
+                    <select class="form-select form-control-modern" disabled>
+                        <option selected disabled>Select...</option>
+                        {% for option in question.options %}
+                        <option>{{ option }}</option>
+                        {% endfor %}
+                    </select>
+                    
+                    {% elif question.type == 'file' %}
+                    <input type="file" class="form-control form-control-modern" disabled>
+                    <div class="form-text">
+                        <small>File upload field</small>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        {% if uploaded_files %}
+        <div class="card-modern">
+            <div class="card-header-modern">
+                <h5 class="mb-0"><i class="bi bi-folder me-2"></i>Recent Uploads</h5>
+            </div>
+            <div class="card-body-modern">
+                <div class="list-group list-group-flush">
+                    {% for file in uploaded_files %}
+                        {% if loop.index <= 5 %}
+                        <a href="{{ file.url }}" target="_blank" class="list-group-item list-group-item-action border-0 px-0 py-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    {% if file.name.endswith('.png') or file.name.endswith('.jpg') or file.name.endswith('.jpeg') or file.name.endswith('.gif') %}
+                                    <i class="bi bi-image text-primary me-2"></i>
+                                    {% elif file.name.endswith('.pdf') %}
+                                    <i class="bi bi-file-pdf text-danger me-2"></i>
+                                    {% elif file.name.endswith('.doc') or file.name.endswith('.docx') %}
+                                    <i class="bi bi-file-word text-info me-2"></i>
+                                    {% elif file.name.endswith('.xls') or file.name.endswith('.xlsx') or file.name.endswith('.csv') %}
+                                    <i class="bi bi-file-excel text-success me-2"></i>
+                                    {% else %}
+                                    <i class="bi bi-file-earmark text-secondary me-2"></i>
+                                    {% endif %}
+                                    <span class="text-truncate" style="max-width: 150px;">{{ file.name }}</span>
+                                </div>
+                                <small class="text-muted">{{ (file.size / 1024)|round(1) }} KB</small>
+                            </div>
+                        </a>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                {% if uploaded_files|length > 5 %}
+                <div class="text-center mt-3">
+                    <a href="/view_uploads/{{ event.id }}/{{ form.id }}" class="btn btn-outline-primary btn-sm">
+                        View All {{ uploaded_files|length }} Files
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function copyLink() {
+    const input = document.getElementById('formLink');
+    input.select();
+    input.setSelectionRange(0, 99999);
+    document.execCommand('copy');
+    
+    // Show feedback
+    const originalText = input.value;
+    input.value = '✓ Link copied!';
+    setTimeout(() => {
+        input.value = originalText;
+    }, 2000);
+}
+
+function downloadQRCode() {
+    {% if qr_code %}
+    const link = document.createElement('a');
+    link.href = "{{ qr_code }}";
+    const eventName = "{{ event.name|slugify }}" || "event";
+    const formTitle = "{{ form.title|slugify }}" || "form";
+    const filename = 'qr_code_' + eventName + '_' + formTitle + '.png';
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    {% endif %}
+}
+</script>
+{% endblock %}

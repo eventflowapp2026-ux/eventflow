@@ -1,0 +1,35 @@
+{
+    "admin": {
+        "username": "Admin",
+        "email": "admin@eventflow.com",
+        "mobile": "N/A",
+        "password": "admin",
+        "created_at": "2024-01-01T00:00:00",
+        "email_verified": true,
+        "is_admin": true
+    },
+    "3500f206-52c1-45b8-adfe-ad4c15722b35": {
+        "username": "u687418",
+        "email": "u687418@gmail.com",
+        "mobile": "906 105 4750",
+        "password": "123456",
+        "created_at": "2025-12-31T11:33:55.732879",
+        "email_verified": true
+    },
+    "de111898-52ce-43ce-8689-b0b647d357b3": {
+        "username": "Aaron_pixel",
+        "email": "aaronveedon@gmail.com",
+        "mobile": "954 435 4750",
+        "password": "Aaron12",
+        "created_at": "2025-12-31T14:24:56.465944",
+        "email_verified": true
+    },
+    "4a9ccf63-1f3a-4c79-8c43-7224e5e390f9": {
+        "username": "edwinveedon",
+        "email": "edwinveedon@gmail.com",
+        "mobile": "906 105 4750",
+        "password": "edwin@2008",
+        "created_at": "2025-12-31T21:17:16.395845",
+        "email_verified": true
+    }
+}
