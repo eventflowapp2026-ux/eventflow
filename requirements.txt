@@ -2,7 +2,6 @@ agate==1.9.1
 agate-dbf==0.2.2
 agate-excel==0.4.1
 agate-sql==0.7.2
-aptdaemon==2.0.2
 attrs==25.1.0
 autocommand==2.2.2
 babel==2.17.0
