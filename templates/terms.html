@@ -1,8 +1,8 @@
-<!-- terms.html -->
+<!-- privacy_policy.html -->
 {% extends "base.html" %}
-{% block title %}Terms of Service{% endblock %}
+{% block title %}Privacy Policy{% endblock %}
 
-{% block page_title %}Terms of Service{% endblock %}
+{% block page_title %}Privacy Policy{% endblock %}
 {% block page_subtitle %}
 <p class="text-muted mb-0">Last Updated: {{ now.strftime('%B %d, %Y') }}</p>
 {% endblock %}
@@ -12,148 +12,186 @@
     <div class="col-lg-10">
         <div class="card-modern">
             <div class="card-header-modern">
-                <h4 class="mb-0"><i class="bi bi-file-text me-2"></i>Terms & Conditions</h4>
+                <h4 class="mb-0">
+                    <i class="bi bi-shield-check me-2"></i>Privacy Policy
+                </h4>
             </div>
 
             <div class="card-body-modern" style="max-height: 600px; overflow-y: auto;">
 
-                <div class="alert alert-warning mb-4">
-                    <i class="bi bi-exclamation-triangle me-2"></i>
-                    <strong>Beta Disclaimer:</strong> EventFlow is an independent educational project currently
-                    under development. Features may change, break, or be discontinued at any time.
-                </div>
-
                 <div class="mb-5">
-                    <h5 class="text-primary mb-3">1. Acceptance of Terms</h5>
+                    <h5 class="text-primary mb-3">1. Introduction</h5>
                     <p>
-                        By accessing or using EventFlow ("the Service"), you agree to be bound by these Terms.
-                        If you do not agree, you must not use the Service.
+                        EventFlow ("we," "our," or "us") is committed to protecting your privacy.
+                        This Privacy Policy explains how we collect, use, disclose, and safeguard
+                        your information when you use our event registration platform.
                     </p>
                 </div>
 
                 <div class="mb-5">
-                    <h5 class="text-primary mb-3">2. Description of Service</h5>
-                    <p>
-                        EventFlow is a web-based platform that allows users to create and manage event
-                        registration forms, send email invitations, and collect responses.
-                        The Service is provided on a best-effort basis.
-                    </p>
-                </div>
+                    <h5 class="text-primary mb-3">2. Information We Collect</h5>
 
-                <div class="mb-5">
-                    <h5 class="text-primary mb-3">3. User Accounts</h5>
+                    <h6 class="text-secondary mb-2">A. Information You Provide</h6>
                     <ul>
-                        <li>You must provide accurate and current information</li>
-                        <li>You are responsible for maintaining the security of your account</li>
-                        <li>You are responsible for all activities under your account</li>
-                        <li>You must notify us of unauthorized access</li>
+                        <li><strong>Account Information:</strong> Name, email address, mobile number, password</li>
+                        <li><strong>Event Data:</strong> Event names, descriptions, and form content</li>
+                        <li><strong>Form Responses:</strong> Information submitted by form respondents</li>
+                        <li><strong>Uploaded Files:</strong> Documents, images, or other files uploaded by users</li>
+                        <li><strong>Email Lists:</strong> Recipient email addresses used for invitations</li>
+                    </ul>
+
+                    <h6 class="text-secondary mb-2 mt-3">B. Automatically Collected Information</h6>
+                    <ul>
+                        <li><strong>Usage Data:</strong> IP address, browser type, device information</li>
+                        <li><strong>Cookies:</strong> Session cookies used for authentication</li>
+                        <li><strong>Log Data:</strong> Access times, pages viewed, and interaction data</li>
+                        <li><strong>Email Analytics:</strong> Delivery status, open rates, and click-through rates</li>
                     </ul>
                 </div>
 
                 <div class="mb-5">
-                    <h5 class="text-primary mb-3">4. Acceptable Use</h5>
-                    <p>You agree not to use the Service to:</p>
+                    <h5 class="text-primary mb-3">3. How We Use Your Information</h5>
                     <ul>
-                        <li>Violate any applicable Indian laws or regulations</li>
-                        <li>Collect personal data without consent</li>
-                        <li>Send spam or misuse email services</li>
-                        <li>Upload malicious, harmful, or illegal content</li>
-                        <li>Impersonate individuals or organizations</li>
-                        <li>Create forms for illegal or deceptive activities</li>
+                        <li>Provide, operate, and maintain the Service</li>
+                        <li>Process and manage event registrations</li>
+                        <li>Send email invitations and notifications</li>
+                        <li>Analyze usage patterns to improve the Service</li>
+                        <li>Respond to support requests and inquiries</li>
+                        <li>Detect, prevent, and address technical issues</li>
+                        <li>Comply with applicable legal obligations</li>
                     </ul>
                 </div>
 
                 <div class="mb-5">
-                    <h5 class="text-primary mb-3">5. Content Ownership</h5>
+                    <h5 class="text-primary mb-3">4. Data Processing Roles</h5>
                     <p>
-                        You retain ownership of content you submit.
-                        By using the Service, you grant EventFlow permission to store and process content
-                        solely for providing the Service.
+                        <strong>For Form Creators:</strong> EventFlow acts as a data processor.
+                        You are responsible for complying with applicable data protection laws
+                        for the data you collect.
+                    </p>
+                    <p>
+                        <strong>For Form Respondents:</strong> Data is processed on behalf of
+                        the form creator. Questions regarding the use of such data should be
+                        directed to the form creator.
+                    </p>
+                    <p>
+                        <strong>For Account Holders:</strong> EventFlow acts as a data controller
+                        for account-related information.
                     </p>
                 </div>
 
+                <!-- 🔐 NEW SECTION -->
                 <div class="mb-5">
-                    <h5 class="text-primary mb-3">6. Data Responsibility</h5>
+                    <h5 class="text-primary mb-3">5. Sensitive Personal Information</h5>
                     <p>
-                        If you collect personal data using EventFlow, you are responsible for:
+                        EventFlow does not request, require, or encourage the submission of
+                        sensitive personal information through its platform.
+                    </p>
+                    <p>
+                        Users are strictly advised not to submit or upload sensitive data,
+                        including but not limited to:
                     </p>
                     <ul>
-                        <li>Obtaining valid consent from respondents</li>
-                        <li>Handling data responsibly and securely</li>
-                        <li>Complying with applicable Indian data protection laws</li>
+                        <li>Passwords or authentication credentials</li>
+                        <li>Bank account details, card numbers, or financial information</li>
+                        <li>UPI IDs, PINs, or payment-related data</li>
+                        <li>Government-issued identification such as Aadhaar, PAN, passport, or voter ID</li>
                     </ul>
                     <p>
-                        EventFlow acts only as a technical platform and does not control how collected data is used.
+                        Any sensitive personal information voluntarily shared through
+                        user-created forms is provided at the user's own discretion.
+                        EventFlow shall not be responsible or liable for the collection,
+                        disclosure, misuse, or loss of such information.
                     </p>
                 </div>
 
                 <div class="mb-5">
-                    <h5 class="text-primary mb-3">7. Email Usage</h5>
-                    <p>
-                        You agree to use email features responsibly and not for spam, harassment,
-                        or unlawful communication.
-                    </p>
-                </div>
-
-                <div class="mb-5">
-                    <h5 class="text-primary mb-3">8. Service Availability</h5>
-                    <p>
-                        The Service may be unavailable due to maintenance, technical issues,
-                        or development changes. Availability is not guaranteed.
-                    </p>
-                </div>
-
-                <div class="mb-5">
-                    <h5 class="text-primary mb-3">9. Termination</h5>
-                    <p>
-                        Access to the Service may be suspended or terminated if these Terms are violated
-                        or if continued operation becomes impractical.
-                    </p>
-                </div>
-
-                <div class="mb-5">
-                    <h5 class="text-primary mb-3">10. Limitation of Liability</h5>
-                    <p>
-                        The Service is provided "as is". EventFlow is not liable for data loss,
-                        service interruptions, or damages arising from use of the Service.
-                    </p>
-                </div>
-
-                <div class="mb-5">
-                    <h5 class="text-primary mb-3">11. Legal Compliance (India)</h5>
-                    <p>
-                        These Terms are governed by the laws of India, including but not limited to:
-                    </p>
+                    <h5 class="text-primary mb-3">6. Data Sharing and Disclosure</h5>
+                    <p>We may share information with:</p>
                     <ul>
-                        <li>The Information Technology Act, 2000</li>
-                        <li>The Information Technology (Intermediary Guidelines) Rules</li>
-                        <li>The Digital Personal Data Protection Act, 2023 (where applicable)</li>
+                        <li><strong>Service Providers:</strong> Email delivery, hosting, and analytics services</li>
+                        <li><strong>Legal Authorities:</strong> When required by law</li>
+                        <li><strong>Business Transfers:</strong> In case of merger or acquisition</li>
+                        <li><strong>Form Creators:</strong> Responses submitted to their forms</li>
+                    </ul>
+                    <p>EventFlow does not sell personal information to third parties.</p>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">7. Data Security</h5>
+                    <ul>
+                        <li>Encryption of data in transit (SSL/TLS)</li>
+                        <li>Secure password storage using hashing</li>
+                        <li>Access control and authentication mechanisms</li>
+                        <li>Regular security reviews and backups</li>
                     </ul>
                     <p>
-                        Compliance is implemented on a best-effort basis appropriate to the
-                        educational and non-commercial nature of the project.
+                        While we take reasonable measures to protect your data, no method
+                        of transmission over the internet is completely secure.
                     </p>
                 </div>
 
                 <div class="mb-5">
-                    <h5 class="text-primary mb-3">12. Changes to Terms</h5>
+                    <h5 class="text-primary mb-3">8. Data Retention</h5>
                     <p>
-                        These Terms may be updated as the project evolves.
-                        Continued use of the Service indicates acceptance of the updated Terms.
+                        We retain personal data for as long as necessary to provide the Service
+                        or as required by applicable laws.
+                    </p>
+                    <p>
+                        Form creators are responsible for defining retention periods
+                        for data collected through their forms.
                     </p>
                 </div>
 
                 <div class="mb-5">
-                    <h5 class="text-primary mb-3">13. Contact</h5>
+                    <h5 class="text-primary mb-3">9. Your Rights</h5>
+                    <ul>
+                        <li>Access your personal data</li>
+                        <li>Request correction of inaccurate data</li>
+                        <li>Request deletion of your data</li>
+                        <li>Restrict or object to processing</li>
+                        <li>Withdraw consent where applicable</li>
+                    </ul>
+                    <p>Requests can be sent to: <strong>u687418@gmail.com</strong></p>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">10. Cookies and Tracking</h5>
                     <p>
-                        <strong>EventFlow</strong><br>
+                        Cookies are used for authentication, session management,
+                        and improving service performance.
+                    </p>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">11. Children's Privacy</h5>
+                    <p>
+                        EventFlow is not intended for children under the age of 16.
+                        We do not knowingly collect personal data from minors.
+                    </p>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">12. Changes to This Policy</h5>
+                    <p>
+                        This Privacy Policy may be updated periodically.
+                        Continued use of the Service constitutes acceptance of changes.
+                    </p>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">13. Contact Us</h5>
+                    <p>
+                        <strong>EventFlow Privacy Team</strong><br>
                         Email: u687418@gmail.com
                     </p>
                 </div>
 
                 <div class="alert alert-info mt-4">
                     <i class="bi bi-info-circle me-2"></i>
-                    By using EventFlow, you acknowledge that this is a beta educational project.
+                    <strong>Compliance Notice:</strong>
+                    EventFlow supports compliance with the Information Technology Act, 2000
+                    and the Digital Personal Data Protection Act, 2023 (India).
                 </div>
 
             </div>
@@ -163,8 +201,8 @@
             <a href="{{ url_for('signup') }}" class="btn btn-outline-primary btn-modern me-2">
                 <i class="bi bi-arrow-left"></i> Back to Sign Up
             </a>
-            <a href="{{ url_for('privacy_policy') }}" class="btn btn-primary-modern btn-modern">
-                <i class="bi bi-shield-check"></i> View Privacy Policy
+            <a href="{{ url_for('terms') }}" class="btn btn-primary-modern btn-modern">
+                <i class="bi bi-file-text"></i> View Terms of Service
             </a>
         </div>
     </div>
