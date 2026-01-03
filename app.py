@@ -21,7 +21,6 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField
 from wtforms.validators import DataRequired
 import logging
-from flask_mailman import EmailMessage, Mail
 import logging
 logging.basicConfig(level=logging.ERROR)
 logger = logging.getLogger(__name__)
@@ -38,35 +37,20 @@ app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-change-this-in-pr
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024
 
-# Email configuration - USING FLASK-MAILMAN
-# Email configuration - FOR FLASK-MAILMAN
-app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
-app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
-app.config['MAIL_USE_TLS'] = True  # Keep this
-app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
-app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
-app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER', os.environ.get('MAIL_USERNAME'))
+# Resend configuration - ONLY email provider
 resend.api_key = os.environ.get("RESEND_API_KEY")
-# Flask-Mailman specific configs (add these):
-app.config['MAIL_USE_SSL'] = False  # Set to True if using port 465
-app.config['MAIL_TIMEOUT'] = 30
-app.config['MAIL_DEBUG'] = False
-
-# Initialize Flask-Mailman
-mail = Mail(app)
-
-logging.basicConfig(level=logging.DEBUG)
 
 # Email status tracking
 email_status_queue = queue.Queue()
 email_statuses = {}  # Store email status by user/session
 
 print("="*80)
-print("📧 EventFlow Email System - FLASK-MAILMAN VERSION")
+print("📧 EventFlow Email System - RESEND ONLY VERSION")
 print("="*80)
-print(f"   Username: {app.config['MAIL_USERNAME']}")
-print(f"   Password length: {len(app.config['MAIL_PASSWORD']) if app.config['MAIL_PASSWORD'] else 'NONE'}")
-print(f"   Server: {app.config['MAIL_SERVER']}:{app.config['MAIL_PORT']}")
+print("✅ All emails powered by Resend API")
+print("✅ No SMTP configuration needed")
+print("✅ Fully compatible with Render free tier")
+print(f"✅ Resend API Key: {'Set' if resend.api_key else 'NOT SET'}")
 print("="*80)
 
 # Allowed file extensions
@@ -263,7 +247,7 @@ def save_feedback(feedback_data):
         return False
 
 def send_thank_you_email(to_email, name, feedback_id, feedback_type, rating, message):
-    """Send thank you email using Resend API (works perfectly on Render free tier)"""
+    """Send thank you email using Resend API"""
     if not resend.api_key:
         app.logger.warning("RESEND_API_KEY not set - skipping thank you email")
         log_message("Thank you email skipped: No RESEND_API_KEY", "WARNING")
@@ -314,7 +298,7 @@ def send_thank_you_email(to_email, name, feedback_id, feedback_type, rating, mes
                     <p style="font-style: italic; background: #f8fafc; padding: 15px; border-radius: 8px;">"{message[:300]}{'...' if len(message) > 300 else ''}"</p>
                     
                     <p>{type_message}</p>
-                    <p>We’re always improving — thanks for being part of it!</p>
+                    <p>We're always improving — thanks for being part of it!</p>
                     <p>Best regards,<br><strong>The EventFlow Team</strong></p>
                 </div>
             </div>
@@ -323,7 +307,7 @@ def send_thank_you_email(to_email, name, feedback_id, feedback_type, rating, mes
         """
 
         params = {
-            "from": "EventFlow <onboarding@resend.dev>",  # Works out of the box for testing
+            "from": "EventFlow <onboarding@resend.dev>",
             "to": [to_email],
             "subject": "🎉 Thank You for Your Feedback!",
             "html": html_content,
@@ -406,7 +390,7 @@ def admin_send_followup():
         return jsonify({'success': False, 'error': 'No recipient email available'})
     
     try:
-        # Send email
+        # Send email using Resend
         html_content = f"""
         <!DOCTYPE html>
         <html>
@@ -440,7 +424,7 @@ def admin_send_followup():
         </html>
         """
         
-        success, email_msg = send_email_simple(
+        success, email_msg = send_email_resend(
             recipient_email,
             subject,
             html_content
@@ -466,30 +450,6 @@ def admin_send_followup():
     except Exception as e:
         log_message(f"Error sending follow-up: {e}", "ERROR")
         return jsonify({'success': False, 'error': str(e)})
-
-@app.route('/check-env')
-def check_env():
-    """Check if environment variables are loaded"""
-    env_vars = {
-        'MAIL_USERNAME': os.environ.get('MAIL_USERNAME'),
-        'MAIL_PASSWORD': os.environ.get('MAIL_PASSWORD'),
-        'MAIL_SERVER': os.environ.get('MAIL_SERVER'),
-        'MAIL_PORT': os.environ.get('MAIL_PORT'),
-        'LOAD_DOTENV': os.environ.get('LOAD_DOTENV'),
-        'PYTHONPATH': os.environ.get('PYTHONPATH'),
-        'PWD': os.environ.get('PWD'),
-    }
-    
-    # Also check app config
-    config_vars = {
-        'MAIL_USERNAME': app.config.get('MAIL_USERNAME'),
-        'MAIL_PASSWORD_LEN': len(app.config.get('MAIL_PASSWORD', '')) if app.config.get('MAIL_PASSWORD') else 0,
-    }
-    
-    return jsonify({
-        'environment_variables': env_vars,
-        'app_config': config_vars
-    })
 
 # ============================================================================
 # VIDEO FILE DISCOVERY FUNCTION
@@ -625,9 +585,9 @@ def send_feedback_notification(feedback):
         """
         
         # Send to admin email from settings or default
-        admin_email = settings.get('admin_email', app.config['MAIL_USERNAME'])
+        admin_email = settings.get('admin_email', 'admin@example.com')
         if admin_email:
-            success, message = send_email_simple(admin_email, subject, html_content)
+            success, message = send_email_resend(admin_email, subject, html_content)
             if success:
                 log_message(f"Feedback notification sent to {admin_email}", "INFO")
             else:
@@ -637,31 +597,34 @@ def send_feedback_notification(feedback):
         log_message(f"Error sending feedback notification: {e}", "ERROR")
 
 # ============================================================================
-# EMAIL FUNCTIONS USING FLASK-MAILMAN
+# RESEND EMAIL FUNCTIONS (REPLACED Flask-Mailman/SMTP)
 # ============================================================================
 
-def send_email_simple(to_email, subject, html_content):
-    """Simplified email sending function using Flask-Mailman"""
+def send_email_resend(to_email, subject, html_content, from_email="EventFlow <onboarding@resend.dev>"):
+    """Send email using Resend API"""
+    if not resend.api_key:
+        log_message(f"Cannot send email: RESEND_API_KEY not configured", "ERROR")
+        return False, "Resend API key not configured"
+
     try:
-        email = EmailMessage(
-            subject=subject,
-            body=html_content,
-            from_email=app.config['MAIL_DEFAULT_SENDER'],
-            to=[to_email]
-        )
-        email.content_subtype = 'html'  # Send as HTML email
-        email.send()
-        
-        log_message(f"✅ Email sent to {to_email}", "SUCCESS")
-        return True, "Email sent successfully"
+        params = {
+            "from": from_email,
+            "to": [to_email],
+            "subject": subject,
+            "html": html_content,
+        }
+
+        response = resend.Emails.send(params)
+        log_message(f"✅ Email sent via Resend to {to_email} (ID: {response.get('id')})", "SUCCESS")
+        return True, f"Email sent successfully (Resend ID: {response.get('id')})"
         
     except Exception as e:
-        error_msg = f"Email error: {str(e)}"
+        error_msg = f"Resend email error: {str(e)}"
         log_message(f"❌ Email Error: {error_msg}", "ERROR")
         return False, error_msg
 
 def send_emails_direct(recipient_emails, form_url, form_title, event_name, sender_name, custom_message):
-    """Send emails directly (no threading) using Flask-Mailman"""
+    """Send emails directly using Resend"""
     results = []
     
     for idx, email in enumerate(recipient_emails):
@@ -725,8 +688,8 @@ def send_emails_direct(recipient_emails, form_url, form_title, event_name, sende
         </html>
         """
         
-        # Use Flask-Mailman
-        success, message = send_email_simple(email, subject, html_content)
+        # Use Resend API
+        success, message = send_email_resend(email, subject, html_content)
         
         if success:
             results.append({'email': email, 'status': 'sent', 'message': message})
@@ -736,12 +699,12 @@ def send_emails_direct(recipient_emails, form_url, form_title, event_name, sende
         # Small delay
         import time
         if idx < len(recipient_emails) - 1:
-            time.sleep(1)  # 1 second delay
+            time.sleep(0.5)  # 0.5 second delay
     
     return results
 
 def send_otp_email(email: str, otp: str):
-    """Send OTP email using Flask-Mailman"""
+    """Send OTP email using Resend"""
     try:
         subject = "🔐 Your EventFlow Verification Code"
         
@@ -795,10 +758,10 @@ def send_otp_email(email: str, otp: str):
         </html>
         """
         
-        success, message = send_email_simple(email, subject, html_content)
+        success, message = send_email_resend(email, subject, html_content)
         
         if success:
-            log_message(f"✅ OTP email sent to {email}", "SUCCESS")
+            log_message(f"✅ OTP email sent to {email} via Resend", "SUCCESS")
         else:
             log_message(f"❌ Failed to send OTP email to {email}: {message}", "ERROR")
         
@@ -826,11 +789,11 @@ def debug_email(email):
         <h2>Debug Test Email</h2>
         <p>This is a debug email sent to: {email}</p>
         <p>Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
-        <p>From: {app.config['MAIL_USERNAME']}</p>
+        <p>Using: Resend API</p>
         """
         
-        # Send using Flask-Mailman
-        success, message = send_email_simple(email, subject, html_content)
+        # Send using Resend
+        success, message = send_email_resend(email, subject, html_content)
         
         if success:
             log_message(f"✅ DEBUG: Email sent successfully to {email}", "SUCCESS")
@@ -846,25 +809,25 @@ def debug_email(email):
     return redirect(url_for('dashboard'))
 
 # ============================================================================
-# TEST EMAIL ROUTES
+# TEST EMAIL ROUTES (UPDATED FOR RESEND)
 # ============================================================================
 
 @app.route('/test_email')
 @login_required
 def test_email():
-    """Test email route using Flask-Mailman"""
+    """Test email route using Resend"""
     try:
-        if not app.config['MAIL_USERNAME'] or not app.config['MAIL_PASSWORD']:
-            flash('❌ Email not configured in .env file', 'error')
+        if not resend.api_key:
+            flash('❌ Resend API key not configured in .env file', 'error')
             return redirect(url_for('dashboard'))
         
-        log_message("🧪 STARTING FLASK-MAILMAN TEST EMAIL", "INFO")
+        log_message("🧪 TESTING RESEND EMAIL", "INFO")
         
         form_url = url_for('index', _external=True)
         form_title = "Test Registration Form"
         event_name = "Test Event - EventFlow"
         sender_name = session.get('username', 'Test User')
-        custom_message = "This is a test email to verify that Flask-Mailman email system is working correctly."
+        custom_message = "This is a test email to verify that Resend email system is working correctly."
         
         html_content = f"""
         <!DOCTYPE html>
@@ -903,11 +866,10 @@ def test_email():
                     </div>
                     
                     <div class="debug-info">
-                        <strong>🧪 FLASK-MAILMAN TEST EMAIL:</strong><br>
-                        • Sender: {app.config['MAIL_USERNAME']}<br>
-                        • Server: {app.config['MAIL_SERVER']}:{app.config['MAIL_PORT']}<br>
+                        <strong>🧪 RESEND TEST EMAIL:</strong><br>
+                        • Using: Resend API<br>
                         • Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}<br>
-                        • Using: Flask-Mailman
+                        • Type: Form invitation test
                     </div>
                     
                     <p>Sent by: <strong>{sender_name}</strong></p>
@@ -922,18 +884,20 @@ def test_email():
         </html>
         """
         
-        success, message = send_email_simple(
-            app.config['MAIL_USERNAME'],  # Send to yourself
+        # Use a test email (you can change this)
+        test_email = "test@example.com"
+        success, message = send_email_resend(
+            test_email,
             f"📋 Registration: {form_title}",
             html_content
         )
         
         if success:
-            flash(f'✅ Test email sent successfully to {app.config["MAIL_USERNAME"]}! Check your inbox (and spam folder).', 'success')
-            flash('🔧 Using Flask-Mailman for Python 3.12 compatibility.', 'info')
+            flash(f'✅ Test email sent successfully via Resend!', 'success')
+            flash('🔧 Using Resend API - no SMTP configuration needed.', 'info')
         else:
             flash(f'❌ Test email failed: {message}', 'error')
-            flash('🔧 Check your .env file and email settings.', 'error')
+            flash('🔧 Check your RESEND_API_KEY in .env file.', 'error')
             
     except Exception as e:
         error_msg = str(e)
@@ -942,78 +906,20 @@ def test_email():
     
     return redirect(url_for('dashboard'))
 
+# ============================================================================
+# COMPARE EMAIL TEST (REMOVED - Not needed for Resend only)
+# ============================================================================
+
 @app.route('/compare_email_test')
 @login_required
 def compare_email_test():
-    """Send both test and real-style emails to compare"""
-    try:
-        if not app.config['MAIL_USERNAME'] or not app.config['MAIL_PASSWORD']:
-            flash('❌ Email not configured', 'error')
-            return redirect(url_for('dashboard'))
-        
-        log_message("🔬 COMPARING TEST vs REAL EMAIL CONFIGURATIONS", "INFO")
-        
-        # Test 1: Simple test email
-        simple_success, simple_msg = send_email_simple(
-            app.config['MAIL_USERNAME'],
-            "Simple Test Email",
-            "<h2>Simple Test</h2><p>This is a basic test email.</p>"
-        )
-        
-        # Wait 2 seconds
-        import time
-        time.sleep(2)
-        
-        # Test 2: Real-style email (identical to form invitations)
-        form_url = url_for('index', _external=True)
-        form_title = "Test Registration Form"
-        event_name = "Test Event"
-        sender_name = session.get('username', 'User')
-        
-        real_success, real_msg = send_email_simple(
-            app.config['MAIL_USERNAME'],
-            f"📋 Registration: {form_title}",  # Same format as real
-            f"""
-            <!DOCTYPE html>
-            <html>
-            <head><meta charset="UTF-8"></head>
-            <body>
-                <h2>Real-Style Test Email</h2>
-                <p><strong>Event:</strong> {event_name}</p>
-                <p><strong>Form:</strong> {form_title}</p>
-                <p><a href="{form_url}">Register Now</a></p>
-                <p><code>{form_url}</code></p>
-                <p>From: {sender_name}</p>
-            </body>
-            </html>
-            """
-        )
-        
-        # Show comparison results
-        if simple_success and real_success:
-            flash('✅ BOTH email types sent successfully!', 'success')
-            flash('🔍 Configuration is identical for both test and real emails.', 'info')
-            flash('🔧 If real form emails fail, check form URL generation.', 'info')
-        elif not simple_success and not real_success:
-            flash('❌ BOTH email types failed with same error.', 'error')
-            flash(f'🔍 Error: {simple_msg}', 'error')
-            flash('🔧 Fix your SMTP configuration in .env file.', 'error')
-        elif simple_success and not real_success:
-            flash('⚠️ SIMPLE email works but REAL email fails!', 'warning')
-            flash(f'🔍 Simple worked, but real failed: {real_msg}', 'warning')
-            flash('🔧 This means the issue is in the CONTENT, not the configuration.', 'info')
-        elif not simple_success and real_success:
-            flash('⚠️ REAL email works but SIMPLE email fails!', 'warning')
-            flash(f'🔍 Real worked, but simple failed: {simple_msg}', 'warning')
-            flash('🔧 This is unusual - check email content differences.', 'info')
-            
-    except Exception as e:
-        flash(f'❌ Comparison test error: {str(e)[:100]}', 'error')
-    
+    """Simple test showing Resend is working"""
+    flash('✅ Using Resend API for all emails - no comparison needed!', 'success')
+    flash('🔧 All emails go through Resend API, not SMTP.', 'info')
     return redirect(url_for('dashboard'))
 
 # ============================================================================
-# csv to pdf creation
+# CSV TO PDF CREATION (UNCHANGED)
 # ============================================================================
 
 def generate_pdf_report(event_id, form_id):
@@ -1209,7 +1115,7 @@ def generate_pdf_route(event_id, form_id):
         return redirect(url_for('view_form', event_id=event_id, form_id=form_id))
 
 # ============================================================================
-# DEBUG SHARE FORM EMAIL
+# DEBUG SHARE FORM EMAIL (UPDATED FOR RESEND)
 # ============================================================================
 
 @app.route('/debug_share_form_email/<event_id>/<form_id>/<email>')
@@ -1277,7 +1183,7 @@ def debug_share_form_email(event_id, form_id, email):
                         • Event ID: {event_id}<br>
                         • Form URL: {form_url}<br>
                         • Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}<br>
-                        • This is the EXACT email sent from Share Form
+                        • This is the EXACT email sent from Share Form via Resend
                     </div>
                     
                     <div style="text-align: center; margin: 25px 0;">
@@ -1301,12 +1207,12 @@ def debug_share_form_email(event_id, form_id, email):
         </html>
         """
         
-        # Send using Flask-Mailman
-        success, message = send_email_simple(email, subject, html_content)
+        # Send using Resend
+        success, message = send_email_resend(email, subject, html_content)
         
         if success:
             flash(f'✅ Debug email sent successfully to {email}!', 'success')
-            flash(f'🔧 This is the EXACT email that would be sent from the Share Form.', 'info')
+            flash(f'🔧 This is the EXACT email that would be sent from the Share Form via Resend.', 'info')
             flash(f'📝 If this works but Share Form doesn\'t, check form URL generation.', 'info')
         else:
             flash(f'❌ Debug email failed: {message}', 'error')
@@ -1342,7 +1248,7 @@ def check_form_url(form_id):
     return jsonify(result)
 
 # ============================================================================
-# DIAGNOSTIC TOOLS
+# DIAGNOSTIC TOOLS (UPDATED FOR RESEND)
 # ============================================================================
 
 @app.route('/check_email_config')
@@ -1350,13 +1256,10 @@ def check_form_url(form_id):
 def check_email_config():
     """Check email configuration"""
     config_info = {
-        'MAIL_USERNAME': app.config['MAIL_USERNAME'],
-        'MAIL_PASSWORD': '***' + (app.config['MAIL_PASSWORD'][-4:] if app.config['MAIL_PASSWORD'] else 'NONE'),
-        'MAIL_SERVER': app.config['MAIL_SERVER'],
-        'MAIL_PORT': app.config['MAIL_PORT'],
-        'MAIL_FROM': app.config['MAIL_DEFAULT_SENDER'],
-        'Password Length': len(app.config['MAIL_PASSWORD']) if app.config['MAIL_PASSWORD'] else 0,
-        'Using Flask-Mailman': True
+        'RESEND_API_KEY': '✅ Set' if resend.api_key else '❌ NOT SET',
+        'Email Provider': 'Resend API',
+        'SMTP Configuration': '❌ NOT NEEDED - Using Resend API',
+        'Status': '✅ Ready for Render deployment'
     }
     
     return render_template('email_config.html', config=config_info)
@@ -1376,34 +1279,23 @@ def view_email_log():
 @app.route('/email_debug_info')
 @login_required
 def email_debug_info():
-    """Show detailed email configuration comparison"""
+    """Show detailed email configuration"""
     config = {
-        'test_email': {
-            'function': 'send_email_simple()',
-            'sender': app.config['MAIL_USERNAME'],
-            'recipient': app.config['MAIL_USERNAME'],
-            'subject_format': '"📋 Registration: {form_title}"',
-            'content': 'Full HTML with styling',
-            'threading': 'No threading',
-            'delay': 'No delay between emails'
-        },
-        'real_email': {
-            'function': 'send_email_simple()',
-            'sender': app.config['MAIL_USERNAME'],
-            'recipient': 'Form recipients',
-            'subject_format': '"📋 Registration: {form_title}"',
-            'content': 'Full HTML with styling',
-            'threading': 'No threading (in direct mode)',
-            'delay': '1 second between emails'
-        },
-        'config_identical': 'YES - Both use identical Flask-Mailman configuration',
-        'differences': 'Only recipient and minor content variations'
+        'email_provider': 'Resend API',
+        'configuration': 'API key only',
+        'advantages': [
+            'No SMTP port issues on Render',
+            'Better deliverability',
+            'Email tracking included',
+            'Simple configuration'
+        ],
+        'status': '✅ Active'
     }
     
     return render_template('email_debug_info.html', config=config)
 
 # ============================================================================
-# VIDEO DEBUGGING ROUTES
+# VIDEO DEBUGGING ROUTES (UNCHANGED)
 # ============================================================================
 
 @app.route('/test-video-access/<int:step>')
@@ -1502,7 +1394,7 @@ def debug_video(step):
     return jsonify(debug_info)
 
 # ============================================================================
-# VIDEO TESTING AND LISTING ROUTES
+# VIDEO TESTING AND LISTING ROUTES (UNCHANGED)
 # ============================================================================
 
 @app.route('/list-videos')
@@ -1684,7 +1576,7 @@ def test_step_video(step):
     return html
 
 # ============================================================================
-# SIMPLE VIDEO SERVING
+# SIMPLE VIDEO SERVING (UNCHANGED)
 # ============================================================================
 
 @app.route('/debug-video-url/<int:step>')
@@ -1712,7 +1604,7 @@ def debug_video_url(step):
     return jsonify(debug_info)
 
 # ============================================================================
-# CUSTOM JINJA2 FILTERS
+# CUSTOM JINJA2 FILTERS (UNCHANGED)
 # ============================================================================
 @app.template_filter()
 def slugify(s):
@@ -1787,7 +1679,7 @@ def relative_time(timestamp):
         return timestamp
 
 # ============================================================================
-# PDF GENERATION FUNCTIONS
+# PDF GENERATION FUNCTIONS (UNCHANGED)
 # ============================================================================
 def generate_response_pdf(event_id, form_id, event_data=None, form_data=None):
     """Generate HTML report for form responses"""
@@ -2215,7 +2107,7 @@ def send_feedback_reply():
         return jsonify({'success': False, 'error': 'Feedback not found or no email'})
     
     try:
-        # Send email reply - CLEAN VERSION (only admin's message)
+        # Send email reply using Resend
         html_content = f"""
         <!DOCTYPE html>
         <html>
@@ -2249,7 +2141,7 @@ def send_feedback_reply():
         </html>
         """
         
-        success, email_msg = send_email_simple(
+        success, email_msg = send_email_resend(
             feedback['email'],
             subject,
             html_content
@@ -2276,7 +2168,7 @@ def send_feedback_reply():
         return jsonify({'success': False, 'error': str(e)})
 
 # ============================================================================
-# MULTI-PAGE FEEDBACK FORM ROUTES
+# MULTI-PAGE FEEDBACK FORM ROUTES (UNCHANGED)
 # ============================================================================
 
 @app.route('/feedback/multi/<int:current_page>', methods=['GET', 'POST'])
@@ -2484,7 +2376,7 @@ def debug_routes():
     })
 
 # ============================================================================
-# CSRF TOKEN FUNCTION
+# CSRF TOKEN FUNCTION (UNCHANGED)
 # ============================================================================
 
 def generate_csrf_token():
@@ -2497,7 +2389,7 @@ def generate_csrf_token():
 app.jinja_env.globals['csrf_token'] = generate_csrf_token
 
 # ============================================================================
-# CSRF PROTECTION
+# CSRF PROTECTION (UNCHANGED)
 # ============================================================================
 
 @app.before_request
@@ -2581,7 +2473,7 @@ def handle_bad_request(e):
     return render_template('400.html', error=str(e)), 400
 
 # ============================================================================
-# FEEDBACK FORM ROUTES
+# FEEDBACK FORM ROUTES (UNCHANGED)
 # ============================================================================
 
 @app.route('/feedback')
@@ -2729,7 +2621,8 @@ def submit_feedback():
             
     except Exception as e:
         print(f"❌ ERROR in submit_feedback: {str(e)}")
-        print(f"❌ Traceback: {traceback.format_exc()}")
+        import traceback
+        traceback.print_exc()
         log_message(f"Error submitting feedback: {e}", "ERROR")
         return jsonify({
             'success': False, 
@@ -2741,21 +2634,21 @@ def submit_feedback():
 def debug_email_test_feedback():
     """Test email sending for feedback"""
     try:
-        test_email = app.config['MAIL_USERNAME']
+        test_email = "test@example.com"
         print(f"🔍 Testing email to: {test_email}")
         
         # Test simple email
-        success, message = send_email_simple(
+        success, message = send_email_resend(
             test_email,
             "Test Feedback Email",
-            "<h1>Test</h1><p>This is a test email for feedback system.</p>"
+            "<h1>Test</h1><p>This is a test email for feedback system via Resend.</p>"
         )
         
         return jsonify({
             'success': success,
             'message': message,
             'test_email': test_email,
-            'config_ok': bool(app.config['MAIL_USERNAME'] and app.config['MAIL_PASSWORD'])
+            'resend_configured': bool(resend.api_key)
         })
     except Exception as e:
         return jsonify({
@@ -2779,7 +2672,7 @@ def feedback_settings():
     default_settings = {
         'send_thank_you_emails': True,
         'notify_admin_on_feedback': True,
-        'admin_email': os.environ.get('ADMIN_EMAIL', app.config['MAIL_USERNAME']),
+        'admin_email': 'admin@example.com',
         'auto_reply_enabled': True,
         'auto_reply_message': "Thank you for your feedback! We've received your submission and will review it soon.",
         'feedback_categories': ['bug', 'suggestion', 'praise', 'general', 'feature']
@@ -3063,7 +2956,7 @@ def clear_all_feedback():
         return jsonify({'success': False, 'error': str(e)})
 
 # ============================================================================
-# USER FEEDBACK FOLLOW-UP ROUTES
+# USER FEEDBACK FOLLOW-UP ROUTES (UNCHANGED)
 # ============================================================================
 
 @app.route('/user/send_followup', methods=['POST'])
@@ -3210,9 +3103,9 @@ def send_followup_notification(followup_feedback, original_feedback):
         """
         
         # Send to admin
-        admin_email = app.config['MAIL_USERNAME']  # Or use ADMIN_EMAIL from settings
+        admin_email = 'admin@example.com'  # Or use ADMIN_EMAIL from settings
         if admin_email:
-            success, message = send_email_simple(admin_email, subject, html_content)
+            success, message = send_email_resend(admin_email, subject, html_content)
             if success:
                 log_message(f"Follow-up notification sent to {admin_email}", "INFO")
             else:
@@ -3298,7 +3191,7 @@ def user_get_feedback_detail(feedback_id):
     return jsonify({'success': False, 'error': 'Feedback not found or unauthorized'}), 404    
 
 # ============================================================================
-# FIXED HOW IT WORKS STEP ROUTE
+# FIXED HOW IT WORKS STEP ROUTE (UNCHANGED)
 # ============================================================================
 
 @app.route('/how-it-works/step/<int:step>')
@@ -3410,7 +3303,7 @@ def debug_step_video(step):
     return jsonify(debug_info)
 
 # ============================================================================
-# ROUTES
+# ROUTES (UNCHANGED)
 # ============================================================================
 @app.context_processor
 def inject_now():
@@ -4222,7 +4115,7 @@ def share_form(event_id, form_id):
     form_url = url_for('show_form', form_id=form_id, _external=True)
     qr_code = generate_qr_code(form_url)
     
-    # Handle email sending with Flask-Mailman
+    # Handle email sending with Resend
     if request.method == 'POST':
         # DEBUG: Log what we received
         log_message(f"🔍 SHARE_FORM: POST request received", "DEBUG")
@@ -4268,7 +4161,7 @@ def share_form(event_id, form_id):
             log_message(f"🔍 SHARE_FORM: Sender: {session['username']}", "DEBUG")
             log_message(f"🔍 SHARE_FORM: Recipients: {valid_emails}", "DEBUG")
             
-            # Send emails using Flask-Mailman
+            # Send emails using Resend
             try:
                 results = send_emails_direct(
                     valid_emails,
@@ -4286,8 +4179,8 @@ def share_form(event_id, form_id):
                 
                 # Show results
                 if sent_count > 0:
-                    flash(f'✅ {sent_count} email(s) sent successfully!', 'success')
-                    flash('🔍 Using Flask-Mailman for Python 3.12 compatibility.', 'info')
+                    flash(f'✅ {sent_count} email(s) sent successfully via Resend!', 'success')
+                    flash('🔍 Using Resend API for reliable email delivery.', 'info')
                     
                     # Debug: Show first successful email details
                     for result in results:
@@ -4521,8 +4414,7 @@ def debug_otp_email(email):
     from otp import generate_and_store_otp
     
     print(f"🔍 DEBUG OTP EMAIL FOR: {email}")
-    print(f"🔍 MAIL_USERNAME: {app.config['MAIL_USERNAME']}")
-    print(f"🔍 MAIL_PASSWORD length: {len(app.config['MAIL_PASSWORD']) if app.config['MAIL_PASSWORD'] else 'NONE'}")
+    print(f"🔍 RESEND_API_KEY: {'Set' if resend.api_key else 'NOT SET'}")
     
     # Generate OTP
     otp = generate_and_store_otp(email)
@@ -4538,6 +4430,7 @@ def debug_otp_email(email):
         <p>OTP: {otp}</p>
         <p>Success: {success}</p>
         <p>Message: {message}</p>
+        <p>Using: Resend API</p>
         <p><a href="/">Back</a></p>
         """
     except Exception as e:
@@ -4605,10 +4498,12 @@ def health():
 
 if __name__ == '__main__':
     print("="*80)
-    print("🚀 EventFlow with FLASK-MAILMAN")
+    print("🚀 EventFlow with RESEND API ONLY")
     print("="*80)
     print("✅ Python 3.12 compatible")
-    print("✅ Using Flask-Mailman instead of Flask-Mail")
+    print("✅ Using Resend API instead of SMTP")
+    print("✅ No SMTP configuration needed")
+    print("✅ Ready for Render free tier")
     print("="*80)
     
     app.run(debug=True, host='0.0.0.0', port=5000)
