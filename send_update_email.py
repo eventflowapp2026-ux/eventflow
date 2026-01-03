@@ -16,6 +16,7 @@ EMAIL_ADDRESS = os.getenv("MAIL_USERNAME")
 EMAIL_PASSWORD = os.getenv("MAIL_PASSWORD")
 DEFAULT_SENDER = os.getenv("MAIL_DEFAULT_SENDER", EMAIL_ADDRESS)
 USERS_FILE = "data/users.json"
+EMAIL_BODY_FILE = "email_body.txt"  # <-- new
 
 if not EMAIL_ADDRESS or not EMAIL_PASSWORD:
     print("❌ .env missing MAIL_USERNAME or MAIL_PASSWORD")
@@ -48,18 +49,16 @@ if not verified_users:
 print(f"📬 Found {len(verified_users)} verified user(s).")
 
 # ============================
-# PROMPT FOR SUBJECT AND MESSAGE
+# LOAD EMAIL SUBJECT AND BODY
 # ============================
 subject = input("Enter the email subject: ").strip()
 
-print("\nEnter your email message (press ENTER twice to finish):")
-lines = []
-while True:
-    line = input()
-    if line == "":
-        break
-    lines.append(line)
-custom_text = "\n".join(lines)
+if not os.path.exists(EMAIL_BODY_FILE):
+    print(f"❌ {EMAIL_BODY_FILE} not found. Create a text file with your email content.")
+    exit(1)
+
+with open(EMAIL_BODY_FILE, "r") as f:
+    custom_text = f.read().strip()
 
 # ============================
 # PROMPT FOR LINKS
@@ -145,7 +144,7 @@ for user in verified_users:
             </div>
             <div style="padding: 30px;">
                 <p>Hello {user['name']},</p>
-                <p>{custom_text}</p>
+                <p>{custom_text.replace('\n','<br>')}</p>
                 <div style="margin-top:20px;">
                     {build_link_buttons(links)}
                 </div>

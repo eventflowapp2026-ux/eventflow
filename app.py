@@ -4620,6 +4620,10 @@ def not_found_error(error):
 def internal_error(error):
     return render_template('500.html'), 500
 
+@app.route('/health')
+def health():
+    return 'OK', 200
+
 if __name__ == '__main__':
     print("="*80)
     print("🚀 EventFlow with FLASK-MAILMAN")
