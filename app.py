@@ -313,10 +313,12 @@ def send_thank_you_email(to_email, name, feedback_id, feedback_type, rating, mes
             "html": html_content,
         }
 
-        response = resend.Emails.send(params)
-        app.logger.info(f"Thank you email sent via Resend! ID: {response.get('id')}")
-        log_message(f"Thank you email sent to {to_email} (Resend ID: {response.get('id')})", "SUCCESS")
-        return True
+        # response = resend.Emails.send(params)
+        # app.logger.info(f"Thank you email sent via Resend! ID: {response.get('id')}")
+        # log_message(f"Thank you email sent to {to_email} (Resend ID: {response.get('id')})", "SUCCESS")
+        # return True
+        log_message(f"Thank you email to {to_email} commented out", "INFO")
+        return False
 
     except Exception as e:
         app.logger.error(f"Resend email failed: {str(e)}", exc_info=True)
@@ -424,28 +426,31 @@ def admin_send_followup():
         </html>
         """
         
-        success, email_msg = send_email_resend(
-            recipient_email,
-            subject,
-            html_content
-        )
+        # success, email_msg = send_email_resend(
+        #     recipient_email,
+        #     subject,
+        #     html_content
+        # )
         
-        if success:
-            # Update feedback status if we have feedback_id
-            if feedback_id and feedback_id != 'null':
-                for fb in feedback_data:
-                    if fb['id'] == feedback_id:
-                        fb['status'] = 'responded'
-                        fb['responded_at'] = datetime.now().isoformat()
-                        fb['responded_by'] = session['user_id']
-                        fb['response_message'] = f"Follow-up sent: {message[:100]}..."
-                        break
+        # if success:
+        #     # Update feedback status if we have feedback_id
+        #     if feedback_id and feedback_id != 'null':
+        #         for fb in feedback_data:
+        #             if fb['id'] == feedback_id:
+        #                 fb['status'] = 'responded'
+        #                 fb['responded_at'] = datetime.now().isoformat()
+        #                 fb['responded_by'] = session['user_id']
+        #                 fb['response_message'] = f"Follow-up sent: {message[:100]}..."
+        #                 break
             
-            save_feedback(feedback_data)
-            log_message(f"Admin sent follow-up to {recipient_email}", "INFO")
-            return jsonify({'success': True, 'recipient': recipient_email})
-        else:
-            return jsonify({'success': False, 'error': f'Email failed: {email_msg}'})
+        #     save_feedback(feedback_data)
+        #     log_message(f"Admin sent follow-up to {recipient_email}", "INFO")
+        #     return jsonify({'success': True, 'recipient': recipient_email})
+        # else:
+        #     return jsonify({'success': False, 'error': f'Email failed: {email_msg}'})
+        
+        log_message(f"Admin follow-up email to {recipient_email} commented out", "INFO")
+        return jsonify({'success': False, 'error': 'Email sending commented out'})
             
     except Exception as e:
         log_message(f"Error sending follow-up: {e}", "ERROR")
@@ -587,336 +592,39 @@ def send_feedback_notification(feedback):
         # Send to admin email from settings or default
         admin_email = settings.get('admin_email', 'admin@example.com')
         if admin_email:
-            success, message = send_email_resend(admin_email, subject, html_content)
-            if success:
-                log_message(f"Feedback notification sent to {admin_email}", "INFO")
-            else:
-                log_message(f"Failed to send feedback notification: {message}", "ERROR")
+            # success, message = send_email_resend(admin_email, subject, html_content)
+            # if success:
+            #     log_message(f"Feedback notification sent to {admin_email}", "INFO")
+            # else:
+            #     log_message(f"Failed to send feedback notification: {message}", "ERROR")
+            log_message(f"Feedback notification to {admin_email} commented out", "INFO")
                 
     except Exception as e:
         log_message(f"Error sending feedback notification: {e}", "ERROR")
 
 # ============================================================================
-# RESEND EMAIL FUNCTIONS (REPLACED Flask-Mailman/SMTP)
+# RESEND EMAIL FUNCTIONS (COMMENTED OUT)
 # ============================================================================
 
-def send_email_resend(to_email, subject, html_content, from_email="EventFlow <onboarding@resend.dev>"):
-    """Send email using Resend API"""
-    if not resend.api_key:
-        log_message(f"Cannot send email: RESEND_API_KEY not configured", "ERROR")
-        return False, "Resend API key not configured"
-
-    try:
-        params = {
-            "from": from_email,
-            "to": [to_email],
-            "subject": subject,
-            "html": html_content,
-        }
-
-        response = resend.Emails.send(params)
-        log_message(f"✅ Email sent via Resend to {to_email} (ID: {response.get('id')})", "SUCCESS")
-        return True, f"Email sent successfully (Resend ID: {response.get('id')})"
-        
-    except Exception as e:
-        error_msg = f"Resend email error: {str(e)}"
-        log_message(f"❌ Email Error: {error_msg}", "ERROR")
-        return False, error_msg
-
-def send_emails_direct(recipient_emails, form_url, form_title, event_name, sender_name, custom_message):
-    """Send emails directly using Resend"""
-    results = []
-    
-    for idx, email in enumerate(recipient_emails):
-        email = email.strip()
-        
-        # Skip invalid emails
-        if not email or '@' not in email or '.' not in email:
-            results.append({'email': email, 'status': 'invalid', 'message': 'Invalid email format'})
-            continue
-        
-        # Prepare email
-        subject = f"📋 Registration: {form_title}"
-        
-        html_content = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <style>
-                body {{ font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 20px; }}
-                .container {{ max-width: 600px; margin: auto; background: #f8fafc; padding: 30px; border-radius: 10px; }}
-                .header {{ background: #4361ee; color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }}
-                .btn {{ background: #4361ee; color: white; padding: 12px 24px; text-decoration: none; 
-                        border-radius: 6px; display: inline-block; margin: 20px 0; }}
-                .custom-message {{ background: #e8f4fd; padding: 15px; border-radius: 6px; margin: 20px 0; }}
-                .footer {{ margin-top: 30px; color: #64748b; font-size: 12px; text-align: center; }}
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <h1>📋 Event Registration Invitation</h1>
-                </div>
-                <div style="padding: 30px;">
-                    <p>Hello,</p>
-                    
-                    <p>You're invited to register for:</p>
-                    <h2>{event_name}</h2>
-                    <p><strong>Form:</strong> {form_title}</p>
-                    
-                    {f'<div class="custom-message"><p><strong>Message from {sender_name}:</strong><br>{custom_message}</p></div>' if custom_message else ''}
-                    
-                    <div style="text-align: center; margin: 25px 0;">
-                        <a href="{form_url}" class="btn">📝 Register Now</a>
-                    </div>
-                    
-                    <p>Or copy this link:</p>
-                    <div style="background: #f1f5f9; padding: 15px; border-radius: 6px; margin: 15px 0;">
-                        <code>{form_url}</code>
-                    </div>
-                    
-                    <p>Sent by: <strong>{sender_name}</strong></p>
-                    
-                    <div class="footer">
-                        <p>EventFlow Registration System</p>
-                        <p>© {datetime.now().year}</p>
-                    </div>
-                </div>
-            </div>
-        </body>
-        </html>
-        """
-        
-        # Use Resend API
-        success, message = send_email_resend(email, subject, html_content)
-        
-        if success:
-            results.append({'email': email, 'status': 'sent', 'message': message})
-        else:
-            results.append({'email': email, 'status': 'failed', 'message': message})
-        
-        # Small delay
-        import time
-        if idx < len(recipient_emails) - 1:
-            time.sleep(0.5)  # 0.5 second delay
-    
-    return results
-
-def send_otp_email(email: str, otp: str):
-    """Send OTP email using Resend"""
-    try:
-        subject = "🔐 Your EventFlow Verification Code"
-        
-        html_content = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <style>
-                body {{ font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 20px; }}
-                .container {{ max-width: 600px; margin: auto; background: #f8fafc; padding: 30px; border-radius: 10px; }}
-                .header {{ background: #4361ee; color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }}
-                .otp-box {{ background: white; border: 2px dashed #4361ee; padding: 25px; text-align: center; margin: 30px 0; 
-                           font-size: 32px; font-weight: bold; color: #4361ee; letter-spacing: 10px; border-radius: 10px; }}
-                .footer {{ margin-top: 30px; color: #64748b; font-size: 12px; text-align: center; }}
-                .note {{ background: #fff3cd; padding: 15px; border-radius: 6px; margin: 20px 0; color: #856404; }}
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <h1>🔐 Verify Your Email</h1>
-                </div>
-                <div style="padding: 30px;">
-                    <p>Hello,</p>
-                    
-                    <p>You're signing up for EventFlow. Use this OTP to verify your email:</p>
-                    
-                    <div class="otp-box">
-                        {otp}
-                    </div>
-                    
-                    <div class="note">
-                        <p><strong>⚠️ Important:</strong></p>
-                        <ul>
-                            <li>This OTP is valid for 5 minutes only</li>
-                            <li>Don't share this code with anyone</li>
-                            <li>If you didn't request this, please ignore this email</li>
-                        </ul>
-                    </div>
-                    
-                    <p>Enter this code on the verification page to complete your registration.</p>
-                    
-                    <div class="footer">
-                        <p>EventFlow Registration System</p>
-                        <p>© {datetime.now().year} | This is an automated email, please do not reply</p>
-                    </div>
-                </div>
-            </div>
-        </body>
-        </html>
-        """
-        
-        success, message = send_email_resend(email, subject, html_content)
-        
-        if success:
-            log_message(f"✅ OTP email sent to {email} via Resend", "SUCCESS")
-        else:
-            log_message(f"❌ Failed to send OTP email to {email}: {message}", "ERROR")
-        
-        return success, message
-        
-    except Exception as e:
-        error_msg = f"OTP email error: {str(e)}"
-        log_message(f"❌ OTP email exception: {error_msg}", "ERROR")
-        return False, error_msg
+# Email functions commented out as requested
 
 # ============================================================================
-# DEBUG EMAIL FUNCTION
+# DEBUG EMAIL FUNCTION (COMMENTED OUT)
 # ============================================================================
 
-@app.route('/debug_email/<email>')
-@login_required
-def debug_email(email):
-    """Debug email sending to a specific email"""
-    try:
-        log_message(f"🔍 DEBUGGING email to: {email}", "DEBUG")
-        
-        # Test with simple text email first
-        subject = "🔍 EventFlow Debug Test"
-        html_content = f"""
-        <h2>Debug Test Email</h2>
-        <p>This is a debug email sent to: {email}</p>
-        <p>Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
-        <p>Using: Resend API</p>
-        """
-        
-        # Send using Resend
-        success, message = send_email_resend(email, subject, html_content)
-        
-        if success:
-            log_message(f"✅ DEBUG: Email sent successfully to {email}", "SUCCESS")
-            flash(f'✅ Debug email sent to {email}! Check console for details.', 'success')
-        else:
-            log_message(f"❌ DEBUG Email Error: {message}", "ERROR")
-            flash(f'❌ Debug email failed: {message[:100]}', 'error')
-            
-    except Exception as e:
-        log_message(f"❌ DEBUG General Error: {repr(e)}", "ERROR")
-        flash(f'❌ General error: {str(e)[:100]}', 'error')
-    
-    return redirect(url_for('dashboard'))
+# Email debug routes commented out as requested
 
 # ============================================================================
-# TEST EMAIL ROUTES (UPDATED FOR RESEND)
+# TEST EMAIL ROUTES (COMMENTED OUT)
 # ============================================================================
 
-@app.route('/test_email')
-@login_required
-def test_email():
-    """Test email route using Resend"""
-    try:
-        if not resend.api_key:
-            flash('❌ Resend API key not configured in .env file', 'error')
-            return redirect(url_for('dashboard'))
-        
-        log_message("🧪 TESTING RESEND EMAIL", "INFO")
-        
-        form_url = url_for('index', _external=True)
-        form_title = "Test Registration Form"
-        event_name = "Test Event - EventFlow"
-        sender_name = session.get('username', 'Test User')
-        custom_message = "This is a test email to verify that Resend email system is working correctly."
-        
-        html_content = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <style>
-                body {{ font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 20px; }}
-                .container {{ max-width: 600px; margin: auto; background: #f8fafc; padding: 30px; border-radius: 10px; }}
-                .header {{ background: #4361ee; color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }}
-                .btn {{ background: #4361ee; color: white; padding: 12px 24px; text-decoration: none; 
-                        border-radius: 6px; display: inline-block; margin: 20px 0; }}
-                .custom-message {{ background: #e8f4fd; padding: 15px; border-radius: 6px; margin: 20px 0; }}
-                .footer {{ margin-top: 30px; color: #64748b; font-size: 12px; text-align: center; }}
-                .debug-info {{ background: #f1f5f9; padding: 10px; border-radius: 5px; margin: 15px 0; font-family: monospace; font-size: 12px; }}
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <h1>📋 Event Registration Invitation</h1>
-                </div>
-                <div style="padding: 30px;">
-                    <p>Hello,</p>
-                    
-                    <p>You're invited to register for:</p>
-                    <h2>{event_name}</h2>
-                    <p><strong>Form:</strong> {form_title}</p>
-                    
-                    <div class="custom-message">
-                        <p><strong>Message from {sender_name}:</strong><br>{custom_message}</p>
-                    </div>
-                    
-                    <div style="text-align: center; margin: 25px 0;">
-                        <a href="{form_url}" class="btn">📝 Register Now</a>
-                    </div>
-                    
-                    <div class="debug-info">
-                        <strong>🧪 RESEND TEST EMAIL:</strong><br>
-                        • Using: Resend API<br>
-                        • Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}<br>
-                        • Type: Form invitation test
-                    </div>
-                    
-                    <p>Sent by: <strong>{sender_name}</strong></p>
-                    
-                    <div class="footer">
-                        <p>EventFlow Registration System</p>
-                        <p>© {datetime.now().year}</p>
-                    </div>
-                </div>
-            </div>
-        </body>
-        </html>
-        """
-        
-        # Use a test email (you can change this)
-        test_email = "test@example.com"
-        success, message = send_email_resend(
-            test_email,
-            f"📋 Registration: {form_title}",
-            html_content
-        )
-        
-        if success:
-            flash(f'✅ Test email sent successfully via Resend!', 'success')
-            flash('🔧 Using Resend API - no SMTP configuration needed.', 'info')
-        else:
-            flash(f'❌ Test email failed: {message}', 'error')
-            flash('🔧 Check your RESEND_API_KEY in .env file.', 'error')
-            
-    except Exception as e:
-        error_msg = str(e)
-        log_message(f"❌ Test email error: {error_msg}", "ERROR")
-        flash(f'❌ Test error: {error_msg[:100]}', 'error')
-    
-    return redirect(url_for('dashboard'))
+# Test email routes commented out as requested
 
 # ============================================================================
-# COMPARE EMAIL TEST (REMOVED - Not needed for Resend only)
+# COMPARE EMAIL TEST (COMMENTED OUT)
 # ============================================================================
 
-@app.route('/compare_email_test')
-@login_required
-def compare_email_test():
-    """Simple test showing Resend is working"""
-    flash('✅ Using Resend API for all emails - no comparison needed!', 'success')
-    flash('🔧 All emails go through Resend API, not SMTP.', 'info')
-    return redirect(url_for('dashboard'))
+# Compare email test commented out as requested
 
 # ============================================================================
 # CSV TO PDF CREATION (UNCHANGED)
@@ -1115,115 +823,10 @@ def generate_pdf_route(event_id, form_id):
         return redirect(url_for('view_form', event_id=event_id, form_id=form_id))
 
 # ============================================================================
-# DEBUG SHARE FORM EMAIL (UPDATED FOR RESEND)
+# DEBUG SHARE FORM EMAIL (COMMENTED OUT)
 # ============================================================================
 
-@app.route('/debug_share_form_email/<event_id>/<form_id>/<email>')
-@login_required
-def debug_share_form_email(event_id, form_id, email):
-    """Debug: Send the exact email that would be sent from share form"""
-    try:
-        event = load_event(event_id)
-        if not event or event.get('creator_id') != session['user_id']:
-            flash('Unauthorized!', 'error')
-            return redirect(url_for('dashboard'))
-        
-        form = None
-        for f in event.get('forms', []):
-            if f['id'] == form_id:
-                form = f
-                break
-        
-        if not form:
-            flash('Form not found!', 'error')
-            return redirect(url_for('dashboard'))
-        
-        form_url = url_for('show_form', form_id=form_id, _external=True)
-        
-        log_message(f"🔧 DEBUG_SHARE_FORM: Testing exact share form email", "DEBUG")
-        log_message(f"🔧 DEBUG_SHARE_FORM: To: {email}", "DEBUG")
-        log_message(f"🔧 DEBUG_SHARE_FORM: Form URL: {form_url}", "DEBUG")
-        log_message(f"🔧 DEBUG_SHARE_FORM: Form Title: {form['title']}", "DEBUG")
-        log_message(f"🔧 DEBUG_SHARE_FORM: Event Name: {event['name']}", "DEBUG")
-        
-        # Create the EXACT email that would be sent
-        subject = f"📋 Registration: {form['title']}"
-        
-        html_content = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <style>
-                body {{ font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 20px; }}
-                .container {{ max-width: 600px; margin: auto; background: #f8fafc; padding: 30px; border-radius: 10px; }}
-                .header {{ background: #4361ee; color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }}
-                .btn {{ background: #4361ee; color: white; padding: 12px 24px; text-decoration: none; 
-                        border-radius: 6px; display: inline-block; margin: 20px 0; }}
-                .custom-message {{ background: #e8f4fd; padding: 15px; border-radius: 6px; margin: 20px 0; }}
-                .footer {{ margin-top: 30px; color: #64748b; font-size: 12px; text-align: center; }}
-                .debug-info {{ background: #f1f5f9; padding: 10px; border-radius: 5px; margin: 15px 0; font-family: monospace; font-size: 12px; }}
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <h1>📋 Event Registration Invitation</h1>
-                </div>
-                <div style="padding: 30px;">
-                    <p>Hello,</p>
-                    
-                    <p>You're invited to register for:</p>
-                    <h2>{event['name']}</h2>
-                    <p><strong>Form:</strong> {form['title']}</p>
-                    
-                    <div class="debug-info">
-                        <strong>🔧 DEBUG EMAIL - FROM SHARE FORM:</strong><br>
-                        • Form ID: {form_id}<br>
-                        • Event ID: {event_id}<br>
-                        • Form URL: {form_url}<br>
-                        • Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}<br>
-                        • This is the EXACT email sent from Share Form via Resend
-                    </div>
-                    
-                    <div style="text-align: center; margin: 25px 0;">
-                        <a href="{form_url}" class="btn">📝 Register Now</a>
-                    </div>
-                    
-                    <p>Or copy this link:</p>
-                    <div style="background: #f1f5f9; padding: 15px; border-radius: 6px; margin: 15px 0;">
-                        <code>{form_url}</code>
-                    </div>
-                    
-                    <p>Sent by: <strong>{session.get('username', 'User')}</strong></p>
-                    
-                    <div class="footer">
-                        <p>EventFlow Registration System</p>
-                        <p>© {datetime.now().year}</p>
-                    </div>
-                </div>
-            </div>
-        </body>
-        </html>
-        """
-        
-        # Send using Resend
-        success, message = send_email_resend(email, subject, html_content)
-        
-        if success:
-            flash(f'✅ Debug email sent successfully to {email}!', 'success')
-            flash(f'🔧 This is the EXACT email that would be sent from the Share Form via Resend.', 'info')
-            flash(f'📝 If this works but Share Form doesn\'t, check form URL generation.', 'info')
-        else:
-            flash(f'❌ Debug email failed: {message}', 'error')
-            flash(f'🔧 This shows why Share Form emails are failing.', 'error')
-            
-    except Exception as e:
-        error_msg = str(e)
-        log_message(f"❌ DEBUG_SHARE_FORM error: {error_msg}", "ERROR")
-        flash(f'❌ Debug error: {error_msg[:200]}', 'error')
-    
-    return redirect(url_for('share_form', event_id=event_id, form_id=form_id))
+# Debug share form email commented out as requested
 
 @app.route('/check_form_url/<form_id>')
 @login_required
@@ -1248,51 +851,10 @@ def check_form_url(form_id):
     return jsonify(result)
 
 # ============================================================================
-# DIAGNOSTIC TOOLS (UPDATED FOR RESEND)
+# DIAGNOSTIC TOOLS (COMMENTED OUT)
 # ============================================================================
 
-@app.route('/check_email_config')
-@login_required
-def check_email_config():
-    """Check email configuration"""
-    config_info = {
-        'RESEND_API_KEY': '✅ Set' if resend.api_key else '❌ NOT SET',
-        'Email Provider': 'Resend API',
-        'SMTP Configuration': '❌ NOT NEEDED - Using Resend API',
-        'Status': '✅ Ready for Render deployment'
-    }
-    
-    return render_template('email_config.html', config=config_info)
-
-@app.route('/view_email_log')
-@login_required
-def view_email_log():
-    """View email log file"""
-    try:
-        with open('logs/email.log', 'r') as f:
-            log_content = f.read()
-    except:
-        log_content = "Log file not found or empty."
-    
-    return render_template('email_log.html', log_content=log_content)
-
-@app.route('/email_debug_info')
-@login_required
-def email_debug_info():
-    """Show detailed email configuration"""
-    config = {
-        'email_provider': 'Resend API',
-        'configuration': 'API key only',
-        'advantages': [
-            'No SMTP port issues on Render',
-            'Better deliverability',
-            'Email tracking included',
-            'Simple configuration'
-        ],
-        'status': '✅ Active'
-    }
-    
-    return render_template('email_debug_info.html', config=config)
+# Email diagnostic tools commented out as requested
 
 # ============================================================================
 # VIDEO DEBUGGING ROUTES (UNCHANGED)
@@ -2141,27 +1703,30 @@ def send_feedback_reply():
         </html>
         """
         
-        success, email_msg = send_email_resend(
-            feedback['email'],
-            subject,
-            html_content
-        )
+        # success, email_msg = send_email_resend(
+        #     feedback['email'],
+        #     subject,
+        #     html_content
+        # )
         
-        if success:
-            # Update feedback status
-            for fb in feedback_data:
-                if fb['id'] == feedback_id:
-                    fb['status'] = new_status
-                    fb['responded_at'] = datetime.now().isoformat()
-                    fb['responded_by'] = session['user_id']
-                    fb['response_message'] = message  # Store the response message
-                    break
+        # if success:
+        #     # Update feedback status
+        #     for fb in feedback_data:
+        #         if fb['id'] == feedback_id:
+        #             fb['status'] = new_status
+        #             fb['responded_at'] = datetime.now().isoformat()
+        #             fb['responded_by'] = session['user_id']
+        #             fb['response_message'] = message  # Store the response message
+        #             break
             
-            save_feedback(feedback_data)
-            log_message(f"Admin replied to feedback {feedback_id}", "INFO")
-            return jsonify({'success': True})
-        else:
-            return jsonify({'success': False, 'error': f'Email failed: {email_msg}'})
+        #     save_feedback(feedback_data)
+        #     log_message(f"Admin replied to feedback {feedback_id}", "INFO")
+        #     return jsonify({'success': True})
+        # else:
+        #     return jsonify({'success': False, 'error': f'Email failed: {email_msg}'})
+        
+        log_message(f"Admin feedback reply to {feedback['email']} commented out", "INFO")
+        return jsonify({'success': False, 'error': 'Email sending commented out'})
             
     except Exception as e:
         log_message(f"Error sending feedback reply: {e}", "ERROR")
@@ -2638,15 +2203,15 @@ def debug_email_test_feedback():
         print(f"🔍 Testing email to: {test_email}")
         
         # Test simple email
-        success, message = send_email_resend(
-            test_email,
-            "Test Feedback Email",
-            "<h1>Test</h1><p>This is a test email for feedback system via Resend.</p>"
-        )
+        # success, message = send_email_resend(
+        #     test_email,
+        #     "Test Feedback Email",
+        #     "<h1>Test</h1><p>This is a test email for feedback system via Resend.</p>"
+        # )
         
         return jsonify({
-            'success': success,
-            'message': message,
+            'success': False,
+            'message': 'Email sending commented out',
             'test_email': test_email,
             'resend_configured': bool(resend.api_key)
         })
@@ -3105,11 +2670,12 @@ def send_followup_notification(followup_feedback, original_feedback):
         # Send to admin
         admin_email = 'admin@example.com'  # Or use ADMIN_EMAIL from settings
         if admin_email:
-            success, message = send_email_resend(admin_email, subject, html_content)
-            if success:
-                log_message(f"Follow-up notification sent to {admin_email}", "INFO")
-            else:
-                log_message(f"Failed to send follow-up notification: {message}", "ERROR")
+            # success, message = send_email_resend(admin_email, subject, html_content)
+            # if success:
+            #     log_message(f"Follow-up notification sent to {admin_email}", "INFO")
+            # else:
+            #     log_message(f"Failed to send follow-up notification: {message}", "ERROR")
+            log_message(f"Follow-up notification to {admin_email} commented out", "INFO")
                 
     except Exception as e:
         log_message(f"Error sending follow-up notification: {e}", "ERROR")
@@ -3438,6 +3004,10 @@ def login():
     
     return render_template('login.html')
 
+# ============================================================================
+# SIGNUP ROUTE (MODIFIED - NO OTP VERIFICATION)
+# ============================================================================
+
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
@@ -3459,183 +3029,33 @@ def signup():
                 flash('Email already registered!', 'error')
                 return redirect(url_for('signup'))
         
-        # ✅ Store email in TWO session keys for redundancy
-        session['verify_email'] = email  # CRITICAL: For OTP verification
-        session['pending_user'] = {
+        # Create user account immediately (no OTP verification)
+        user_id = str(uuid.uuid4())
+        users[user_id] = {
             'username': username,
             'email': email,
             'mobile': mobile,
-            'password': password
+            'password': password,
+            'created_at': datetime.now().isoformat(),
+            'email_verified': True
         }
         
-        print(f"🔍 SIGNUP: Session keys set: {list(session.keys())}")
+        save_users(users)
         
-        # Generate OTP
-        try:
-            from otp import generate_and_store_otp
-            otp = generate_and_store_otp(email)
-            print(f"🔍 SIGNUP: OTP generated: {otp}")
-        except Exception as e:
-            print(f"❌ SIGNUP: OTP generation failed: {str(e)}")
-            flash('Failed to generate verification code', 'error')
-            session.pop('verify_email', None)
-            session.pop('pending_user', None)
-            return redirect(url_for('signup'))
+        # Log user in immediately
+        session['user_id'] = user_id
+        session['username'] = username
+        session['email'] = email
         
-        # Send OTP email
-        print(f"🔍 SIGNUP: Sending OTP email to {email}")
-        success, message = send_otp_email(email, otp)
-        
-        if success:
-            flash(f'✅ Verification code sent to {email}!', 'success')
-            flash('⏳ Code expires in 5 minutes', 'info')
-            # ✅ IMPORTANT: Show OTP in console for testing
-            print(f"🎁 DEBUG OTP FOR {email}: {otp}")
-            return redirect(url_for('verify_email'))
-        else:
-            flash(f'❌ Failed to send email: {message}', 'error')
-            session.pop('verify_email', None)
-            session.pop('pending_user', None)
-            return redirect(url_for('signup'))
+        print(f"✅ USER CREATED: {user_id} for {email}")
+        flash('🎉 Account created successfully! You are now logged in.', 'success')
+        return redirect(url_for('dashboard'))
     
     return render_template('signup.html')
-    
-@app.route('/verify-email', methods=['GET', 'POST'])
-def verify_email():
-    """Verify OTP for email confirmation - FIXED VERSION"""
-    # ✅ Get email from session (dual check for reliability)
-    email = session.get('verify_email')
-    pending_user = session.get('pending_user')
-    
-    # Debug log
-    print(f"🔍 VERIFY_EMAIL: Session keys: {list(session.keys())}")
-    print(f"🔍 VERIFY_EMAIL: verify_email = {email}")
-    print(f"🔍 VERIFY_EMAIL: pending_user = {pending_user}")
-    
-    # If email not in session, use pending_user as fallback
-    if not email and pending_user:
-        email = pending_user.get('email')
-        session['verify_email'] = email  # Restore it
-    
-    # Final check
-    if not email:
-        print("❌ VERIFY_EMAIL: No email found in session")
-        flash('⚠️ Session expired. Please sign up again.', 'warning')
-        return redirect(url_for('signup'))
-    
-    print(f"✅ VERIFY_EMAIL: Using email: {email}")
-    
-    if request.method == 'POST':
-        user_otp = request.form.get('otp', '').strip()
-        
-        print(f"🔍 VERIFY_EMAIL: Received OTP input: '{user_otp}'")
-        
-        if not user_otp or len(user_otp) != 6:
-            flash('Please enter a valid 6-digit code.', 'error')
-            return render_template('verify_email.html', email=email)
-        
-        # ✅ VERIFY OTP with persistent storage
-        from otp import verify_otp
-        is_valid, message = verify_otp(email, user_otp)
-        
-        print(f"🔍 VERIFY_EMAIL: OTP validation result: {is_valid}, {message}")
-        
-        if is_valid:
-            # ✅ Get user data from pending_user or use defaults
-            if pending_user:
-                username = pending_user.get('username')
-                mobile = pending_user.get('mobile')
-                password = pending_user.get('password')
-            else:
-                # Fallback: create basic user data
-                username = email.split('@')[0]
-                mobile = 'N/A'
-                password = 'to_be_changed'
-            
-            # ✅ Create user account
-            users = load_users()
-            user_id = str(uuid.uuid4())
-            users[user_id] = {
-                'username': username,
-                'email': email,
-                'mobile': mobile,
-                'password': password,
-                'created_at': datetime.now().isoformat(),
-                'email_verified': True
-            }
-            
-            save_users(users)
-            
-            # ✅ Clear ALL session data
-            session.pop('verify_email', None)
-            session.pop('pending_user', None)
-            
-            # ✅ Log user in
-            session['user_id'] = user_id
-            session['username'] = username
-            session['email'] = email
-            
-            flash('🎉 Email verified! Account created successfully.', 'success')
-            return redirect(url_for('dashboard'))
-        else:
-            flash(f'❌ {message}', 'error')
-            return render_template('verify_email.html', email=email)
-    
-    # GET request - show verification page
-    return render_template('verify_email.html', email=email)
-    
-@app.route('/resend-otp')
-def resend_otp():
-    """Resend OTP to email from session"""
-    # ✅ Get email from session (same logic as verify_email)
-    email = session.get('verify_email')
-    pending_user = session.get('pending_user')
-    
-    if not email and pending_user:
-        email = pending_user.get('email')
-        session['verify_email'] = email
-    
-    if not email:
-        flash('No pending verification found. Please sign up again.', 'error')
-        return redirect(url_for('signup'))
-    
-    print(f"🔍 RESEND_OTP: Resending to {email}")
-    
-    from otp import generate_and_store_otp
-    otp = generate_and_store_otp(email)
-    
-    success, message = send_otp_email(email, otp)
-    
-    if success:
-        flash('✅ New verification code sent! Check your email.', 'success')
-        # ✅ Show OTP in console for testing
-        print(f"🎁 DEBUG RESEND OTP FOR {email}: {otp}")
-    else:
-        flash(f'❌ Failed to resend code: {message}', 'error')
-    
-    return redirect(url_for('verify_email'))
-    
-@app.route('/debug-session')
-def debug_session():
-    """Debug session data"""
-    debug_info = {
-        'session_keys': list(session.keys()),
-        'verify_email': session.get('verify_email'),
-        'pending_user': session.get('pending_user'),
-        'user_id': session.get('user_id'),
-        'email': session.get('email')
-    }
-    
-    # Check OTP storage
-    try:
-        from otp import _load_otp_store
-        store = _load_otp_store()
-        debug_info['otp_store_size'] = len(store)
-        debug_info['otp_store_emails'] = list(store.keys())
-    except:
-        debug_info['otp_store'] = 'Error loading'
-    
-    return jsonify(debug_info)
+
+# ============================================================================
+# REMOVED VERIFY EMAIL AND RESEND OTP ROUTES
+# ============================================================================
 
 @app.route('/logout')
 def logout():
@@ -4161,53 +3581,9 @@ def share_form(event_id, form_id):
             log_message(f"🔍 SHARE_FORM: Sender: {session['username']}", "DEBUG")
             log_message(f"🔍 SHARE_FORM: Recipients: {valid_emails}", "DEBUG")
             
-            # Send emails using Resend
-            try:
-                results = send_emails_direct(
-                    valid_emails,
-                    form_url,
-                    form['title'],
-                    event['name'],
-                    session['username'],
-                    custom_message
-                )
-                
-                # Count results
-                sent_count = sum(1 for r in results if r['status'] == 'sent')
-                failed_count = sum(1 for r in results if r['status'] == 'failed')
-                invalid_count = sum(1 for r in results if r['status'] == 'invalid')
-                
-                # Show results
-                if sent_count > 0:
-                    flash(f'✅ {sent_count} email(s) sent successfully via Resend!', 'success')
-                    flash('🔍 Using Resend API for reliable email delivery.', 'info')
-                    
-                    # Debug: Show first successful email details
-                    for result in results:
-                        if result['status'] == 'sent':
-                            log_message(f"✅ SHARE_FORM: Sent to {result['email']} - Message: {result['message']}", "SUCCESS")
-                            break
-                        
-                if failed_count > 0:
-                    flash(f'❌ {failed_count} email(s) failed to send. Check logs for details.', 'error')
-                    # Debug: Show first failed email details
-                    for result in results:
-                        if result['status'] == 'failed':
-                            flash(f'❌ First failure: {result["email"]} - {result["message"][:100]}', 'error')
-                            log_message(f"❌ SHARE_FORM: Failed to {result['email']} - Error: {result['message']}", "ERROR")
-                            break
-                            
-                if invalid_count > 0:
-                    flash(f'⚠️ {invalid_count} email(s) were invalid format.', 'warning')
-                
-                # Save results for display
-                session['last_email_results'] = results[:10]  # Store first 10 for display
-                
-            except Exception as e:
-                error_msg = str(e)
-                log_message(f"❌ SHARE_FORM: Exception during email sending: {error_msg}", "ERROR")
-                flash(f'❌ Error sending emails: {error_msg[:200]}', 'error')
-                flash('🔍 Check the email log for more details.', 'info')
+            # Email sending commented out
+            log_message(f"SHARE_FORM: Email sending to {valid_emails} commented out", "INFO")
+            flash('📧 Email sending is currently disabled.', 'info')
             
             return redirect(url_for('share_form', event_id=event_id, form_id=form_id))
     
@@ -4408,35 +3784,6 @@ def download_csv(event_id, form_id):
     
     return send_file(csv_path, as_attachment=True, download_name=f'responses_{form_id}.csv')
 
-@app.route('/debug-otp-email/<email>')
-def debug_otp_email(email):
-    """Debug OTP email sending"""
-    from otp import generate_and_store_otp
-    
-    print(f"🔍 DEBUG OTP EMAIL FOR: {email}")
-    print(f"🔍 RESEND_API_KEY: {'Set' if resend.api_key else 'NOT SET'}")
-    
-    # Generate OTP
-    otp = generate_and_store_otp(email)
-    print(f"🔍 Generated OTP: {otp}")
-    
-    # Try to send email
-    try:
-        success, message = send_otp_email(email, otp)
-        print(f"🔍 Send result: {success}, {message}")
-        return f"""
-        <h1>OTP Email Debug</h1>
-        <p>Email: {email}</p>
-        <p>OTP: {otp}</p>
-        <p>Success: {success}</p>
-        <p>Message: {message}</p>
-        <p>Using: Resend API</p>
-        <p><a href="/">Back</a></p>
-        """
-    except Exception as e:
-        print(f"🔍 Exception: {str(e)}")
-        return f"Error: {str(e)}"
-
 @app.route('/download_file/<event_id>/<form_id>/<filename>')
 @login_required
 def download_file(event_id, form_id, filename):
@@ -4493,8 +3840,6 @@ def internal_error(error):
 @app.route('/health')
 def health():
     return 'OK', 200
-
-
 
 if __name__ == '__main__':
     print("="*80)
