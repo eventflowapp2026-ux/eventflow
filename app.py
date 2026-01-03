@@ -8,6 +8,7 @@ import re
 import threading
 import queue
 import mimetypes
+import resend
 from datetime import datetime, timedelta
 from flask import Flask, render_template, request, redirect, url_for, flash, session, send_file, send_from_directory, make_response, jsonify, Response, abort
 from functools import wraps
@@ -45,7 +46,7 @@ app.config['MAIL_USE_TLS'] = True  # Keep this
 app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
 app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER', os.environ.get('MAIL_USERNAME'))
-
+resend.api_key = os.environ.get("RESEND_API_KEY")
 # Flask-Mailman specific configs (add these):
 app.config['MAIL_USE_SSL'] = False  # Set to True if using port 465
 app.config['MAIL_TIMEOUT'] = 30
@@ -262,11 +263,13 @@ def save_feedback(feedback_data):
         return False
 
 def send_thank_you_email(to_email, name, feedback_id, feedback_type, rating, message):
-    """Send thank you email to user after feedback submission"""
+    """Send thank you email using Resend API (works perfectly on Render free tier)"""
+    if not resend.api_key:
+        app.logger.warning("RESEND_API_KEY not set - skipping thank you email")
+        log_message("Thank you email skipped: No RESEND_API_KEY", "WARNING")
+        return False
+
     try:
-        subject = "🎉 Thank You for Your Feedback!"
-        
-        # Create personalized message based on feedback type
         type_messages = {
             'suggestion': "We appreciate your suggestion and will consider it in our planning.",
             'bug': "We'll investigate the issue you reported and work on fixing it.",
@@ -274,95 +277,66 @@ def send_thank_you_email(to_email, name, feedback_id, feedback_type, rating, mes
             'general': "We value your feedback and will use it to improve EventFlow.",
             'feature': "Great idea! We'll add this to our feature consideration list."
         }
-        
         type_message = type_messages.get(feedback_type, "We appreciate your feedback!")
-        
+
         html_content = f"""
         <!DOCTYPE html>
         <html>
         <head>
             <meta charset="UTF-8">
             <style>
-                body {{ font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 20px; }}
-                .container {{ max-width: 600px; margin: auto; background: #f8fafc; padding: 30px; border-radius: 10px; }}
-                .header {{ background: linear-gradient(135deg, #6C63FF 0%, #3f37c9 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
-                .content {{ padding: 30px; background: white; }}
-                .feedback-summary {{ background: #f0efff; padding: 20px; border-radius: 8px; margin: 20px 0; }}
-                .rating-stars {{ color: #ffc107; font-size: 20px; }}
-                .footer {{ margin-top: 30px; color: #64748b; font-size: 12px; text-align: center; }}
-                .status-badge {{ display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; background: #d1fae5; color: #059669; }}
+                body {{ font-family: Arial, sans-serif; background: #f8fafc; padding: 20px; }}
+                .container {{ max-width: 600px; margin: auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }}
+                .header {{ background: linear-gradient(135deg, #6C63FF 0%, #3f37c9 100%); color: white; padding: 40px; text-align: center; }}
+                .content {{ padding: 40px; }}
+                .summary {{ background: #f0efff; padding: 25px; border-radius: 10px; margin: 30px 0; }}
+                .stars {{ font-size: 28px; color: #ffc107; }}
+                .badge {{ padding: 8px 16px; background: #d1fae5; color: #059669; border-radius: 30px; font-weight: bold; }}
             </style>
         </head>
         <body>
             <div class="container">
                 <div class="header">
-                    <h1>🎉 Thank You!</h1>
-                    <p>Your feedback helps us improve EventFlow</p>
+                    <h1>🎉 Thank You, {name}!</h1>
+                    <p>Your feedback makes EventFlow better</p>
                 </div>
                 <div class="content">
                     <p>Hi {name},</p>
+                    <p>Thank you so much for your feedback! We truly appreciate you taking the time.</p>
                     
-                    <p>Thank you for taking the time to share your feedback with us. We truly appreciate you helping us improve EventFlow.</p>
-                    
-                    <div class="feedback-summary">
-                        <p><strong>📋 Your Feedback Summary:</strong></p>
-                        <div class="d-flex align-items-center mb-2">
-                            <div class="rating-stars">
-                                {'★' * rating}{'☆' * (5 - rating)}
-                            </div>
-                            <span class="ms-3"><strong>{rating}/5</strong> Rating</span>
-                        </div>
-                        <p><strong>Type:</strong> <span class="status-badge">{feedback_type.replace('_', ' ').title()}</span></p>
-                        <p><strong>Reference ID:</strong> {feedback_id}</p>
-                        <p><strong>Submitted:</strong> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+                    <div class="summary">
+                        <p><strong>Rating:</strong> <span class="stars">{'★' * rating}{'☆' * (5 - rating)}</span> {rating}/5</p>
+                        <p><strong>Type:</strong> <span class="badge">{feedback_type.replace('_', ' ').title()}</span></p>
+                        <p><strong>Reference ID:</strong> <code>{feedback_id}</code></p>
                     </div>
                     
-                    <div style="background: #e8f4fd; padding: 15px; border-radius: 6px; margin: 20px 0;">
-                        <p><strong>📝 Your Message:</strong></p>
-                        <p style="font-style: italic;">"{message[:200]}{'...' if len(message) > 200 else ''}"</p>
-                    </div>
+                    <p><strong>Your message:</strong></p>
+                    <p style="font-style: italic; background: #f8fafc; padding: 15px; border-radius: 8px;">"{message[:300]}{'...' if len(message) > 300 else ''}"</p>
                     
-                    <p><strong>What happens next?</strong></p>
-                    <ul>
-                        <li>Our team will review your feedback within 24-48 hours</li>
-                        <li>We'll use your insights to improve EventFlow</li>
-                        <li>{type_message}</li>
-                        <li>If you requested contact, we may follow up for more details</li>
-                    </ul>
-                    
-                    <p>You can view and track your feedback submissions in your dashboard.</p>
-                    
-                    <div style="text-align: center; margin: 25px 0;">
-                        <a href="{url_for('dashboard', _external=True)}" style="background: #6C63FF; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-                            <i class="bi bi-speedometer2"></i> Go to Dashboard
-                        </a>
-                    </div>
-                    
-                    <p>If you have additional thoughts, feel free to reply to this email.</p>
-                    
-                    <p>Best regards,<br>The EventFlow Team</p>
-                    
-                    <div class="footer">
-                        <p>This is an automated message. Please do not reply to this email.</p>
-                        <p>© {datetime.now().year} EventFlow. All rights reserved.</p>
-                    </div>
+                    <p>{type_message}</p>
+                    <p>We’re always improving — thanks for being part of it!</p>
+                    <p>Best regards,<br><strong>The EventFlow Team</strong></p>
                 </div>
             </div>
         </body>
         </html>
         """
-        
-        # Send email
-        success, message = send_email_simple(to_email, subject, html_content)
-        if success:
-            log_message(f"Thank you email sent to {to_email}", "INFO")
-            return True
-        else:
-            log_message(f"Failed to send thank you email: {message}", "ERROR")
-            return False
-            
+
+        params = {
+            "from": "EventFlow <onboarding@resend.dev>",  # Works out of the box for testing
+            "to": [to_email],
+            "subject": "🎉 Thank You for Your Feedback!",
+            "html": html_content,
+        }
+
+        response = resend.Emails.send(params)
+        app.logger.info(f"Thank you email sent via Resend! ID: {response.get('id')}")
+        log_message(f"Thank you email sent to {to_email} (Resend ID: {response.get('id')})", "SUCCESS")
+        return True
+
     except Exception as e:
-        log_message(f"Error sending thank you email: {e}", "ERROR")
+        app.logger.error(f"Resend email failed: {str(e)}", exc_info=True)
+        log_message(f"Resend email failed for {to_email}: {e}", "ERROR")
         return False
 
 def calculate_feedback_stats(feedback_data):
@@ -4627,10 +4601,7 @@ def internal_error(error):
 def health():
     return 'OK', 200
 
-@app.errorhandler(500)
-def internal_error(error):
-    logger.exception("500 error occurred")  # Logs full traceback
-    return "Internal Server Error - Check logs", 500
+
 
 if __name__ == '__main__':
     print("="*80)
