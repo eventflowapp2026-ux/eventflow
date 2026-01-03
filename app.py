@@ -156,9 +156,16 @@ def get_user_forms_count(user_id):
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        print(f"\n🔍 LOGIN_REQUIRED DEBUG: Checking access for {f.__name__}")
+        print(f"🔍 LOGIN_REQUIRED DEBUG: Session user_id: {session.get('user_id')}")
+        print(f"🔍 LOGIN_REQUIRED DEBUG: Session has user_id? {'user_id' in session}")
+        
         if 'user_id' not in session:
+            print("❌ LOGIN_REQUIRED DEBUG: No user_id in session, redirecting to login")
             flash('Please login to access this page.', 'warning')
             return redirect(url_for('login'))
+        
+        print(f"✅ LOGIN_REQUIRED DEBUG: User authenticated, proceeding")
         return f(*args, **kwargs)
     return decorated_function
 
@@ -3016,16 +3023,24 @@ def signup():
         mobile = request.form.get('mobile')
         password = request.form.get('password')
         
-        print(f"🔍 SIGNUP: Starting registration for {email}")
+        print(f"\n🔍 SIGNUP DEBUG: Starting registration for {email}")
+        print(f"🔍 SIGNUP DEBUG: Username: {username}")
+        print(f"🔍 SIGNUP DEBUG: Mobile: {mobile}")
+        print(f"🔍 SIGNUP DEBUG: Password provided: {'Yes' if password else 'No'}")
+        print(f"🔍 SIGNUP DEBUG: All form data: {dict(request.form)}")
         
         if not all([username, email, mobile, password]):
+            print("❌ SIGNUP DEBUG: Missing required fields")
             flash('All fields are required!', 'error')
             return redirect(url_for('signup'))
         
         # Check if email already exists
         users = load_users()
-        for user_data in users.values():
+        print(f"🔍 SIGNUP DEBUG: Total users in database: {len(users)}")
+        
+        for user_id, user_data in users.items():
             if user_data.get('email') == email:
+                print(f"❌ SIGNUP DEBUG: Email {email} already exists")
                 flash('Email already registered!', 'error')
                 return redirect(url_for('signup'))
         
@@ -3041,14 +3056,20 @@ def signup():
         }
         
         save_users(users)
+        print(f"✅ SIGNUP DEBUG: User saved with ID: {user_id}")
         
         # Log user in immediately
         session['user_id'] = user_id
         session['username'] = username
         session['email'] = email
         
-        print(f"✅ USER CREATED: {user_id} for {email}")
+        print(f"✅ SIGNUP DEBUG: Session set - user_id: {session.get('user_id')}")
+        print(f"✅ SIGNUP DEBUG: Session set - username: {session.get('username')}")
+        print(f"✅ SIGNUP DEBUG: Session set - email: {session.get('email')}")
+        print(f"✅ SIGNUP DEBUG: All session data: {dict(session)}")
+        
         flash('🎉 Account created successfully! You are now logged in.', 'success')
+        print(f"✅ SIGNUP DEBUG: Redirecting to dashboard")
         return redirect(url_for('dashboard'))
     
     return render_template('signup.html')
@@ -3124,105 +3145,113 @@ def delete_how_it_works_video(step):
 def dashboard():
     """User dashboard - shows different content for admin vs regular users"""
     
+    print(f"\n{'='*60}")
+    print(f"🔍 DASHBOARD DEBUG: User accessing dashboard")
+    print(f"🔍 DASHBOARD DEBUG: Time: {datetime.now()}")
+    print(f"🔍 DASHBOARD DEBUG: Session user_id: {session.get('user_id')}")
+    print(f"🔍 DASHBOARD DEBUG: Session username: {session.get('username')}")
+    print(f"🔍 DASHBOARD DEBUG: Session email: {session.get('email')}")
+    print(f"🔍 DASHBOARD DEBUG: All session data: {dict(session)}")
+    print(f"{'='*60}")
+    
+    if 'user_id' not in session:
+        print("❌ DASHBOARD DEBUG: No user_id in session, redirecting to login")
+        flash('Please login to access this page.', 'warning')
+        return redirect(url_for('login'))
+    
     # Check if user is admin
     is_admin = session.get('user_id') == 'admin'
     
-    if is_admin:
-        # Admin dashboard data
-        stats = get_server_statistics()
-        
-        # Get recent feedback (last 5)
-        feedback_data = load_feedback()
-        recent_feedback = sorted(feedback_data, key=lambda x: x.get('timestamp', ''), reverse=True)[:5]
-        
-        # Calculate admin stats
-        admin_stats = {
-            'total_users': stats['users'],
-            'total_feedback': len(feedback_data),
-            'total_events': stats['events'],
-            'total_forms': stats['forms'],
-            'pending_feedback': sum(1 for fb in feedback_data if fb.get('status') == 'new'),
-            'unread_feedback': sum(1 for fb in feedback_data if fb.get('status') == 'new'),
-            'new_users_today': 0,
-            'new_events_today': 0,
-            'new_forms_today': 0,
-        }
-        
-        # Recent activity for admin
-        recent_activity = []
-        try:
-            # Get recent user signups
-            users = load_users()
-            for user_id, user_data in users.items():
-                recent_activity.append({
-                    'type': 'signup',
-                    'user': user_data.get('username', 'User'),
-                    'time': user_data.get('created_at', ''),
-                    'description': 'New user registration'
-                })
-            
-            # Get recent events
-            event_files = sorted([f for f in os.listdir('data/events') if f.endswith('.json')], 
-                               key=lambda x: os.path.getmtime(f'data/events/{x}'),
-                               reverse=True)[:3]
-            
-            for event_file in event_files:
-                with open(f'data/events/{event_file}', 'r') as f:
+    print(f"🔍 DASHBOARD DEBUG: Is admin? {is_admin}")
+    
+    users = load_users()
+    current_user = users.get(session['user_id'], {})
+    
+    # Get user's events
+    user_events = []
+    total_responses = 0
+    
+    for filename in os.listdir('data/events'):
+        if filename.endswith('.json'):
+            try:
+                with open(f'data/events/{filename}', 'r') as f:
                     event = json.load(f)
-                    recent_activity.append({
-                        'type': 'event_created',
-                        'user': event.get('creator_id', 'Unknown'),
-                        'time': event.get('created_at', ''),
-                        'description': f'Created event: {event.get("name", "Unknown")}'
-                    })
-        except:
-            pass
-        
-        # Sort activity by time
-        recent_activity.sort(key=lambda x: x.get('time', ''), reverse=True)
-        recent_activity = recent_activity[:5]
-        
-        # System alerts (example)
-        alerts = []
-        
-        return render_template('admin_dashboard.html',
-                             stats=admin_stats,
-                             recent_feedback=recent_feedback,
-                             recent_activity=recent_activity,
-                             alerts=alerts,
-                             is_admin=True)
-    else:
-        # Regular user dashboard (existing code)
-        event_count = get_user_events_count(session['user_id'])
-        form_count = get_user_forms_count(session['user_id'])
-        
-        # Load user events
-        user_events = []
-        for filename in os.listdir('data/events'):
-            if filename.endswith('.json'):
-                try:
-                    with open(f'data/events/{filename}', 'r') as f:
-                        event = json.load(f)
-                        if event.get('creator_id') == session['user_id']:
-                            user_events.append(event)
-                except:
-                    continue
-        
-        # Regular user stats (different from admin stats)
-        user_stats = {
-            'total_events': event_count,
-            'total_forms': form_count,
-            'total_registrations': 0,
-            'pending_items': 0
-        }
-        
-        return render_template('dashboard.html',
-                             events=user_events,
-                             event_count=event_count,
-                             form_count=form_count,
-                             stats=user_stats,  # Add stats for regular users too
-                             is_admin=False)
-
+                    if event.get('creator_id') == session['user_id']:
+                        
+                        # Count responses for this event
+                        event_responses = 0
+                        for form in event.get('forms', []):
+                            csv_path = f'data/events/{event["id"]}/{form["id"]}.csv'
+                            if os.path.exists(csv_path):
+                                with open(csv_path, 'r') as csv_file:
+                                    reader = csv.reader(csv_file)
+                                    event_responses += max(0, len(list(reader)) - 1)
+                        
+                        total_responses += event_responses
+                        
+                        user_events.append({
+                            'id': event['id'],
+                            'name': event.get('name', 'Unnamed Event'),
+                            'description': event.get('description', ''),
+                            'created_at': event.get('created_at', ''),
+                            'forms_count': len(event.get('forms', [])),
+                            'responses_count': event_responses
+                        })
+            except Exception as e:
+                print(f"⚠️ DASHBOARD DEBUG: Error loading event {filename}: {e}")
+                continue
+    
+    # Sort events by creation date (newest first)
+    user_events.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+    
+    # Get user stats
+    user_stats = {
+        'events_created': len(user_events),
+        'forms_created': sum(event['forms_count'] for event in user_events),
+        'total_responses': total_responses,
+        'join_date': current_user.get('created_at', 'Unknown'),
+        'email_verified': current_user.get('email_verified', False)
+    }
+    
+    # Check for any recent responses (last 24 hours)
+    recent_responses = []
+    for event in user_events[:5]:  # Check first 5 events
+        event_data = load_event(event['id'])
+        if event_data:
+            for form in event_data.get('forms', []):
+                csv_path = f'data/events/{event["id"]}/{form["id"]}.csv'
+                if os.path.exists(csv_path):
+                    try:
+                        with open(csv_path, 'r') as f:
+                            reader = csv.reader(f)
+                            rows = list(reader)
+                            if len(rows) > 1:
+                                # Get the last response
+                                last_row = rows[-1]
+                                recent_responses.append({
+                                    'event_name': event_data['name'],
+                                    'form_title': form.get('title', 'Form'),
+                                    'timestamp': last_row[0],
+                                    'event_id': event['id'],
+                                    'form_id': form['id']
+                                })
+                    except:
+                        continue
+    
+    # Limit recent responses
+    recent_responses = recent_responses[:5]
+    
+    print(f"🔍 DASHBOARD DEBUG: User stats: {user_stats}")
+    print(f"🔍 DASHBOARD DEBUG: Found {len(user_events)} events")
+    print(f"🔍 DASHBOARD DEBUG: Found {len(recent_responses)} recent responses")
+    print(f"{'='*60}")
+    
+    return render_template('dashboard.html',
+                         user=current_user,
+                         events=user_events,
+                         stats=user_stats,
+                         recent_responses=recent_responses,
+                         is_admin=is_admin)
 @app.template_filter()
 def basename(path):
     """Get filename from path"""
