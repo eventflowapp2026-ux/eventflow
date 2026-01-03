@@ -5,7 +5,6 @@ import uuid
 import qrcode
 import base64
 import re
-import smtplib
 import threading
 import queue
 import mimetypes
@@ -14,21 +13,19 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from functools import wraps
 from werkzeug.utils import secure_filename
 from io import BytesIO
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
 from how_it_works_data import get_step_data, get_all_step_data, get_step_navigation
 from video_manager import video_manager
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField
 from wtforms.validators import DataRequired
-#from flask_wtf.csrf import CSRFProtect
 import logging
-
+from flask_mailman import EmailMessage, Mail
 
 class CreateEventForm(FlaskForm):
     event_name = StringField(validators=[DataRequired()])
     description = TextAreaField(validators=[DataRequired()])
+
 # Load environment variables
 load_dotenv()
 
@@ -36,26 +33,36 @@ app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-change-this-in-production')
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024
-#csrf = CSRFProtect(app)
-# Email configuration - USING ENVIRONMENT VARIABLES
-MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
-MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
-MAIL_FROM = os.environ.get('MAIL_DEFAULT_SENDER', MAIL_USERNAME)
-MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
-MAIL_PORT = int(os.environ.get('MAIL_PORT', 587))
+
+# Email configuration - USING FLASK-MAILMAN
+# Email configuration - FOR FLASK-MAILMAN
+app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
+app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
+app.config['MAIL_USE_TLS'] = True  # Keep this
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER', os.environ.get('MAIL_USERNAME'))
+
+# Flask-Mailman specific configs (add these):
+app.config['MAIL_USE_SSL'] = False  # Set to True if using port 465
+app.config['MAIL_TIMEOUT'] = 30
+app.config['MAIL_DEBUG'] = False
+
+# Initialize Flask-Mailman
+mail = Mail(app)
+
 logging.basicConfig(level=logging.DEBUG)
+
 # Email status tracking
 email_status_queue = queue.Queue()
 email_statuses = {}  # Store email status by user/session
 
 print("="*80)
-print("📧 EventFlow Email System - DEBUG VERSION")
+print("📧 EventFlow Email System - FLASK-MAILMAN VERSION")
 print("="*80)
-print(f"   Username: {MAIL_USERNAME}")
-print(f"   Password length: {len(MAIL_PASSWORD) if MAIL_PASSWORD else 'NONE'}")
-print(f"   Server: {MAIL_SERVER}:{MAIL_PORT}")
-print("="*80)
-print("🔧 Test and Real emails use IDENTICAL configuration")
+print(f"   Username: {app.config['MAIL_USERNAME']}")
+print(f"   Password length: {len(app.config['MAIL_PASSWORD']) if app.config['MAIL_PASSWORD'] else 'NONE'}")
+print(f"   Server: {app.config['MAIL_SERVER']}:{app.config['MAIL_PORT']}")
 print("="*80)
 
 # Allowed file extensions
@@ -354,6 +361,7 @@ def send_thank_you_email(to_email, name, feedback_id, feedback_type, rating, mes
     except Exception as e:
         log_message(f"Error sending thank you email: {e}", "ERROR")
         return False
+
 def calculate_feedback_stats(feedback_data):
     """Calculate feedback statistics"""
     total = len(feedback_data)
@@ -482,6 +490,30 @@ def admin_send_followup():
         log_message(f"Error sending follow-up: {e}", "ERROR")
         return jsonify({'success': False, 'error': str(e)})
 
+@app.route('/check-env')
+def check_env():
+    """Check if environment variables are loaded"""
+    env_vars = {
+        'MAIL_USERNAME': os.environ.get('MAIL_USERNAME'),
+        'MAIL_PASSWORD': os.environ.get('MAIL_PASSWORD'),
+        'MAIL_SERVER': os.environ.get('MAIL_SERVER'),
+        'MAIL_PORT': os.environ.get('MAIL_PORT'),
+        'LOAD_DOTENV': os.environ.get('LOAD_DOTENV'),
+        'PYTHONPATH': os.environ.get('PYTHONPATH'),
+        'PWD': os.environ.get('PWD'),
+    }
+    
+    # Also check app config
+    config_vars = {
+        'MAIL_USERNAME': app.config.get('MAIL_USERNAME'),
+        'MAIL_PASSWORD_LEN': len(app.config.get('MAIL_PASSWORD', '')) if app.config.get('MAIL_PASSWORD') else 0,
+    }
+    
+    return jsonify({
+        'environment_variables': env_vars,
+        'app_config': config_vars
+    })
+
 # ============================================================================
 # VIDEO FILE DISCOVERY FUNCTION
 # ============================================================================
@@ -539,7 +571,6 @@ def find_video_file(step):
         return os.path.join(video_dir, all_video_files[step - 1])
     
     return None
-
 
 def send_feedback_notification(feedback):
     """Send email notification about new feedback - enhanced with settings"""
@@ -617,7 +648,7 @@ def send_feedback_notification(feedback):
         """
         
         # Send to admin email from settings or default
-        admin_email = settings.get('admin_email', os.environ.get('ADMIN_EMAIL', MAIL_USERNAME))
+        admin_email = settings.get('admin_email', app.config['MAIL_USERNAME'])
         if admin_email:
             success, message = send_email_simple(admin_email, subject, html_content)
             if success:
@@ -628,46 +659,32 @@ def send_feedback_notification(feedback):
     except Exception as e:
         log_message(f"Error sending feedback notification: {e}", "ERROR")
 
-
 # ============================================================================
-# SIMPLIFIED EMAIL FUNCTIONS - USED BY BOTH TEST AND REAL EMAILS
+# EMAIL FUNCTIONS USING FLASK-MAILMAN
 # ============================================================================
 
 def send_email_simple(to_email, subject, html_content):
-    """Simplified email sending function - USED BY BOTH TEST AND REAL EMAILS"""
+    """Simplified email sending function using Flask-Mailman"""
     try:
-        # Create message
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = subject
-        msg['From'] = MAIL_USERNAME  # Critical: Use same as login
-        msg['To'] = to_email
-        
-        # Attach HTML
-        msg.attach(MIMEText(html_content, 'html'))
-        
-        # Send email
-        with smtplib.SMTP(MAIL_SERVER, MAIL_PORT, timeout=30) as server:
-            server.ehlo()
-            server.starttls()
-            server.ehlo()
-            server.login(MAIL_USERNAME, MAIL_PASSWORD)
-            server.send_message(msg)
+        email = EmailMessage(
+            subject=subject,
+            body=html_content,
+            from_email=app.config['MAIL_DEFAULT_SENDER'],
+            to=[to_email]
+        )
+        email.content_subtype = 'html'  # Send as HTML email
+        email.send()
         
         log_message(f"✅ Email sent to {to_email}", "SUCCESS")
         return True, "Email sent successfully"
         
-    except smtplib.SMTPAuthenticationError as e:
-        error_msg = f"Authentication failed. Check your App Password. Error: {str(e)}"
-        log_message(f"❌ SMTP Auth Error: {error_msg}", "ERROR")
-        return False, error_msg
-        
     except Exception as e:
-        error_msg = f"Error: {str(e)}"
+        error_msg = f"Email error: {str(e)}"
         log_message(f"❌ Email Error: {error_msg}", "ERROR")
         return False, error_msg
 
 def send_emails_direct(recipient_emails, form_url, form_title, event_name, sender_name, custom_message):
-    """Send emails directly (no threading) - IDENTICAL TO TEST EMAIL"""
+    """Send emails directly (no threading) using Flask-Mailman"""
     results = []
     
     for idx, email in enumerate(recipient_emails):
@@ -678,7 +695,7 @@ def send_emails_direct(recipient_emails, form_url, form_title, event_name, sende
             results.append({'email': email, 'status': 'invalid', 'message': 'Invalid email format'})
             continue
         
-        # Prepare email - IDENTICAL FORMAT TO TEST EMAIL
+        # Prepare email
         subject = f"📋 Registration: {form_title}"
         
         html_content = f"""
@@ -731,7 +748,7 @@ def send_emails_direct(recipient_emails, form_url, form_title, event_name, sende
         </html>
         """
         
-        # Use the SAME function as test_email
+        # Use Flask-Mailman
         success, message = send_email_simple(email, subject, html_content)
         
         if success:
@@ -745,6 +762,75 @@ def send_emails_direct(recipient_emails, form_url, form_title, event_name, sende
             time.sleep(1)  # 1 second delay
     
     return results
+
+def send_otp_email(email: str, otp: str):
+    """Send OTP email using Flask-Mailman"""
+    try:
+        subject = "🔐 Your EventFlow Verification Code"
+        
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 20px; }}
+                .container {{ max-width: 600px; margin: auto; background: #f8fafc; padding: 30px; border-radius: 10px; }}
+                .header {{ background: #4361ee; color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }}
+                .otp-box {{ background: white; border: 2px dashed #4361ee; padding: 25px; text-align: center; margin: 30px 0; 
+                           font-size: 32px; font-weight: bold; color: #4361ee; letter-spacing: 10px; border-radius: 10px; }}
+                .footer {{ margin-top: 30px; color: #64748b; font-size: 12px; text-align: center; }}
+                .note {{ background: #fff3cd; padding: 15px; border-radius: 6px; margin: 20px 0; color: #856404; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>🔐 Verify Your Email</h1>
+                </div>
+                <div style="padding: 30px;">
+                    <p>Hello,</p>
+                    
+                    <p>You're signing up for EventFlow. Use this OTP to verify your email:</p>
+                    
+                    <div class="otp-box">
+                        {otp}
+                    </div>
+                    
+                    <div class="note">
+                        <p><strong>⚠️ Important:</strong></p>
+                        <ul>
+                            <li>This OTP is valid for 5 minutes only</li>
+                            <li>Don't share this code with anyone</li>
+                            <li>If you didn't request this, please ignore this email</li>
+                        </ul>
+                    </div>
+                    
+                    <p>Enter this code on the verification page to complete your registration.</p>
+                    
+                    <div class="footer">
+                        <p>EventFlow Registration System</p>
+                        <p>© {datetime.now().year} | This is an automated email, please do not reply</p>
+                    </div>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        success, message = send_email_simple(email, subject, html_content)
+        
+        if success:
+            log_message(f"✅ OTP email sent to {email}", "SUCCESS")
+        else:
+            log_message(f"❌ Failed to send OTP email to {email}: {message}", "ERROR")
+        
+        return success, message
+        
+    except Exception as e:
+        error_msg = f"OTP email error: {str(e)}"
+        log_message(f"❌ OTP email exception: {error_msg}", "ERROR")
+        return False, error_msg
 
 # ============================================================================
 # DEBUG EMAIL FUNCTION
@@ -763,47 +849,18 @@ def debug_email(email):
         <h2>Debug Test Email</h2>
         <p>This is a debug email sent to: {email}</p>
         <p>Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
-        <p>From: {MAIL_USERNAME}</p>
+        <p>From: {app.config['MAIL_USERNAME']}</p>
         """
         
-        # Create simple message
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = subject
-        msg['From'] = MAIL_USERNAME  # Use just the email, no display name
-        msg['To'] = email
+        # Send using Flask-Mailman
+        success, message = send_email_simple(email, subject, html_content)
         
-        # Add both plain text and HTML
-        msg.attach(MIMEText('This is a debug test email', 'plain'))
-        msg.attach(MIMEText(html_content, 'html'))
-        
-        # Try to send with detailed debug
-        log_message(f"🔍 Connecting to {MAIL_SERVER}:{MAIL_PORT}", "DEBUG")
-        
-        server = smtplib.SMTP(MAIL_SERVER, MAIL_PORT, timeout=30)
-        server.set_debuglevel(2)  # Maximum debug output
-        
-        try:
-            server.ehlo()
-            server.starttls()
-            server.ehlo()
-            
-            log_message(f"🔍 Logging in as: {MAIL_USERNAME}", "DEBUG")
-            server.login(MAIL_USERNAME, MAIL_PASSWORD)
-            
-            log_message(f"🔍 Sending to: {email}", "DEBUG")
-            server.sendmail(MAIL_USERNAME, email, msg.as_string())
-            
-            server.quit()
+        if success:
             log_message(f"✅ DEBUG: Email sent successfully to {email}", "SUCCESS")
             flash(f'✅ Debug email sent to {email}! Check console for details.', 'success')
-            
-        except Exception as e:
-            log_message(f"❌ DEBUG SMTP Error: {repr(e)}", "ERROR")
-            flash(f'❌ Debug email failed: {str(e)[:100]}', 'error')
-            if hasattr(e, 'smtp_code'):
-                flash(f'SMTP Code: {e.smtp_code}', 'error')
-            if hasattr(e, 'smtp_error'):
-                flash(f'SMTP Error: {e.smtp_error}', 'error')
+        else:
+            log_message(f"❌ DEBUG Email Error: {message}", "ERROR")
+            flash(f'❌ Debug email failed: {message[:100]}', 'error')
             
     except Exception as e:
         log_message(f"❌ DEBUG General Error: {repr(e)}", "ERROR")
@@ -812,28 +869,26 @@ def debug_email(email):
     return redirect(url_for('dashboard'))
 
 # ============================================================================
-# TEST EMAIL ROUTES - NOW IDENTICAL TO REAL EMAILS
+# TEST EMAIL ROUTES
 # ============================================================================
 
 @app.route('/test_email')
 @login_required
 def test_email():
-    """Test email route using EXACT same configuration as real emails"""
+    """Test email route using Flask-Mailman"""
     try:
-        if not MAIL_USERNAME or not MAIL_PASSWORD:
+        if not app.config['MAIL_USERNAME'] or not app.config['MAIL_PASSWORD']:
             flash('❌ Email not configured in .env file', 'error')
             return redirect(url_for('dashboard'))
         
-        log_message("🧪 STARTING IDENTICAL TEST EMAIL - USING REAL EMAIL CONFIG", "INFO")
+        log_message("🧪 STARTING FLASK-MAILMAN TEST EMAIL", "INFO")
         
-        # Create test data that matches real email structure
-        form_url = url_for('index', _external=True)  # Use a valid URL
+        form_url = url_for('index', _external=True)
         form_title = "Test Registration Form"
         event_name = "Test Event - EventFlow"
         sender_name = session.get('username', 'Test User')
-        custom_message = "This is a test email to verify that the email system is working correctly with the same configuration used for real form invitations."
+        custom_message = "This is a test email to verify that Flask-Mailman email system is working correctly."
         
-        # Create the EXACT same HTML content as real emails
         html_content = f"""
         <!DOCTYPE html>
         <html>
@@ -870,17 +925,12 @@ def test_email():
                         <a href="{form_url}" class="btn">📝 Register Now</a>
                     </div>
                     
-                    <p>Or copy this link:</p>
-                    <div style="background: #f1f5f9; padding: 15px; border-radius: 6px; margin: 15px 0;">
-                        <code>{form_url}</code>
-                    </div>
-                    
                     <div class="debug-info">
-                        <strong>🧪 TEST EMAIL DEBUG INFO:</strong><br>
-                        • Sender: {MAIL_USERNAME}<br>
-                        • Server: {MAIL_SERVER}:{MAIL_PORT}<br>
+                        <strong>🧪 FLASK-MAILMAN TEST EMAIL:</strong><br>
+                        • Sender: {app.config['MAIL_USERNAME']}<br>
+                        • Server: {app.config['MAIL_SERVER']}:{app.config['MAIL_PORT']}<br>
                         • Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}<br>
-                        • User Agent: EventFlow Test System
+                        • Using: Flask-Mailman
                     </div>
                     
                     <p>Sent by: <strong>{sender_name}</strong></p>
@@ -895,21 +945,18 @@ def test_email():
         </html>
         """
         
-        # Use the SAME email function as real emails
         success, message = send_email_simple(
-            MAIL_USERNAME,  # Send to yourself
-            f"📋 Registration: {form_title}",  # EXACT same subject format as real emails
+            app.config['MAIL_USERNAME'],  # Send to yourself
+            f"📋 Registration: {form_title}",
             html_content
         )
         
         if success:
-            flash(f'✅ Test email sent successfully to {MAIL_USERNAME}! Check your inbox (and spam folder).', 'success')
-            flash('🔧 This test uses the EXACT same configuration as real form invitations.', 'info')
-            flash('📝 If this works but real emails fail, the issue is NOT in email configuration.', 'success')
+            flash(f'✅ Test email sent successfully to {app.config["MAIL_USERNAME"]}! Check your inbox (and spam folder).', 'success')
+            flash('🔧 Using Flask-Mailman for Python 3.12 compatibility.', 'info')
         else:
             flash(f'❌ Test email failed: {message}', 'error')
-            flash('🔧 This failure means real form invitations will also fail with the same error.', 'warning')
-            flash('🔍 Check your .env file and Gmail App Password settings.', 'error')
+            flash('🔧 Check your .env file and email settings.', 'error')
             
     except Exception as e:
         error_msg = str(e)
@@ -923,7 +970,7 @@ def test_email():
 def compare_email_test():
     """Send both test and real-style emails to compare"""
     try:
-        if not MAIL_USERNAME or not MAIL_PASSWORD:
+        if not app.config['MAIL_USERNAME'] or not app.config['MAIL_PASSWORD']:
             flash('❌ Email not configured', 'error')
             return redirect(url_for('dashboard'))
         
@@ -931,7 +978,7 @@ def compare_email_test():
         
         # Test 1: Simple test email
         simple_success, simple_msg = send_email_simple(
-            MAIL_USERNAME,
+            app.config['MAIL_USERNAME'],
             "Simple Test Email",
             "<h2>Simple Test</h2><p>This is a basic test email.</p>"
         )
@@ -947,7 +994,7 @@ def compare_email_test():
         sender_name = session.get('username', 'User')
         
         real_success, real_msg = send_email_simple(
-            MAIL_USERNAME,
+            app.config['MAIL_USERNAME'],
             f"📋 Registration: {form_title}",  # Same format as real
             f"""
             <!DOCTYPE html>
@@ -987,9 +1034,6 @@ def compare_email_test():
         flash(f'❌ Comparison test error: {str(e)[:100]}', 'error')
     
     return redirect(url_for('dashboard'))
-
-
-
 
 # ============================================================================
 # csv to pdf creation
@@ -1187,7 +1231,6 @@ def generate_pdf_route(event_id, form_id):
         flash('Failed to generate PDF report!', 'error')
         return redirect(url_for('view_form', event_id=event_id, form_id=form_id))
 
-
 # ============================================================================
 # DEBUG SHARE FORM EMAIL
 # ============================================================================
@@ -1281,7 +1324,7 @@ def debug_share_form_email(event_id, form_id, email):
         </html>
         """
         
-        # Send using the SAME function
+        # Send using Flask-Mailman
         success, message = send_email_simple(email, subject, html_content)
         
         if success:
@@ -1330,24 +1373,14 @@ def check_form_url(form_id):
 def check_email_config():
     """Check email configuration"""
     config_info = {
-        'MAIL_USERNAME': MAIL_USERNAME,
-        'MAIL_PASSWORD': '***' + (MAIL_PASSWORD[-4:] if MAIL_PASSWORD else 'NONE'),
-        'MAIL_SERVER': MAIL_SERVER,
-        'MAIL_PORT': MAIL_PORT,
-        'MAIL_FROM': MAIL_FROM,
-        'Password Length': len(MAIL_PASSWORD) if MAIL_PASSWORD else 0
+        'MAIL_USERNAME': app.config['MAIL_USERNAME'],
+        'MAIL_PASSWORD': '***' + (app.config['MAIL_PASSWORD'][-4:] if app.config['MAIL_PASSWORD'] else 'NONE'),
+        'MAIL_SERVER': app.config['MAIL_SERVER'],
+        'MAIL_PORT': app.config['MAIL_PORT'],
+        'MAIL_FROM': app.config['MAIL_DEFAULT_SENDER'],
+        'Password Length': len(app.config['MAIL_PASSWORD']) if app.config['MAIL_PASSWORD'] else 0,
+        'Using Flask-Mailman': True
     }
-    
-    # Try to connect to SMTP server
-    try:
-        server = smtplib.SMTP(MAIL_SERVER, MAIL_PORT, timeout=10)
-        server.ehlo()
-        server.starttls()
-        server.ehlo()
-        config_info['SMTP_Connection'] = '✅ Connected successfully'
-        server.quit()
-    except Exception as e:
-        config_info['SMTP_Connection'] = f'❌ Failed: {str(e)}'
     
     return render_template('email_config.html', config=config_info)
 
@@ -1370,8 +1403,8 @@ def email_debug_info():
     config = {
         'test_email': {
             'function': 'send_email_simple()',
-            'sender': MAIL_USERNAME,
-            'recipient': MAIL_USERNAME,
+            'sender': app.config['MAIL_USERNAME'],
+            'recipient': app.config['MAIL_USERNAME'],
             'subject_format': '"📋 Registration: {form_title}"',
             'content': 'Full HTML with styling',
             'threading': 'No threading',
@@ -1379,29 +1412,16 @@ def email_debug_info():
         },
         'real_email': {
             'function': 'send_email_simple()',
-            'sender': MAIL_USERNAME,
+            'sender': app.config['MAIL_USERNAME'],
             'recipient': 'Form recipients',
             'subject_format': '"📋 Registration: {form_title}"',
             'content': 'Full HTML with styling',
             'threading': 'No threading (in direct mode)',
             'delay': '1 second between emails'
         },
-        'config_identical': 'YES - Both use identical SMTP settings and send_email_simple() function',
+        'config_identical': 'YES - Both use identical Flask-Mailman configuration',
         'differences': 'Only recipient and minor content variations'
     }
-    
-    # Check if both would work
-    try:
-        import smtplib
-        server = smtplib.SMTP(MAIL_SERVER, MAIL_PORT, timeout=10)
-        server.ehlo()
-        server.starttls()
-        server.ehlo()
-        server.login(MAIL_USERNAME, MAIL_PASSWORD)
-        config['smtp_connection'] = '✅ SUCCESS'
-        server.quit()
-    except Exception as e:
-        config['smtp_connection'] = f'❌ FAILED: {str(e)[:100]}'
     
     return render_template('email_debug_info.html', config=config)
 
@@ -1685,359 +1705,6 @@ def test_step_video(step):
     """
     
     return html
-
-# ============================================================================
-# USER FEEDBACK MANAGEMENT ROUTES
-# ============================================================================
-
-# ============================================================================
-# USER FEEDBACK FOLLOW-UP ROUTES
-# ============================================================================
-
-@app.route('/user/send_followup', methods=['POST'])
-@login_required
-def user_send_followup():
-    """Send follow-up message for user's feedback"""
-    try:
-        data = request.json
-        feedback_id = data.get('feedback_id')
-        subject = data.get('subject', 'Follow-up on feedback')
-        message = data.get('message')
-        priority = data.get('priority', 'medium')
-        original_message = data.get('original_message', '')
-        
-        if not feedback_id or not message:
-            return jsonify({'success': False, 'error': 'Missing required fields'})
-        
-        # Load original feedback
-        feedback_data = load_feedback()
-        original_feedback = None
-        
-        for fb in feedback_data:
-            if fb['id'] == feedback_id:
-                # Verify this feedback belongs to the current user
-                if fb.get('user_id') == session['user_id'] or fb.get('email') == session.get('email'):
-                    original_feedback = fb
-                    break
-        
-        if not original_feedback:
-            return jsonify({'success': False, 'error': 'Feedback not found or unauthorized'})
-        
-        # Create follow-up feedback entry
-        followup_id = str(uuid.uuid4())
-        followup_entry = {
-            'id': followup_id,
-            'name': session.get('username', 'User'),
-            'email': session.get('email', ''),
-            'rating': original_feedback.get('rating', 0),
-            'type': 'followup',
-            'message': f"""FOLLOW-UP TO FEEDBACK ID: {feedback_id}
-            
-Original Feedback: {original_message[:500]}
-            
-Follow-up Message: {message}
-            
-Priority: {priority.upper()}
-            """,
-            'source': 'Follow-up from feedback viewer',
-            'context': f'Follow-up to {feedback_id}',
-            'can_contact': True,
-            'user_id': session['user_id'],
-            'timestamp': datetime.now().isoformat(),
-            'status': 'new',
-            'reviewed': False,
-            'parent_feedback_id': feedback_id,
-            'priority': priority,
-            'followup_subject': subject
-        }
-        
-        # Save follow-up feedback
-        feedback_data.append(followup_entry)
-        save_feedback(feedback_data)
-        
-        # Send email notification to admin
-        send_followup_notification(followup_entry, original_feedback)
-        
-        log_message(f"User {session['user_id']} sent follow-up for feedback {feedback_id}", "INFO")
-        return jsonify({'success': True, 'followup_id': followup_id})
-            
-    except Exception as e:
-        log_message(f"Error sending follow-up: {e}", "ERROR")
-        return jsonify({'success': False, 'error': str(e)})
-
-def send_followup_notification(followup_feedback, original_feedback):
-    """Send email notification about user follow-up"""
-    try:
-        subject = f"📝 User Follow-up: {followup_feedback['followup_subject']}"
-        
-        priority_colors = {
-            'low': '#6c757d',
-            'medium': '#ffc107', 
-            'high': '#dc3545'
-        }
-        
-        html_content = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <style>
-                body {{ font-family: Arial, sans-serif; line-height: 1.6; }}
-                .container {{ max-width: 600px; margin: auto; padding: 20px; background: #f8fafc; border-radius: 10px; }}
-                .header {{ background: #6C63FF; color: white; padding: 20px; border-radius: 10px 10px 0 0; text-align: center; }}
-                .content {{ padding: 20px; background: white; }}
-                .feedback-item {{ margin: 15px 0; padding: 15px; background: #f1f5f9; border-radius: 6px; }}
-                .priority-badge {{ display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }}
-                .action-buttons {{ margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb; }}
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <h1>📝 User Follow-up Received</h1>
-                    <p>Priority: 
-                        <span class="priority-badge" style="background: {priority_colors.get(followup_feedback['priority'], '#6c757d')}; color: {'#000' if followup_feedback['priority'] == 'medium' else 'white'};">
-                            {followup_feedback['priority'].upper()}
-                        </span>
-                    </p>
-                </div>
-                <div class="content">
-                    <div class="feedback-item">
-                        <h3>{followup_feedback['name']}</h3>
-                        <p><strong>Original Feedback ID:</strong> {original_feedback['id']}</p>
-                        <p><strong>Original Type:</strong> {original_feedback['type'].upper()}</p>
-                        <p><strong>Follow-up Subject:</strong> {followup_feedback['followup_subject']}</p>
-                        <p><strong>User Email:</strong> {followup_feedback['email']}</p>
-                        
-                        <p><strong>Follow-up Message:</strong></p>
-                        <div style="background: #f8fafc; padding: 15px; border-radius: 6px; margin: 10px 0;">
-                            {followup_feedback['message'].split('FOLLOW-UP MESSAGE:')[-1][:500] + ('...' if len(followup_feedback['message']) > 500 else '')}
-                        </div>
-                        
-                        <p><strong>Original Feedback:</strong></p>
-                        <div style="background: #e8f4fd; padding: 10px; border-radius: 6px; margin: 10px 0; font-size: 0.9em;">
-                            {original_feedback['message'][:300] + ('...' if len(original_feedback['message']) > 300 else '')}
-                        </div>
-                        
-                        <p><strong>Time:</strong> {datetime.fromisoformat(followup_feedback['timestamp']).strftime('%Y-%m-%d %H:%M:%S')}</p>
-                    </div>
-                    
-                    <div class="action-buttons">
-                        <p><strong>Quick Actions:</strong></p>
-                        <a href="{url_for('admin_feedback_receiver', _external=True)}" style="background: #6C63FF; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 5px;">
-                            View in Admin Dashboard
-                        </a>
-                        <a href="mailto:{followup_feedback['email']}?subject=Re: {followup_feedback['followup_subject']}" style="background: #10b981; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 5px;">
-                            Reply to User
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </body>
-        </html>
-        """
-        
-        # Send to admin
-        admin_email = MAIL_USERNAME  # Or use ADMIN_EMAIL from settings
-        if admin_email:
-            success, message = send_email_simple(admin_email, subject, html_content)
-            if success:
-                log_message(f"Follow-up notification sent to {admin_email}", "INFO")
-            else:
-                log_message(f"Failed to send follow-up notification: {message}", "ERROR")
-                
-    except Exception as e:
-        log_message(f"Error sending follow-up notification: {e}", "ERROR")
-
-# Also add the delete routes from previous message
-@app.route('/delete_user_feedback/<feedback_id>', methods=['DELETE'])
-@login_required
-def delete_user_feedback(feedback_id):
-    """Delete user's own feedback"""
-    try:
-        feedback_data = load_feedback()
-        user_id = session['user_id']
-        user_email = session.get('email')
-        
-        new_feedback_data = []
-        deleted = False
-        
-        for fb in feedback_data:
-            if fb['id'] == feedback_id:
-                if fb.get('user_id') == user_id or fb.get('email') == user_email:
-                    deleted = True
-                    continue
-            new_feedback_data.append(fb)
-        
-        if deleted:
-            save_feedback(new_feedback_data)
-            return jsonify({'success': True, 'message': 'Feedback deleted'})
-        else:
-            return jsonify({'success': False, 'error': 'Feedback not found or unauthorized'}), 403
-            
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-
-@app.route('/bulk_delete_user_feedback', methods=['POST'])
-@login_required
-def bulk_delete_user_feedback():
-    """Bulk delete user's own feedback"""
-    try:
-        data = request.json
-        feedback_ids = data.get('feedback_ids', [])
-        
-        if not feedback_ids:
-            return jsonify({'success': False, 'error': 'No feedback IDs provided'})
-        
-        feedback_data = load_feedback()
-        user_id = session['user_id']
-        user_email = session.get('email')
-        
-        new_feedback_data = []
-        deleted_count = 0
-        
-        for fb in feedback_data:
-            if fb['id'] in feedback_ids:
-                if fb.get('user_id') == user_id or fb.get('email') == user_email:
-                    deleted_count += 1
-                    continue
-            new_feedback_data.append(fb)
-        
-        save_feedback(new_feedback_data)
-        return jsonify({'success': True, 'deleted_count': deleted_count})
-            
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-
-# Also add a user-specific feedback detail endpoint
-@app.route('/user/get_feedback_detail/<feedback_id>')
-@login_required
-def user_get_feedback_detail(feedback_id):
-    """Get detailed feedback information for the current user"""
-    feedback_data = load_feedback()
-    
-    # Find the feedback that belongs to the current user
-    for fb in feedback_data:
-        if fb['id'] == feedback_id:
-            # Check if this feedback belongs to the current user
-            if fb.get('user_id') == session['user_id'] or fb.get('email') == session.get('email'):
-                return jsonify({'success': True, 'feedback': fb})
-    
-    return jsonify({'success': False, 'error': 'Feedback not found or unauthorized'}), 404    
-
-    
-    
-# ============================================================================
-# FIXED HOW IT WORKS STEP ROUTE
-# ============================================================================
-
-@app.route('/how-it-works/step/<int:step>')
-def how_it_works_step(step):
-    """Individual step page for how it works guide - FIXED WITH FILE DISCOVERY"""
-    if step < 1 or step > 4:
-        flash('Invalid step number', 'error')
-        return redirect(url_for('how_it_works'))
-    
-    # Get step data
-    step_data = get_step_data(step)
-    
-    # Try to find video file using our discovery function
-    video_path = find_video_file(step)
-    
-    print(f"\n🎬 DEBUG: Loading step {step}")
-    print(f"  Looking for video file...")
-    print(f"  Found path: {video_path}")
-    
-    # Handle video data - FIXED LOGIC
-    if video_path and os.path.exists(video_path):
-        # Get the filename from the path
-        filename = os.path.basename(video_path)
-        
-        # Set the video file path for the template
-        video_static_path = f"videos/how-it-works/{filename}"
-        step_data['video_file'] = video_static_path
-        step_data['video_type'] = 'file'
-        step_data['video'] = True  # CRITICAL: This must be True
-        
-        # Generate direct URLs
-        step_data['video_url_direct'] = f"/static/videos/how-it-works/{filename}"
-        step_data['video_url_step'] = f"/video/{step}"
-        
-        print(f"  ✅ Video found: {filename}")
-        print(f"  ✅ Setting video_file to: {video_static_path}")
-        print(f"  ✅ Direct URL: {step_data['video_url_direct']}")
-        print(f"  ✅ Video flag set to: {step_data['video']}")
-        
-        # Generate thumbnail URL if needed
-        thumbnail_path = video_path.replace('.mp4', '.jpg').replace('.webm', '.jpg').replace('.mov', '.jpg')
-        if os.path.exists(thumbnail_path):
-            step_data['video_thumbnail'] = f"/static/videos/how-it-works/{os.path.basename(thumbnail_path)}"
-            print(f"  ✅ Thumbnail found")
-        else:
-            # Use a default thumbnail or none
-            step_data['video_thumbnail'] = None
-            print(f"  ℹ️ No thumbnail found")
-    else:
-        # No video available
-        step_data['video'] = False  # CRITICAL: This must be False
-        step_data['video_file'] = None
-        step_data['video_type'] = None
-        step_data['video_thumbnail'] = None
-        step_data['video_url_direct'] = None
-        step_data['video_url_step'] = None
-        print(f"  ❌ No video found for step {step}")
-        print(f"  Path exists: {os.path.exists(video_path) if video_path else 'No path'}")
-    
-    # Get all step data for navigation
-    step_data_all = get_all_step_data()
-    
-    # Get navigation info
-    navigation = get_step_navigation(step)
-    
-    # Map action URLs
-    action_url_map = {
-        1: url_for('signup'),
-        2: url_for('create_event'),
-        3: url_for('dashboard'),
-        4: url_for('signup')
-    }
-    
-    if step in action_url_map:
-        step_data['action_url'] = action_url_map[step]
-    
-    return render_template('how_it_works_step.html', 
-                         step=step, 
-                         step_data=step_data,
-                         step_data_all=step_data_all,
-                         navigation=navigation)
-
-@app.route('/debug-step-video/<int:step>')
-def debug_step_video(step):
-    """Debug video data for a specific step"""
-    step_data = get_step_data(step)
-    video_path = find_video_file(step)
-    
-    debug_info = {
-        'step': step,
-        'video_path': video_path,
-        'video_path_exists': os.path.exists(video_path) if video_path else False,
-        'step_data_keys': list(step_data.keys()),
-        'step_data_video': step_data.get('video', 'NOT SET'),
-        'step_data_video_file': step_data.get('video_file', 'NOT SET'),
-        'step_data_video_type': step_data.get('video_type', 'NOT SET'),
-    }
-    
-    # Check what get_step_data() returns
-    original_video = step_data.get('video', 'NOT SET')
-    debug_info['original_video_from_data'] = original_video
-    
-    # Check if we can access the file
-    if video_path and os.path.exists(video_path):
-        filename = os.path.basename(video_path)
-        debug_info['video_url'] = f"/static/videos/how-it-works/{filename}"
-        debug_info['static_url'] = url_for('static', filename=f"videos/how-it-works/{filename}")
-    
-    return jsonify(debug_info)
 
 # ============================================================================
 # SIMPLE VIDEO SERVING
@@ -2370,7 +2037,6 @@ def generate_detailed_pdf(event_id, form_id):
     """Alias for compatibility"""
     return generate_response_pdf(event_id, form_id)
 
-
 @app.template_filter()
 def type_badge_color(feedback_type):
     """Get badge color for feedback type"""
@@ -2631,6 +2297,7 @@ def send_feedback_reply():
     except Exception as e:
         log_message(f"Error sending feedback reply: {e}", "ERROR")
         return jsonify({'success': False, 'error': str(e)})
+
 # ============================================================================
 # MULTI-PAGE FEEDBACK FORM ROUTES
 # ============================================================================
@@ -3060,7 +2727,7 @@ def feedback_settings():
     default_settings = {
         'send_thank_you_emails': True,
         'notify_admin_on_feedback': True,
-        'admin_email': os.environ.get('ADMIN_EMAIL', MAIL_USERNAME),
+        'admin_email': os.environ.get('ADMIN_EMAIL', app.config['MAIL_USERNAME']),
         'auto_reply_enabled': True,
         'auto_reply_message': "Thank you for your feedback! We've received your submission and will review it soon.",
         'feedback_categories': ['bug', 'suggestion', 'praise', 'general', 'feature']
@@ -3138,6 +2805,7 @@ def admin_feedback():
                          recent_count=recent_count,
                          avg_rating=avg_rating,
                          with_email_count=with_email_count)
+
 @app.route('/feedback/viewer')
 @login_required
 def feedback_viewer():
@@ -3199,6 +2867,7 @@ def feedback_viewer():
         traceback.print_exc()
         flash('Error loading feedback. Please try again.', 'error')
         return redirect(url_for('dashboard'))
+
 @app.route('/export_feedback')
 @login_required
 def export_feedback():
@@ -3342,6 +3011,353 @@ def clear_all_feedback():
         return jsonify({'success': False, 'error': str(e)})
 
 # ============================================================================
+# USER FEEDBACK FOLLOW-UP ROUTES
+# ============================================================================
+
+@app.route('/user/send_followup', methods=['POST'])
+@login_required
+def user_send_followup():
+    """Send follow-up message for user's feedback"""
+    try:
+        data = request.json
+        feedback_id = data.get('feedback_id')
+        subject = data.get('subject', 'Follow-up on feedback')
+        message = data.get('message')
+        priority = data.get('priority', 'medium')
+        original_message = data.get('original_message', '')
+        
+        if not feedback_id or not message:
+            return jsonify({'success': False, 'error': 'Missing required fields'})
+        
+        # Load original feedback
+        feedback_data = load_feedback()
+        original_feedback = None
+        
+        for fb in feedback_data:
+            if fb['id'] == feedback_id:
+                # Verify this feedback belongs to the current user
+                if fb.get('user_id') == session['user_id'] or fb.get('email') == session.get('email'):
+                    original_feedback = fb
+                    break
+        
+        if not original_feedback:
+            return jsonify({'success': False, 'error': 'Feedback not found or unauthorized'})
+        
+        # Create follow-up feedback entry
+        followup_id = str(uuid.uuid4())
+        followup_entry = {
+            'id': followup_id,
+            'name': session.get('username', 'User'),
+            'email': session.get('email', ''),
+            'rating': original_feedback.get('rating', 0),
+            'type': 'followup',
+            'message': f"""FOLLOW-UP TO FEEDBACK ID: {feedback_id}
+            
+Original Feedback: {original_message[:500]}
+            
+Follow-up Message: {message}
+            
+Priority: {priority.upper()}
+            """,
+            'source': 'Follow-up from feedback viewer',
+            'context': f'Follow-up to {feedback_id}',
+            'can_contact': True,
+            'user_id': session['user_id'],
+            'timestamp': datetime.now().isoformat(),
+            'status': 'new',
+            'reviewed': False,
+            'parent_feedback_id': feedback_id,
+            'priority': priority,
+            'followup_subject': subject
+        }
+        
+        # Save follow-up feedback
+        feedback_data.append(followup_entry)
+        save_feedback(feedback_data)
+        
+        # Send email notification to admin
+        send_followup_notification(followup_entry, original_feedback)
+        
+        log_message(f"User {session['user_id']} sent follow-up for feedback {feedback_id}", "INFO")
+        return jsonify({'success': True, 'followup_id': followup_id})
+            
+    except Exception as e:
+        log_message(f"Error sending follow-up: {e}", "ERROR")
+        return jsonify({'success': False, 'error': str(e)})
+
+def send_followup_notification(followup_feedback, original_feedback):
+    """Send email notification about user follow-up"""
+    try:
+        subject = f"📝 User Follow-up: {followup_feedback['followup_subject']}"
+        
+        priority_colors = {
+            'low': '#6c757d',
+            'medium': '#ffc107', 
+            'high': '#dc3545'
+        }
+        
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; }}
+                .container {{ max-width: 600px; margin: auto; padding: 20px; background: #f8fafc; border-radius: 10px; }}
+                .header {{ background: #6C63FF; color: white; padding: 20px; border-radius: 10px 10px 0 0; text-align: center; }}
+                .content {{ padding: 20px; background: white; }}
+                .feedback-item {{ margin: 15px 0; padding: 15px; background: #f1f5f9; border-radius: 6px; }}
+                .priority-badge {{ display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }}
+                .action-buttons {{ margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>📝 User Follow-up Received</h1>
+                    <p>Priority: 
+                        <span class="priority-badge" style="background: {priority_colors.get(followup_feedback['priority'], '#6c757d')}; color: {'#000' if followup_feedback['priority'] == 'medium' else 'white'};">
+                            {followup_feedback['priority'].upper()}
+                        </span>
+                    </p>
+                </div>
+                <div class="content">
+                    <div class="feedback-item">
+                        <h3>{followup_feedback['name']}</h3>
+                        <p><strong>Original Feedback ID:</strong> {original_feedback['id']}</p>
+                        <p><strong>Original Type:</strong> {original_feedback['type'].upper()}</p>
+                        <p><strong>Follow-up Subject:</strong> {followup_feedback['followup_subject']}</p>
+                        <p><strong>User Email:</strong> {followup_feedback['email']}</p>
+                        
+                        <p><strong>Follow-up Message:</strong></p>
+                        <div style="background: #f8fafc; padding: 15px; border-radius: 6px; margin: 10px 0;">
+                            {followup_feedback['message'].split('FOLLOW-UP MESSAGE:')[-1][:500] + ('...' if len(followup_feedback['message']) > 500 else '')}
+                        </div>
+                        
+                        <p><strong>Original Feedback:</strong></p>
+                        <div style="background: #e8f4fd; padding: 10px; border-radius: 6px; margin: 10px 0; font-size: 0.9em;">
+                            {original_feedback['message'][:300] + ('...' if len(original_feedback['message']) > 300 else '')}
+                        </div>
+                        
+                        <p><strong>Time:</strong> {datetime.fromisoformat(followup_feedback['timestamp']).strftime('%Y-%m-%d %H:%M:%S')}</p>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <p><strong>Quick Actions:</strong></p>
+                        <a href="{url_for('admin_feedback_receiver', _external=True)}" style="background: #6C63FF; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 5px;">
+                            View in Admin Dashboard
+                        </a>
+                        <a href="mailto:{followup_feedback['email']}?subject=Re: {followup_feedback['followup_subject']}" style="background: #10b981; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 5px;">
+                            Reply to User
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        # Send to admin
+        admin_email = app.config['MAIL_USERNAME']  # Or use ADMIN_EMAIL from settings
+        if admin_email:
+            success, message = send_email_simple(admin_email, subject, html_content)
+            if success:
+                log_message(f"Follow-up notification sent to {admin_email}", "INFO")
+            else:
+                log_message(f"Failed to send follow-up notification: {message}", "ERROR")
+                
+    except Exception as e:
+        log_message(f"Error sending follow-up notification: {e}", "ERROR")
+
+# Also add the delete routes
+@app.route('/delete_user_feedback/<feedback_id>', methods=['DELETE'])
+@login_required
+def delete_user_feedback(feedback_id):
+    """Delete user's own feedback"""
+    try:
+        feedback_data = load_feedback()
+        user_id = session['user_id']
+        user_email = session.get('email')
+        
+        new_feedback_data = []
+        deleted = False
+        
+        for fb in feedback_data:
+            if fb['id'] == feedback_id:
+                if fb.get('user_id') == user_id or fb.get('email') == user_email:
+                    deleted = True
+                    continue
+            new_feedback_data.append(fb)
+        
+        if deleted:
+            save_feedback(new_feedback_data)
+            return jsonify({'success': True, 'message': 'Feedback deleted'})
+        else:
+            return jsonify({'success': False, 'error': 'Feedback not found or unauthorized'}), 403
+            
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/bulk_delete_user_feedback', methods=['POST'])
+@login_required
+def bulk_delete_user_feedback():
+    """Bulk delete user's own feedback"""
+    try:
+        data = request.json
+        feedback_ids = data.get('feedback_ids', [])
+        
+        if not feedback_ids:
+            return jsonify({'success': False, 'error': 'No feedback IDs provided'})
+        
+        feedback_data = load_feedback()
+        user_id = session['user_id']
+        user_email = session.get('email')
+        
+        new_feedback_data = []
+        deleted_count = 0
+        
+        for fb in feedback_data:
+            if fb['id'] in feedback_ids:
+                if fb.get('user_id') == user_id or fb.get('email') == user_email:
+                    deleted_count += 1
+                    continue
+            new_feedback_data.append(fb)
+        
+        save_feedback(new_feedback_data)
+        return jsonify({'success': True, 'deleted_count': deleted_count})
+            
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+# Also add a user-specific feedback detail endpoint
+@app.route('/user/get_feedback_detail/<feedback_id>')
+@login_required
+def user_get_feedback_detail(feedback_id):
+    """Get detailed feedback information for the current user"""
+    feedback_data = load_feedback()
+    
+    # Find the feedback that belongs to the current user
+    for fb in feedback_data:
+        if fb['id'] == feedback_id:
+            # Check if this feedback belongs to the current user
+            if fb.get('user_id') == session['user_id'] or fb.get('email') == session.get('email'):
+                return jsonify({'success': True, 'feedback': fb})
+    
+    return jsonify({'success': False, 'error': 'Feedback not found or unauthorized'}), 404    
+
+# ============================================================================
+# FIXED HOW IT WORKS STEP ROUTE
+# ============================================================================
+
+@app.route('/how-it-works/step/<int:step>')
+def how_it_works_step(step):
+    """Individual step page for how it works guide - FIXED WITH FILE DISCOVERY"""
+    if step < 1 or step > 4:
+        flash('Invalid step number', 'error')
+        return redirect(url_for('how_it_works'))
+    
+    # Get step data
+    step_data = get_step_data(step)
+    
+    # Try to find video file using our discovery function
+    video_path = find_video_file(step)
+    
+    print(f"\n🎬 DEBUG: Loading step {step}")
+    print(f"  Looking for video file...")
+    print(f"  Found path: {video_path}")
+    
+    # Handle video data - FIXED LOGIC
+    if video_path and os.path.exists(video_path):
+        # Get the filename from the path
+        filename = os.path.basename(video_path)
+        
+        # Set the video file path for the template
+        video_static_path = f"videos/how-it-works/{filename}"
+        step_data['video_file'] = video_static_path
+        step_data['video_type'] = 'file'
+        step_data['video'] = True  # CRITICAL: This must be True
+        
+        # Generate direct URLs
+        step_data['video_url_direct'] = f"/static/videos/how-it-works/{filename}"
+        step_data['video_url_step'] = f"/video/{step}"
+        
+        print(f"  ✅ Video found: {filename}")
+        print(f"  ✅ Setting video_file to: {video_static_path}")
+        print(f"  ✅ Direct URL: {step_data['video_url_direct']}")
+        print(f"  ✅ Video flag set to: {step_data['video']}")
+        
+        # Generate thumbnail URL if needed
+        thumbnail_path = video_path.replace('.mp4', '.jpg').replace('.webm', '.jpg').replace('.mov', '.jpg')
+        if os.path.exists(thumbnail_path):
+            step_data['video_thumbnail'] = f"/static/videos/how-it-works/{os.path.basename(thumbnail_path)}"
+            print(f"  ✅ Thumbnail found")
+        else:
+            # Use a default thumbnail or none
+            step_data['video_thumbnail'] = None
+            print(f"  ℹ️ No thumbnail found")
+    else:
+        # No video available
+        step_data['video'] = False  # CRITICAL: This must be False
+        step_data['video_file'] = None
+        step_data['video_type'] = None
+        step_data['video_thumbnail'] = None
+        step_data['video_url_direct'] = None
+        step_data['video_url_step'] = None
+        print(f"  ❌ No video found for step {step}")
+        print(f"  Path exists: {os.path.exists(video_path) if video_path else 'No path'}")
+    
+    # Get all step data for navigation
+    step_data_all = get_all_step_data()
+    
+    # Get navigation info
+    navigation = get_step_navigation(step)
+    
+    # Map action URLs
+    action_url_map = {
+        1: url_for('signup'),
+        2: url_for('create_event'),
+        3: url_for('dashboard'),
+        4: url_for('signup')
+    }
+    
+    if step in action_url_map:
+        step_data['action_url'] = action_url_map[step]
+    
+    return render_template('how_it_works_step.html', 
+                         step=step, 
+                         step_data=step_data,
+                         step_data_all=step_data_all,
+                         navigation=navigation)
+
+@app.route('/debug-step-video/<int:step>')
+def debug_step_video(step):
+    """Debug video data for a specific step"""
+    step_data = get_step_data(step)
+    video_path = find_video_file(step)
+    
+    debug_info = {
+        'step': step,
+        'video_path': video_path,
+        'video_path_exists': os.path.exists(video_path) if video_path else False,
+        'step_data_keys': list(step_data.keys()),
+        'step_data_video': step_data.get('video', 'NOT SET'),
+        'step_data_video_file': step_data.get('video_file', 'NOT SET'),
+        'step_data_video_type': step_data.get('video_type', 'NOT SET'),
+    }
+    
+    # Check what get_step_data() returns
+    original_video = step_data.get('video', 'NOT SET')
+    debug_info['original_video_from_data'] = original_video
+    
+    # Check if we can access the file
+    if video_path and os.path.exists(video_path):
+        filename = os.path.basename(video_path)
+        debug_info['video_url'] = f"/static/videos/how-it-works/{filename}"
+        debug_info['static_url'] = url_for('static', filename=f"videos/how-it-works/{filename}")
+    
+    return jsonify(debug_info)
+
+# ============================================================================
 # ROUTES
 # ============================================================================
 @app.context_processor
@@ -3476,6 +3492,7 @@ def login():
         print(f"🔍 Generated new CSRF token: {session['_csrf_token']}")
     
     return render_template('login.html')
+
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
@@ -3674,76 +3691,6 @@ def debug_session():
         debug_info['otp_store'] = 'Error loading'
     
     return jsonify(debug_info)
-
-def send_otp_email(email: str, otp: str):
-    """Send OTP email - uses same configuration as test_email"""
-    try:
-        subject = "🔐 Your EventFlow Verification Code"
-        
-        html_content = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <style>
-                body {{ font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 20px; }}
-                .container {{ max-width: 600px; margin: auto; background: #f8fafc; padding: 30px; border-radius: 10px; }}
-                .header {{ background: #4361ee; color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }}
-                .otp-box {{ background: white; border: 2px dashed #4361ee; padding: 25px; text-align: center; margin: 30px 0; 
-                           font-size: 32px; font-weight: bold; color: #4361ee; letter-spacing: 10px; border-radius: 10px; }}
-                .footer {{ margin-top: 30px; color: #64748b; font-size: 12px; text-align: center; }}
-                .note {{ background: #fff3cd; padding: 15px; border-radius: 6px; margin: 20px 0; color: #856404; }}
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <h1>🔐 Verify Your Email</h1>
-                </div>
-                <div style="padding: 30px;">
-                    <p>Hello,</p>
-                    
-                    <p>You're signing up for EventFlow. Use this OTP to verify your email:</p>
-                    
-                    <div class="otp-box">
-                        {otp}
-                    </div>
-                    
-                    <div class="note">
-                        <p><strong>⚠️ Important:</strong></p>
-                        <ul>
-                            <li>This OTP is valid for 5 minutes only</li>
-                            <li>Don't share this code with anyone</li>
-                            <li>If you didn't request this, please ignore this email</li>
-                        </ul>
-                    </div>
-                    
-                    <p>Enter this code on the verification page to complete your registration.</p>
-                    
-                    <div class="footer">
-                        <p>EventFlow Registration System</p>
-                        <p>© {datetime.now().year} | This is an automated email, please do not reply</p>
-                    </div>
-                </div>
-            </div>
-        </body>
-        </html>
-        """
-        
-        # Use the existing send_email_simple function
-        success, message = send_email_simple(email, subject, html_content)
-        
-        if success:
-            log_message(f"✅ OTP email sent to {email}", "SUCCESS")
-        else:
-            log_message(f"❌ Failed to send OTP email to {email}: {message}", "ERROR")
-        
-        return success, message
-        
-    except Exception as e:
-        error_msg = f"OTP email error: {str(e)}"
-        log_message(f"❌ OTP email exception: {error_msg}", "ERROR")
-        return False, error_msg
 
 @app.route('/logout')
 def logout():
@@ -4008,6 +3955,7 @@ def create_event():
         print(f"❌ ERROR: {str(e)}")
         flash(f'Error creating event: {str(e)}', 'error')
         return redirect(url_for('create_event'))
+
 @app.route('/create_form/<event_id>', methods=['GET', 'POST'])
 @login_required
 def create_form(event_id):
@@ -4222,7 +4170,7 @@ def share_form(event_id, form_id):
     form_url = url_for('show_form', form_id=form_id, _external=True)
     qr_code = generate_qr_code(form_url)
     
-    # Handle email sending with IDENTICAL configuration to test_email
+    # Handle email sending with Flask-Mailman
     if request.method == 'POST':
         # DEBUG: Log what we received
         log_message(f"🔍 SHARE_FORM: POST request received", "DEBUG")
@@ -4268,7 +4216,7 @@ def share_form(event_id, form_id):
             log_message(f"🔍 SHARE_FORM: Sender: {session['username']}", "DEBUG")
             log_message(f"🔍 SHARE_FORM: Recipients: {valid_emails}", "DEBUG")
             
-            # Send emails DIRECTLY with IDENTICAL configuration
+            # Send emails using Flask-Mailman
             try:
                 results = send_emails_direct(
                     valid_emails,
@@ -4287,7 +4235,7 @@ def share_form(event_id, form_id):
                 # Show results
                 if sent_count > 0:
                     flash(f'✅ {sent_count} email(s) sent successfully!', 'success')
-                    flash('🔍 These emails used IDENTICAL configuration to /test_email', 'info')
+                    flash('🔍 Using Flask-Mailman for Python 3.12 compatibility.', 'info')
                     
                     # Debug: Show first successful email details
                     for result in results:
@@ -4521,8 +4469,8 @@ def debug_otp_email(email):
     from otp import generate_and_store_otp
     
     print(f"🔍 DEBUG OTP EMAIL FOR: {email}")
-    print(f"🔍 MAIL_USERNAME: {MAIL_USERNAME}")
-    print(f"🔍 MAIL_PASSWORD length: {len(MAIL_PASSWORD) if MAIL_PASSWORD else 'NONE'}")
+    print(f"🔍 MAIL_USERNAME: {app.config['MAIL_USERNAME']}")
+    print(f"🔍 MAIL_PASSWORD length: {len(app.config['MAIL_PASSWORD']) if app.config['MAIL_PASSWORD'] else 'NONE'}")
     
     # Generate OTP
     otp = generate_and_store_otp(email)
@@ -4599,30 +4547,10 @@ def internal_error(error):
 
 if __name__ == '__main__':
     print("="*80)
-    print("🚀 EventFlow with VIDEO FIXES")
+    print("🚀 EventFlow with FLASK-MAILMAN")
     print("="*80)
-    print("🎬 Video Files Detected:")
-    
-    video_dir = 'static/videos/how-it-works'
-    if os.path.exists(video_dir):
-        files = os.listdir(video_dir)
-        for file in files:
-            filepath = os.path.join(video_dir, file)
-            if os.path.isfile(filepath):
-                size = os.path.getsize(filepath) / (1024*1024)
-                print(f"   📁 {file} ({size:.1f} MB)")
-    else:
-        print("   ❌ Video directory not found!")
-    
-    print("\n🎬 New Video Debug Tools:")
-    print("   /list-videos             - List all available video files")
-    print("   /test-step-video/<step>  - Test video playback for specific step")
-    print("   /test-video-access/<step>- Detailed video test page")
-    print("="*80)
-    print("📧 Email Debug Tools:")
-    print("   /test_email              - Send test email")
-    print("   /compare_email_test      - Compare email configurations")
-    print("   /check_email_config      - View email settings")
+    print("✅ Python 3.12 compatible")
+    print("✅ Using Flask-Mailman instead of Flask-Mail")
     print("="*80)
     
     app.run(debug=True, host='0.0.0.0', port=5000)
