@@ -2614,46 +2614,65 @@ def feedback():
 
 @app.route('/submit_feedback', methods=['POST'])
 def submit_feedback():
-    """Handle feedback submission with file upload"""
+    """Handle feedback submission with file upload - FIXED WITH BETTER ERROR HANDLING"""
     try:
         # Get form data
         name = request.form.get('name', '').strip()
         email = request.form.get('email', '').strip()
-        rating = int(request.form.get('rating', 0))
+        rating = request.form.get('rating', '0')
         feedback_type = request.form.get('type', 'general')
         message = request.form.get('message', '').strip()
         source = request.form.get('source', '').strip()
         context = request.form.get('context', '').strip()
         can_contact = request.form.get('can_contact') == 'on'
-        user_id = request.form.get('user_id')
+        user_id = request.form.get('user_id', '')
+        
+        print(f"\n🔍 FEEDBACK SUBMISSION RECEIVED:")
+        print(f"   Name: {name}")
+        print(f"   Email: {email}")
+        print(f"   Rating: {rating}")
+        print(f"   Type: {feedback_type}")
+        print(f"   Message length: {len(message)}")
+        print(f"   All form data: {dict(request.form)}")
         
         # Validate required fields
         if not name or not email or not message:
+            print("❌ Validation failed: Name, email, and message are required")
             return jsonify({
                 'success': False, 
                 'error': 'Name, email, and message are required'
-            })
+            }), 400
         
         # Validate email format
         if '@' not in email or '.' not in email:
+            print(f"❌ Validation failed: Invalid email format: {email}")
             return jsonify({
                 'success': False, 
                 'error': 'Please enter a valid email address'
-            })
+            }), 400
         
         # Validate rating
-        if rating < 0 or rating > 5:
+        try:
+            rating_int = int(rating)
+            if rating_int < 0 or rating_int > 5:
+                print(f"❌ Validation failed: Invalid rating value: {rating}")
+                return jsonify({
+                    'success': False, 
+                    'error': 'Invalid rating value. Must be between 0 and 5.'
+                }), 400
+        except ValueError:
+            print(f"❌ Validation failed: Rating is not a number: {rating}")
             return jsonify({
                 'success': False, 
-                'error': 'Invalid rating value'
-            })
+                'error': 'Rating must be a number between 0 and 5.'
+            }), 400
         
         # Create feedback entry
         feedback_entry = {
             'id': str(uuid.uuid4()),
             'name': name,
             'email': email,
-            'rating': rating,
+            'rating': rating_int,
             'type': feedback_type,
             'message': message,
             'source': source,
@@ -2668,25 +2687,47 @@ def submit_feedback():
         }
         
         # Load existing feedback
+        print("🔍 Loading existing feedback data...")
         feedback_data = load_feedback()
+        print(f"   Found {len(feedback_data)} existing feedback entries")
+        
+        # Add new feedback
         feedback_data.append(feedback_entry)
         
         # Save feedback
+        print("🔍 Saving feedback...")
         if save_feedback(feedback_data):
-            log_message(f"Feedback submitted by {name} ({email}) - Type: {feedback_type}, Rating: {rating}", "INFO")
+            print(f"✅ Feedback saved successfully with ID: {feedback_entry['id']}")
+            log_message(f"Feedback submitted by {name} ({email}) - Type: {feedback_type}, Rating: {rating_int}", "INFO")
             
-            # Send notification email to admin
-            send_feedback_notification(feedback_entry)
+            # Send notification email to admin (in background, don't block)
+            try:
+                print("🔍 Attempting to send notification email...")
+                send_feedback_notification(feedback_entry)
+                print("✅ Notification email sent to admin")
+            except Exception as email_error:
+                print(f"⚠️ Failed to send notification email: {email_error}")
+                # Don't fail the submission if email fails
             
-            # Send thank you email to user
-            email_sent = send_thank_you_email(
-                email, 
-                name, 
-                feedback_entry['id'],
-                feedback_type,
-                rating,
-                message
-            )
+            # Send thank you email to user (in background)
+            email_sent = False
+            try:
+                print(f"🔍 Attempting to send thank you email to {email}...")
+                email_sent = send_thank_you_email(
+                    email, 
+                    name, 
+                    feedback_entry['id'],
+                    feedback_type,
+                    rating_int,
+                    message
+                )
+                if email_sent:
+                    print("✅ Thank you email sent successfully")
+                else:
+                    print("⚠️ Thank you email failed to send")
+            except Exception as email_error:
+                print(f"⚠️ Error sending thank you email: {email_error}")
+                email_sent = False
             
             response_data = {
                 'success': True,
@@ -2700,16 +2741,50 @@ def submit_feedback():
             else:
                 response_data['message'] += ' (Note: Confirmation email could not be sent)'
             
+            print(f"✅ Returning success response: {response_data}")
             return jsonify(response_data)
         else:
+            print("❌ Failed to save feedback data")
             return jsonify({
                 'success': False, 
                 'error': 'Failed to save feedback'
-            })
+            }), 500
             
     except Exception as e:
+        print(f"❌ ERROR in submit_feedback: {str(e)}")
+        print(f"❌ Traceback: {traceback.format_exc()}")
         log_message(f"Error submitting feedback: {e}", "ERROR")
-        return jsonify({'success': False, 'error': str(e)})
+        return jsonify({
+            'success': False, 
+            'error': 'An internal server error occurred. Please try again later.',
+            'debug': str(e) if app.debug else None
+        }), 500
+        
+@app.route('/debug-email-test-feedback')
+def debug_email_test_feedback():
+    """Test email sending for feedback"""
+    try:
+        test_email = app.config['MAIL_USERNAME']
+        print(f"🔍 Testing email to: {test_email}")
+        
+        # Test simple email
+        success, message = send_email_simple(
+            test_email,
+            "Test Feedback Email",
+            "<h1>Test</h1><p>This is a test email for feedback system.</p>"
+        )
+        
+        return jsonify({
+            'success': success,
+            'message': message,
+            'test_email': test_email,
+            'config_ok': bool(app.config['MAIL_USERNAME'] and app.config['MAIL_PASSWORD'])
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
         
 
 @app.route('/admin/feedback/settings', methods=['GET', 'POST'])
