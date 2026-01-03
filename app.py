@@ -21,6 +21,9 @@ from wtforms import StringField, TextAreaField
 from wtforms.validators import DataRequired
 import logging
 from flask_mailman import EmailMessage, Mail
+import logging
+logging.basicConfig(level=logging.ERROR)
+logger = logging.getLogger(__name__)
 
 class CreateEventForm(FlaskForm):
     event_name = StringField(validators=[DataRequired()])
@@ -4623,6 +4626,11 @@ def internal_error(error):
 @app.route('/health')
 def health():
     return 'OK', 200
+
+@app.errorhandler(500)
+def internal_error(error):
+    logger.exception("500 error occurred")  # Logs full traceback
+    return "Internal Server Error - Check logs", 500
 
 if __name__ == '__main__':
     print("="*80)
