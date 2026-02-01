@@ -43,7 +43,7 @@ from weasyprint.text.fonts import FontConfiguration
 import tempfile
 
 # ============================================================================
-# DIRECTORY UTILITIES (Must be defined before use)
+# DIRECTORY UTILITIES
 # ============================================================================
 
 def get_data_path(subpath=''):
@@ -60,7 +60,7 @@ def get_data_path(subpath=''):
 # Load environment variables
 load_dotenv()
 
-# Ensure required directories exist - THIS PREVENTS THE NameError
+# Create directories before the app starts using them
 os.makedirs(get_data_path('reports'), exist_ok=True)
 os.makedirs(get_data_path('email_status'), exist_ok=True)
 os.makedirs('static/uploads', exist_ok=True)
@@ -68,6 +68,12 @@ os.makedirs('logs', exist_ok=True)
 os.makedirs(get_data_path('volunteers'), exist_ok=True)
 os.makedirs(get_data_path('notifications'), exist_ok=True)
 
+# Define Form Class
+class CreateEventForm(FlaskForm):
+    event_name = StringField(validators=[DataRequired()])
+    description = TextAreaField(validators=[DataRequired()])
+
+# Initialize Flask App
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(
     app.wsgi_app,
@@ -80,6 +86,8 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-change-this-in-production')
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///eventflow.db'  # or your database URI
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 # Email configuration - USING ENVIRONMENT VARIABLES
 # Email configuration - USING RESEND API
