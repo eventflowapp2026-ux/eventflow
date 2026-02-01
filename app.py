@@ -334,7 +334,7 @@ def init_directories():
 init_directories()
     
     # Function to extract IPv4 from string that might contain multiple IPs
-    def extract_ipv4_from_string(ip_string):
+def extract_ipv4_from_string(ip_string):
         if not ip_string:
             return None
         
