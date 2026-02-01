@@ -40,7 +40,13 @@ from weasyprint import HTML
 from weasyprint.text.fonts import FontConfiguration
 import tempfile
 
-
+def get_data_path(subpath=''):
+    """Get absolute path to data directory"""
+    base_dir = os.path.join(os.getcwd(), 'data')
+    if subpath:
+        return os.path.join(base_dir, subpath)
+    return base_dir
+    
 class CreateEventForm(FlaskForm):
     event_name = StringField(validators=[DataRequired()])
     description = TextAreaField(validators=[DataRequired()])
@@ -2459,7 +2465,7 @@ def load_event(event_id):
 
 def save_event(event_data):
     os.makedirs(get_data_path('events'), exist_ok=True)
-path = get_data_path(f"events/{event_data['id']}.json")
+    path = get_data_path(f"events/{event_data['id']}.json")
     with open(path, 'w', encoding='utf-8') as f:
         json.dump(event_data, f, indent=4)
 
