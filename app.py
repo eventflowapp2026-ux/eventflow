@@ -313,28 +313,12 @@ def get_real_ip():
         
         return True
 
-def init_directories():
-    """Initialize all required directories"""
-    # Data directories (persistent)
-    data_dirs = ['email_status', 'volunteers', 'notifications', 'events', 'reports']
-    for dir_name in data_dirs:
-        os.makedirs(get_data_path(dir_name), exist_ok=True)
-    
-    # Static directories (non-persistent)
-    static_dirs = ['static/uploads', 'static/qr_codes', 'logs']
-    for dir_name in static_dirs:
-        os.makedirs(dir_name, exist_ok=True)
-    
-    print("✅ Directories initialized")
-
-# Call it in your app
-init_directories()
-    
-def extract_ipv4_from_string(ip_string):
+    def extract_ipv4_from_string(ip_string):
+        """Helper to extract IPv4 from potential proxy strings"""
         if not ip_string:
             return None
         
-        # Split by comma for multiple IPs
+        # Split by comma for multiple IPs (common in X-Forwarded-For)
         ips = [ip.strip() for ip in ip_string.split(',')]
         
         for ip in ips:
@@ -342,7 +326,7 @@ def extract_ipv4_from_string(ip_string):
             if is_valid_ipv4(ip):
                 return ip
             
-            # Handle IPv6-mapped IPv4 (::ffff:192.168.1.1)
+            # Handle IPv6-mapped IPv4 (e.g., ::ffff:192.168.1.1)
             if ip.startswith('::ffff:'):
                 ipv4_part = ip[7:]  # Remove '::ffff:'
                 if is_valid_ipv4(ipv4_part):
@@ -365,20 +349,19 @@ def extract_ipv4_from_string(ip_string):
         if header_value:
             ipv4 = extract_ipv4_from_string(header_value)
             if ipv4:
-                return ipv4  # Now this is properly inside the function
+                return ipv4
 
-    # Check remote_addr
+    # Check remote_addr as a fallback
     remote_addr = request.remote_addr
     if remote_addr:
         ipv4 = extract_ipv4_from_string(remote_addr)
         if ipv4:
             return ipv4
 
-    # If we get IPv6, convert it to a consistent pseudo-IPv4
-    # This is for display purposes only
+    # If we get IPv6, convert it to a consistent pseudo-IPv4 for display purposes
     ipv6_address = None
 
-    # Get IPv6 from headers
+    # Get IPv6 from headers if no IPv4 was found
     for header in headers_to_check:
         header_value = request.headers.get(header)
         if header_value and ':' in header_value and '.' not in header_value:
@@ -390,7 +373,7 @@ def extract_ipv4_from_string(ip_string):
 
     # Convert IPv6 to pseudo-IPv4 for consistent display
     if ipv6_address:
-        # Create deterministic pseudo-IPv4 from IPv6
+        # Create deterministic pseudo-IPv4 from IPv6 hash
         hash_obj = hashlib.md5(ipv6_address.encode())
         hash_hex = hash_obj.hexdigest()
         
@@ -405,6 +388,23 @@ def extract_ipv4_from_string(ip_string):
         return pseudo_ip
 
     return '0.0.0.0'
+
+def init_directories():
+    """Initialize all required directories"""
+    # Data directories (persistent)
+    data_dirs = ['email_status', 'volunteers', 'notifications', 'events', 'reports']
+    for dir_name in data_dirs:
+        os.makedirs(get_data_path(dir_name), exist_ok=True)
+    
+    # Static directories (non-persistent)
+    static_dirs = ['static/uploads', 'static/qr_codes', 'logs']
+    for dir_name in static_dirs:
+        os.makedirs(dir_name, exist_ok=True)
+    
+    print("✅ Directories initialized")
+
+# Call it in your app
+init_directories()
     
 def calculate_growth_stats():
     """Calculate month-over-month growth statistics"""
