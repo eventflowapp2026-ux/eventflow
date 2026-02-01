@@ -21,3 +21,4 @@ A comprehensive event registration system built with Flask that allows users to 
 ```bash
 git clone <repository-url>
 cd event-registration-system
+# eventflow
