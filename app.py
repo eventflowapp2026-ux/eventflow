@@ -2050,13 +2050,17 @@ def admin_send_batch_emails():
                 skipped_count += 1
                 continue
             
-            # Personalize the content
+            # 1. Personalize the content (Standard string methods)
             personalized_content = content\
                 .replace('{username}', username)\
                 .replace('{email}', email)\
                 .replace('{join_date}', join_date)
             
-            # Create HTML email
+            # 2. FIX: Convert newlines to HTML breaks BEFORE the f-string
+            # This avoids the SyntaxError: f-string expression part cannot include a backslash
+            body_with_breaks = personalized_content.replace('\n', '<br>')
+            
+            # 3. Create HTML email using the pre-processed variable
             html_content = f"""
             <!DOCTYPE html>
             <html>
@@ -2077,7 +2081,7 @@ def admin_send_batch_emails():
                         <h2>📢 EventFlow Announcement</h2>
                     </div>
                     <div class="content">
-                        {personalized_content.replace('\n', '<br>')}
+                        {body_with_breaks}
                         <div class="footer">
                             <p>Sent by: <strong>{sender_name}</strong></p>
                             <p>This is an automated message from EventFlow.</p>
@@ -2113,7 +2117,7 @@ def admin_send_batch_emails():
             'sent_count': sent_count,
             'failed_count': failed_count,
             'skipped_count': skipped_count,
-            'failed_emails': failed_emails[:10],  # Limit to first 10 failed emails
+            'failed_emails': failed_emails[:10],
             'message': f'Sent {sent_count} emails in batch {batch_number}'
         })
         
