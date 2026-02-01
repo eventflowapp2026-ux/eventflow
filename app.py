@@ -42,59 +42,31 @@ from weasyprint import HTML
 from weasyprint.text.fonts import FontConfiguration
 import tempfile
 
+# ============================================================================
+# DIRECTORY UTILITIES (Must be defined before use)
+# ============================================================================
+
+def get_data_path(subpath=''):
+    """Get absolute path to data directory"""
+    base_dir = os.path.join(os.getcwd(), 'data')
+    if subpath:
+        return os.path.join(base_dir, subpath)
+    return base_dir
+
+# ============================================================================
+# INITIALIZATION & CONFIGURATION
+# ============================================================================
+
 # Load environment variables
 load_dotenv()
 
-
-# ========== DEBUG CODE - ADD THIS ==========
-print("=" * 60)
-print("DEBUG: ENVIRONMENT VARIABLES CHECK")
-print("=" * 60)
-
-# Check current working directory
-print(f"📁 Current directory: {os.getcwd()}")
-
-# Check .env file location
-env_path = os.path.join(os.getcwd(), '.env')
-print(f"🔍 Looking for .env at: {env_path}")
-print(f"✅ .env exists: {os.path.exists(env_path)}")
-
-# List all .env files in directory
-print("\n🔍 Searching for .env files:")
-for root, dirs, files in os.walk('.'):
-    for file in files:
-        if '.env' in file:
-            print(f"   Found: {os.path.join(root, file)}")
-
-# Check specific environment variables
-print("\n🔑 Checking environment variables:")
-env_vars_to_check = ['RESEND_API_KEY', 'MAIL_DEFAULT_SENDER', 'SECRET_KEY', 'MAIL_USERNAME']
-for var in env_vars_to_check:
-    value = os.environ.get(var)
-    if value:
-        masked = '*' * len(value) if 'KEY' in var or 'SECRET' in var else value
-        print(f"   ✅ {var}: {masked}")
-    else:
-        print(f"   ❌ {var}: NOT SET")
-
-# If .env exists, show first 10 lines
-if os.path.exists('.env'):
-    print("\n📄 Contents of .env (first 10 lines):")
-    try:
-        with open('.env', 'r') as f:
-            lines = f.readlines()
-            for i, line in enumerate(lines[:10], 1):
-                line = line.rstrip()
-                if 'KEY' in line or 'SECRET' in line or 'PASSWORD' in line:
-                    # Mask sensitive info
-                    if '=' in line:
-                        key, value = line.split('=', 1)
-                        line = f"{key}=[MASKED]"
-                print(f"   {i:2}. {line}")
-    except Exception as e:
-        print(f"   Error reading .env: {e}")
-
-print("=" * 60)
+# Ensure required directories exist - THIS PREVENTS THE NameError
+os.makedirs(get_data_path('reports'), exist_ok=True)
+os.makedirs(get_data_path('email_status'), exist_ok=True)
+os.makedirs('static/uploads', exist_ok=True)
+os.makedirs('logs', exist_ok=True)
+os.makedirs(get_data_path('volunteers'), exist_ok=True)
+os.makedirs(get_data_path('notifications'), exist_ok=True)
 
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(
@@ -108,8 +80,6 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-change-this-in-production')
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///eventflow.db'  # or your database URI
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 # Email configuration - USING ENVIRONMENT VARIABLES
 # Email configuration - USING RESEND API
