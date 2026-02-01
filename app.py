@@ -294,15 +294,6 @@ def get_real_ip():
     import re
     import hashlib
     
-    # Common headers to check for IP addresses
-    headers_to_check = [
-        'X-Forwarded-For',
-        'X-Real-IP',
-        'CF-Connecting-IP',  # Cloudflare
-        'True-Client-IP',    # Akamai/Cloudflare
-        'X-Client-IP'
-    ]
-    
     def is_valid_ipv4(ip):
         """Check if string is a valid IPv4 address"""
         if not ip or not isinstance(ip, str):
@@ -339,74 +330,81 @@ def init_directories():
 # Call it in your app
 init_directories()
     
-    # Function to extract IPv4 from string that might contain multiple IPs
 def extract_ipv4_from_string(ip_string):
-    if not ip_string:
-        return None
-    
-    # Split by comma for multiple IPs
-    ips = [ip.strip() for ip in ip_string.split(',')]
-    
-    for ip in ips:
-        # Check if it's IPv4
-        if is_valid_ipv4(ip):
-            return ip
+        if not ip_string:
+            return None
         
-        # Handle IPv6-mapped IPv4 (::ffff:192.168.1.1)
-        if ip.startswith('::ffff:'):
-            ipv4_part = ip[7:]  # Remove '::ffff:'
-            if is_valid_ipv4(ipv4_part):
-                return ipv4_part
-    
-    return None
+        # Split by comma for multiple IPs
+        ips = [ip.strip() for ip in ip_string.split(',')]
+        
+        for ip in ips:
+            # Check if it's IPv4
+            if is_valid_ipv4(ip):
+                return ip
+            
+            # Handle IPv6-mapped IPv4 (::ffff:192.168.1.1)
+            if ip.startswith('::ffff:'):
+                ipv4_part = ip[7:]  # Remove '::ffff:'
+                if is_valid_ipv4(ipv4_part):
+                    return ipv4_part
+        
+        return None
 
-# This code should be OUTSIDE the extract_ipv4_from_string function
-# Check all headers for IPv4
-for header in headers_to_check:
-    header_value = request.headers.get(header)
-    if header_value:
-        ipv4 = extract_ipv4_from_string(header_value)
+    # Common headers to check for IP addresses
+    headers_to_check = [
+        'X-Forwarded-For',
+        'X-Real-IP',
+        'CF-Connecting-IP',  # Cloudflare
+        'True-Client-IP',    # Akamai/Cloudflare
+        'X-Client-IP'
+    ]
+    
+    # Check all headers for IPv4
+    for header in headers_to_check:
+        header_value = request.headers.get(header)
+        if header_value:
+            ipv4 = extract_ipv4_from_string(header_value)
+            if ipv4:
+                return ipv4  # Now this is properly inside the function
+
+    # Check remote_addr
+    remote_addr = request.remote_addr
+    if remote_addr:
+        ipv4 = extract_ipv4_from_string(remote_addr)
         if ipv4:
             return ipv4
 
-# Check remote_addr
-remote_addr = request.remote_addr
-if remote_addr:
-    ipv4 = extract_ipv4_from_string(remote_addr)
-    if ipv4:
-        return ipv4
+    # If we get IPv6, convert it to a consistent pseudo-IPv4
+    # This is for display purposes only
+    ipv6_address = None
 
-# If we get IPv6, convert it to a consistent pseudo-IPv4
-# This is for display purposes only
-ipv6_address = None
+    # Get IPv6 from headers
+    for header in headers_to_check:
+        header_value = request.headers.get(header)
+        if header_value and ':' in header_value and '.' not in header_value:
+            ipv6_address = header_value.split(',')[0].strip()
+            break
 
-# Get IPv6 from headers
-for header in headers_to_check:
-    header_value = request.headers.get(header)
-    if header_value and ':' in header_value and '.' not in header_value:
-        ipv6_address = header_value.split(',')[0].strip()
-        break
+    if not ipv6_address and remote_addr and ':' in remote_addr:
+        ipv6_address = remote_addr
 
-if not ipv6_address and remote_addr and ':' in remote_addr:
-    ipv6_address = remote_addr
+    # Convert IPv6 to pseudo-IPv4 for consistent display
+    if ipv6_address:
+        # Create deterministic pseudo-IPv4 from IPv6
+        hash_obj = hashlib.md5(ipv6_address.encode())
+        hash_hex = hash_obj.hexdigest()
+        
+        # Convert to 192.x.x.x format (private range)
+        part1 = str((int(hash_hex[0:2], 16) % 64) + 192)  # 192-255
+        part2 = str(int(hash_hex[2:4], 16) % 256)
+        part3 = str(int(hash_hex[4:6], 16) % 256)
+        part4 = str(int(hash_hex[6:8], 16) % 256)
+        
+        pseudo_ip = f"{part1}.{part2}.{part3}.{part4}"
+        print(f"Converted IPv6 {ipv6_address[:20]}... to pseudo-IPv4: {pseudo_ip}")
+        return pseudo_ip
 
-# Convert IPv6 to pseudo-IPv4 for consistent display
-if ipv6_address:
-    # Create deterministic pseudo-IPv4 from IPv6
-    hash_obj = hashlib.md5(ipv6_address.encode())
-    hash_hex = hash_obj.hexdigest()
-    
-    # Convert to 192.x.x.x format (private range)
-    part1 = str((int(hash_hex[0:2], 16) % 64) + 192)  # 192-255
-    part2 = str(int(hash_hex[2:4], 16) % 256)
-    part3 = str(int(hash_hex[4:6], 16) % 256)
-    part4 = str(int(hash_hex[6:8], 16) % 256)
-    
-    pseudo_ip = f"{part1}.{part2}.{part3}.{part4}"
-    print(f"Converted IPv6 {ipv6_address[:20]}... to pseudo-IPv4: {pseudo_ip}")
-    return pseudo_ip
-
-return '0.0.0.0'
+    return '0.0.0.0'
     
 def calculate_growth_stats():
     """Calculate month-over-month growth statistics"""
