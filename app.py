@@ -3121,41 +3121,45 @@ atexit.register(lambda: scheduler.shutdown())
 # ============================================================================
 
 def send_email_simple(to_email, subject, html_content):
-    """Send email using Resend API"""
+    """Send email using Resend SMTP"""
     try:
-        import resend
+        # Create message
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = subject
+        msg['From'] = MAIL_DEFAULT_SENDER
+        msg['To'] = to_email
         
-        RESEND_API_KEY = os.environ.get('RESEND_API_KEY')
+        # Attach HTML
+        msg.attach(MIMEText(html_content, 'html'))
         
-        if not RESEND_API_KEY:
-            error_msg = "RESEND_API_KEY not found."
-            log_message(f"❌ {error_msg}", "ERROR")
-            return False, error_msg
+        # SMTP configuration for Resend
+        smtp_server = MAIL_SERVER or "smtp.resend.com"
+        smtp_port = int(MAIL_PORT or 587)
+        smtp_username = MAIL_USERNAME or "resend"
+        smtp_password = MAIL_PASSWORD  # Your Resend API key
         
-        resend.api_key = RESEND_API_KEY
+        print(f"📧 Connecting to {smtp_server}:{smtp_port}")
+        print(f"📧 Username: {smtp_username}")
+        print(f"📧 Password length: {len(smtp_password) if smtp_password else 0}")
         
-        # Use sender from environment (now onboarding@resend.dev)
-        from_email = os.environ.get('MAIL_DEFAULT_SENDER', 'EventFlow <onboarding@resend.dev>')
+        # Connect and send
+        server = smtplib.SMTP(smtp_server, smtp_port, timeout=30)
+        server.ehlo()
+        server.starttls()
+        server.ehlo()
+        server.login(smtp_username, smtp_password)
+        server.send_message(msg)
+        server.quit()
         
-        params = {
-            "from": from_email,
-            "to": [to_email],
-            "subject": subject,
-            "html": html_content,
-        }
+        log_message(f"✅ Email sent to {to_email} via Resend SMTP", "SUCCESS")
+        return True, "Email sent successfully via Resend SMTP"
         
-        email_response = resend.Emails.send(params)
-        
-        if email_response and 'id' in email_response:
-            log_message(f"✅ Email sent to {to_email} | ID: {email_response['id']}", "SUCCESS")
-            return True, "Email sent successfully"
-        else:
-            error_msg = f"Resend API Error: {str(email_response)}"
-            log_message(f"❌ {error_msg}", "ERROR")
-            return False, error_msg
-            
+    except smtplib.SMTPAuthenticationError as e:
+        error_msg = f"Resend SMTP authentication failed: {str(e)}"
+        log_message(f"❌ {error_msg}", "ERROR")
+        return False, error_msg
     except Exception as e:
-        error_msg = f"Email error: {str(e)}"
+        error_msg = f"Resend SMTP error: {str(e)}"
         log_message(f"❌ {error_msg}", "ERROR")
         return False, error_msg
         
@@ -4093,6 +4097,56 @@ def test_otp_save():
             'data_dir': os.path.exists('data'),
             'can_write_to_data': os.access('data', os.W_OK) if os.path.exists('data') else False
         })
+
+@app.route('/test_resend_smtp')
+def test_resend_smtp():
+    """Test Resend SMTP connection"""
+    try:
+        # Test connection
+        import smtplib
+        
+        print("🔧 Testing Resend SMTP connection...")
+        print(f"Server: {MAIL_SERVER}")
+        print(f"Port: {MAIL_PORT}")
+        print(f"Username: {MAIL_USERNAME}")
+        
+        server = smtplib.SMTP(MAIL_SERVER, MAIL_PORT, timeout=10)
+        server.ehlo()
+        server.starttls()
+        server.ehlo()
+        server.login(MAIL_USERNAME, MAIL_PASSWORD)
+        server.quit()
+        
+        # Send test email
+        success, message = send_email_simple(
+            "eventflow.app2026@gmail.com",  # Send to yourself
+            "✅ Resend SMTP Test",
+            """
+            <h2>Success! Resend SMTP is working</h2>
+            <p>You can now send emails from: <strong>EventFlow &lt;eventflow.app2026@gmail.com&gt;</strong></p>
+            <p>Using Resend SMTP with your own email address as sender!</p>
+            """
+        )
+        
+        if success:
+            return "✅ Resend SMTP Connected & Test Email Sent!"
+        else:
+            return f"❌ Email failed: {message}"
+            
+    except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
+        return f"""
+        ❌ Resend SMTP Test Failed:<br><br>
+        <strong>Error:</strong> {str(e)}<br><br>
+        <strong>Details:</strong><br>
+        <pre>{error_details}</pre><br>
+        <strong>Config Check:</strong><br>
+        • MAIL_SERVER: {MAIL_SERVER}<br>
+        • MAIL_PORT: {MAIL_PORT}<br>
+        • MAIL_USERNAME: {MAIL_USERNAME}<br>
+        • MAIL_PASSWORD Set: {bool(MAIL_PASSWORD)}<br>
+        """
         
 @app.route('/debug_otp_full')
 def debug_otp_full():
