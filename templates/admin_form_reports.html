@@ -1,0 +1,1039 @@
+{% extends "base.html" %}
+{% block title %}Form Reports - Admin{% endblock %}
+
+{% block page_title %}Form Reports Management{% endblock %}
+{% block page_subtitle %}
+<p class="text-muted mb-0">Review and manage reported forms</p>
+{% endblock %}
+
+{% block content %}
+<style>
+.report-card {
+    transition: all 0.2s ease;
+    border-left: 4px solid transparent;
+}
+
+.report-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.report-card.blocked {
+    border-left-color: #dc3545;
+}
+
+.report-card.reviewed {
+    border-left-color: #ffc107;
+}
+
+.report-card.new {
+    border-left-color: #0d6efd;
+}
+
+.report-card.resolved {
+    border-left-color: #198754;
+}
+
+.report-reason-badge {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    margin-right: 0.3rem;
+    margin-bottom: 0.3rem;
+}
+
+.report-count-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.report-details-modal .modal-dialog {
+    max-width: 800px;
+}
+
+.report-actions {
+    position: sticky;
+    top: 20px;
+}
+</style>
+
+<div class="row">
+    <!-- Statistics Cards -->
+    <div class="col-md-3 mb-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <h1 class="display-5 text-primary">{{ total_reports }}</h1>
+                <p class="text-muted mb-0">Total Reports</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <h1 class="display-5 text-warning">{{ total_forms_reported }}</h1>
+                <p class="text-muted mb-0">Forms Reported</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <h1 class="display-5 text-danger">{{ total_blocked }}</h1>
+                <p class="text-muted mb-0">Forms Blocked</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <h1 class="display-5 text-success">{{ recent_reports|length }}</h1>
+                <p class="text-muted mb-0">Recent (7 days)</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Reports -->
+    <div class="col-lg-8 mb-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Recent Form Reports</h5>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="refreshReports()">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh
+                    </button>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_reports %}
+                <div class="list-group list-group-flush">
+                    {% for report in recent_reports %}
+                    <div class="list-group-item list-group-item-action report-card {% if report.is_blocked %}blocked{% else %}new{% endif %}">
+                        <div class="d-flex w-100 justify-content-between align-items-start">
+                            <div class="flex-grow-1 me-3">
+                                <div class="d-flex align-items-center mb-2">
+                                    <h6 class="mb-0">{{ report.form_title }}</h6>
+                                    <span class="report-count-badge ms-2 {% if report.is_blocked %}bg-danger{% else %}bg-warning{% endif %}">
+                                        {{ report.total_reports }} report{% if report.total_reports != 1 %}s{% endif %}
+                                    </span>
+                                </div>
+                                <small class="text-muted d-block mb-2">
+                                    Form ID: <code>{{ report.form_id[:8] }}...</code>
+                                    {% if report.is_blocked %}
+                                    <span class="badge bg-danger ms-2">BLOCKED</span>
+                                    {% endif %}
+                                </small>
+                                <div class="text-muted small">
+                                    <i class="bi bi-clock me-1"></i>
+                                    Last reported: {{ report.last_reported|relative_time }}
+                                </div>
+                            </div>
+                            <div class="btn-group">
+    <button class="btn btn-sm btn-outline-primary" onclick="viewReportDetails('{{ report.form_id }}')">
+        <i class="bi bi-eye"></i> Details
+    </button>
+    {% if not report.is_blocked %}
+    <button class="btn btn-sm btn-outline-danger" onclick="blockForm('{{ report.form_id }}')">
+        <i class="bi bi-shield-exclamation"></i> Block
+    </button>
+    {% else %}
+    <button class="btn btn-sm btn-outline-success" onclick="unblockForm('{{ report.form_id }}')">
+        <i class="bi bi-shield-check"></i> Unblock
+    </button>
+    {% endif %}
+    <!-- Add resolve button -->
+    <button class="btn btn-sm btn-outline-success" onclick="markFormResolved('{{ report.form_id }}')">
+        <i class="bi bi-check-circle"></i> Resolve
+    </button>
+    <!-- Add delete button -->
+    <button class="btn btn-sm btn-outline-dark" onclick="deleteFormCompletely('{{ report.form_id }}')">
+        <i class="bi bi-trash"></i> Delete
+    </button>
+</div>
+
+
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-check-circle display-4 text-success mb-3"></i>
+                    <h5>No Recent Reports</h5>
+                    <p class="text-muted">No forms have been reported in the last 7 days.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <button class="btn btn-info mb-2" data-bs-toggle="collapse" data-bs-target="#resolvedReports">
+        <i class="bi bi-check-circle me-2"></i> View Resolved
+    </button>
+    
+    <!-- Resolved Reports (Collapsible) -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        Recently Resolved Reports
+                    </h5>
+                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#resolvedReports">
+                        <i class="bi bi-chevron-down"></i> Toggle
+                    </button>
+                </div>
+            </div>
+            <div class="collapse" id="resolvedReports">
+                <div class="card-body" id="resolvedReportsContent">
+                    <div class="text-center py-3">
+                        <div class="spinner-border text-success" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Loading resolved reports...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    
+    <!-- Quick Actions -->
+    <div class="col-lg-4 mb-4">
+        <div class="card border-0 shadow-sm report-actions">
+            <div class="card-header bg-white border-bottom">
+                <h5 class="mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button class="btn btn-primary mb-2" onclick="viewAllReports()">
+                        <i class="bi bi-list-check me-2"></i> View All Reports
+                    </button>
+                    <button class="btn btn-warning mb-2" onclick="viewBlockedForms()">
+                        <i class="bi bi-shield-exclamation me-2"></i> View Blocked Forms
+                    </button>
+                    <button class="btn btn-danger mb-2" data-bs-toggle="modal" data-bs-target="#searchReportModal">
+                        <i class="bi bi-search me-2"></i> Search Reports
+                    </button>
+                    <button class="btn btn-success mb-2" onclick="exportReports()">
+                        <i class="bi bi-download me-2"></i> Export Reports
+                    </button>
+                </div>
+                
+                <hr>
+                
+                <div class="mb-3">
+                    <h6>Report Statistics</h6>
+                    <div class="small text-muted">
+                        <div class="d-flex justify-content-between">
+                            <span>Forms requiring review:</span>
+                            <span class="fw-semibold">{{ total_forms_reported - total_blocked }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Auto-block threshold:</span>
+                            <span class="fw-semibold">3 reports</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Default block duration:</span>
+                            <span class="fw-semibold">7 days</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="mb-3">
+                    <h6>Moderation Guidelines</h6>
+                    <ul class="small text-muted ps-3 mb-0">
+                        <li>Review each report carefully</li>
+                        <li>Check form content and creator history</li>
+                        <li>Block forms violating ToS immediately</li>
+                        <li>Notify creators when forms are blocked</li>
+                        <li>Document all moderation actions</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search Report Modal -->
+<div class="modal fade" id="searchReportModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Search Form Reports</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="searchReportForm">
+                    <div class="mb-3">
+                        <label class="form-label">Form ID</label>
+                        <input type="text" class="form-control" name="form_id" placeholder="Enter Form ID">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Form Title</label>
+                        <input type="text" class="form-control" name="form_title" placeholder="Enter Form Title">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Creator ID</label>
+                        <input type="text" class="form-control" name="creator_id" placeholder="Enter Creator ID">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" name="status">
+                            <option value="">All</option>
+                            <option value="blocked">Blocked</option>
+                            <option value="active">Active</option>
+                            <option value="reviewed">Reviewed</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="performSearch()">Search</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Report Details Modal -->
+<div class="modal fade" id="reportDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg report-details-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Report Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="reportDetailsContent">
+                <!-- Content loaded via JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <div id="reportDetailsActions">
+                    <!-- Actions loaded via JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Delete Form Modal -->
+<div class="modal fade" id="deleteFormModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>Permanently Delete Form</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <strong>WARNING:</strong> This action cannot be undone!
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Form ID to Delete</label>
+                    <input type="text" class="form-control" id="deleteFormId" placeholder="Enter Form ID">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Reason for Deletion</label>
+                    <textarea class="form-control" id="deleteReason" rows="3" placeholder="Why are you deleting this form?"></textarea>
+                </div>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="confirmDelete">
+                    <label class="form-check-label" for="confirmDelete">
+                        I understand this will permanently delete all form data
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn" disabled onclick="confirmDeleteForm()">
+                    <i class="bi bi-trash-fill me-1"></i> Delete Permanently
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+
+// ==================== LOAD RESOLVED REPORTS ====================
+function loadResolvedReports() {
+    const contentEl = document.getElementById('resolvedReportsContent');
+    
+    fetch('/admin/get_resolved_reports')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.resolved_reports && Object.keys(data.resolved_reports).length > 0) {
+                renderResolvedReports(data.resolved_reports, contentEl);
+            } else {
+                contentEl.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="bi bi-check-circle display-4 text-success mb-3"></i>
+                        <h5>No Resolved Reports</h5>
+                        <p class="text-muted">No forms have been marked as resolved yet.</p>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            contentEl.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Error loading resolved reports: ${error.message}
+                </div>
+            `;
+        });
+}
+
+function renderResolvedReports(resolvedReports, contentEl) {
+    let html = `
+        <div class="list-group list-group-flush">
+    `;
+    
+    // Get last 10 resolved reports
+    const recentResolved = Object.entries(resolvedReports)
+        .sort((a, b) => new Date(b[1].resolved_at || '') - new Date(a[1].resolved_at || ''))
+        .slice(0, 10);
+    
+    if (recentResolved.length === 0) {
+        html += `
+            <div class="text-center py-4">
+                <p class="text-muted">No resolved reports found.</p>
+            </div>
+        `;
+    } else {
+        recentResolved.forEach(([formId, report]) => {
+            const resolvedDate = report.resolved_at ? new Date(report.resolved_at).toLocaleDateString() : 'Unknown';
+            const resolvedBy = report.resolved_by_name || report.resolved_by || 'Admin';
+            
+            html += `
+                <div class="list-group-item">
+                    <div class="d-flex w-100 justify-content-between align-items-start">
+                        <div class="flex-grow-1 me-3">
+                            <div class="d-flex align-items-center mb-1">
+                                <h6 class="mb-0">${report.form_title || 'Unknown Form'}</h6>
+                                <span class="badge bg-success ms-2">RESOLVED</span>
+                            </div>
+                            <small class="text-muted d-block mb-2">
+                                Form ID: <code>${formId.substring(0, 8)}...</code> | 
+                                Had ${report.total_reports || 0} report${report.total_reports !== 1 ? 's' : ''}
+                            </small>
+                            <div class="text-muted small">
+                                <i class="bi bi-check-circle me-1"></i>
+                                Resolved by ${resolvedBy} on ${resolvedDate}
+                            </div>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-info" onclick="viewResolvedDetails('${formId}')">
+                                <i class="bi bi-info-circle"></i> Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+    
+    html += `
+        </div>
+        <div class="mt-3 text-center">
+            <small class="text-muted">
+                Showing ${recentResolved.length} most recently resolved reports
+            </small>
+        </div>
+    `;
+    
+    contentEl.innerHTML = html;
+}
+
+function viewResolvedDetails(formId) {
+    // You can implement this to show more details about resolved reports
+    alert('Resolved report details coming soon!\n\nForm ID: ' + formId);
+}
+
+// ==================== PAGE INITIALIZATION ====================
+document.addEventListener('DOMContentLoaded', function() {
+    // Load resolved reports when page loads
+    loadResolvedReports();
+    
+    // Initialize Bootstrap components
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    
+    // Auto-show resolved reports if there are many active reports
+    if ({{ total_forms_reported|default(0) }} > 5) {
+        const collapseElement = document.getElementById('resolvedReports');
+        if (collapseElement) {
+            new bootstrap.Collapse(collapseElement, {
+                toggle: false
+            }).show();
+        }
+    }
+});
+
+// ==================== DELETE FORM FUNCTION ====================
+function deleteFormCompletely(formId) {
+    if (!confirm('⚠️ WARNING: This will PERMANENTLY DELETE the form!\n\n' +
+                 '• All form data will be permanently deleted\n' +
+                 '• All responses will be lost\n' +
+                 '• The form will be inaccessible to everyone\n' +
+                 '• This action cannot be undone!\n\n' +
+                 'Are you absolutely sure you want to permanently delete this form?')) {
+        return;
+    }
+    
+    const reason = prompt('Please enter the reason for permanent deletion (this will be sent to the form creator):');
+    if (reason === null) {
+        return; // User cancelled
+    }
+    
+    // Show loading
+    const modalContent = document.getElementById('reportDetailsContent');
+    if (modalContent) {
+        modalContent.innerHTML = `
+            <div class="text-center py-4">
+                <div class="spinner-border text-danger" role="status">
+                    <span class="visually-hidden">Deleting...</span>
+                </div>
+                <p class="mt-3">Deleting form permanently...</p>
+            </div>
+        `;
+    }
+    
+    fetch(`/admin/delete_form_completely/${formId}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            reason: reason || 'Violation of Terms of Service'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            if (modalContent) {
+                modalContent.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="bi bi-check-circle display-4 text-success mb-3"></i>
+                        <h5>Form Deleted Successfully</h5>
+                        <p>The form "${data.form_title || formId}" has been permanently deleted.</p>
+                        <p class="text-muted">
+                            ${data.creator_notified ? '✅ Creator has been notified via email.' : '⚠️ Could not notify creator (no email found).'}
+                        </p>
+                        <button class="btn btn-primary mt-3" onclick="location.reload()">
+                            <i class="bi bi-arrow-clockwise"></i> Refresh Page
+                        </button>
+                    </div>
+                `;
+            } else {
+                alert('✅ Form permanently deleted!');
+                location.reload();
+            }
+        } else {
+            alert('❌ Error: ' + data.error);
+            if (modalContent) {
+                modalContent.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Error deleting form: ${data.error}
+                    </div>
+                `;
+            }
+        }
+    })
+    .catch(error => {
+        alert('❌ Network error: ' + error.message);
+        if (modalContent) {
+            modalContent.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Network error: ${error.message}
+                </div>
+            `;
+        }
+    });
+}
+
+// ==================== MARK AS RESOLVED FUNCTION ====================
+function markFormResolved(formId) {
+    if (!confirm('Mark this form as resolved?\n\n' +
+                 '• Form will be removed from reports list\n' +
+                 '• Any blocks will be removed\n' +
+                 '• Creator will be notified\n' +
+                 '• All reports will be cleared')) {
+        return;
+    }
+    
+    const resolutionNotes = prompt('Add resolution notes (optional):');
+    
+    // Show loading
+    const modalContent = document.getElementById('reportDetailsContent');
+    if (modalContent) {
+        modalContent.innerHTML = `
+            <div class="text-center py-4">
+                <div class="spinner-border text-success" role="status">
+                    <span class="visually-hidden">Processing...</span>
+                </div>
+                <p class="mt-3">Marking form as resolved...</p>
+            </div>
+        `;
+    }
+    
+    fetch(`/admin/mark_form_resolved/${formId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            resolution_notes: resolutionNotes || '',
+            resolution: 'no_issue_found'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            if (modalContent) {
+                modalContent.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="bi bi-check-circle display-4 text-success mb-3"></i>
+                        <h5>Form Marked as Resolved</h5>
+                        <p>The form has been removed from the reports list.</p>
+                        <p class="text-muted">All reports have been cleared and any blocks removed.</p>
+                        <button class="btn btn-primary mt-3" onclick="location.reload()">
+                            <i class="bi bi-arrow-clockwise"></i> Refresh Page
+                        </button>
+                    </div>
+                `;
+            } else {
+                alert('✅ Form marked as resolved! It has been removed from the reports list.');
+                location.reload();
+            }
+        } else {
+            alert('❌ Error: ' + data.error);
+            if (modalContent) {
+                modalContent.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Error: ${data.error}
+                    </div>
+                `;
+            }
+        }
+    })
+    .catch(error => {
+        alert('❌ Network error: ' + error.message);
+        if (modalContent) {
+            modalContent.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Network error: ${error.message}
+                </div>
+            `;
+        }
+    });
+}
+
+// ==================== REPORT DETAILS FUNCTIONS ====================
+function viewReportDetails(formId) {
+    const modalContent = document.getElementById('reportDetailsContent');
+    const modalActions = document.getElementById('reportDetailsActions');
+    
+    // Show loading
+    modalContent.innerHTML = `
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3">Loading report details...</p>
+        </div>
+    `;
+    
+    modalActions.innerHTML = '';
+    
+    // Fetch report details
+    fetch(`/admin/get_form_report_detail/${formId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                renderReportDetails(data, modalContent, modalActions);
+            } else {
+                modalContent.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Error: ${data.error}
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            modalContent.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Network error: ${error.message}
+                </div>
+            `;
+        });
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('reportDetailsModal'));
+    modal.show();
+}
+
+function renderReportDetails(data, contentEl, actionsEl) {
+    const reports = data.reports;
+    const formInfo = data.form_info;
+    const creatorInfo = data.creator_info;
+    const isBlocked = data.is_blocked;
+    const blockInfo = data.block_info;
+    
+    // Build content
+    let content = `
+        <div class="row">
+            <!-- Form Information -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0"><i class="bi bi-file-text me-2"></i>Form Information</h6>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Title:</strong> ${reports.form_title || 'Unknown'}</p>
+                        <p><strong>Form ID:</strong> <code>${data.form_id}</code></p>
+                        <p><strong>Event ID:</strong> <code>${reports.event_id || 'Unknown'}</code></p>
+                        <p><strong>Questions:</strong> ${formInfo.questions ? formInfo.questions.length : 'Unknown'}</p>
+                        <p><strong>Created:</strong> ${reports.first_reported ? new Date(reports.first_reported).toLocaleDateString() : 'Unknown'}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Creator Information -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0"><i class="bi bi-person me-2"></i>Creator Information</h6>
+                    </div>
+                    <div class="card-body">
+    `;
+    
+    if (creatorInfo) {
+        content += `
+            <p><strong>Username:</strong> ${creatorInfo.username || 'Unknown'}</p>
+            <p><strong>Email:</strong> ${creatorInfo.email || 'Unknown'}</p>
+            <p><strong>Account Created:</strong> ${creatorInfo.created_at ? new Date(creatorInfo.created_at).toLocaleDateString() : 'Unknown'}</p>
+            <p><strong>Email Verified:</strong> ${creatorInfo.email_verified ? '✅ Yes' : '❌ No'}</p>
+        `;
+    } else {
+        content += `<p class="text-muted">Creator information not available</p>`;
+    }
+    
+    content += `
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Report Statistics -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h6 class="mb-0"><i class="bi bi-bar-chart me-2"></i>Report Statistics</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        <h1 class="display-6 ${reports.total_reports >= 3 ? 'text-danger' : 'text-warning'}">${reports.total_reports}</h1>
+                        <p class="text-muted mb-0">Total Reports</p>
+                    </div>
+                    <div class="col-md-9">
+                        <p><strong>First Reported:</strong> ${reports.first_reported ? new Date(reports.first_reported).toLocaleString() : 'Unknown'}</p>
+                        <p><strong>Last Reported:</strong> ${reports.last_reported ? new Date(reports.last_reported).toLocaleString() : 'Unknown'}</p>
+                        <div class="mt-2">
+                            <strong>Reports by Reason:</strong>
+                            <div class="d-flex flex-wrap mt-1">
+    `;
+    
+    if (reports.reports_by_reason) {
+        for (const [reason, count] of Object.entries(reports.reports_by_reason)) {
+            content += `<span class="badge bg-secondary me-1 mb-1">${reason}: ${count}</span>`;
+        }
+    }
+    
+    content += `
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Block Status -->
+    `;
+    
+    if (isBlocked && blockInfo) {
+        content += `
+            <div class="card border-danger mb-4">
+                <div class="card-header bg-danger text-white">
+                    <h6 class="mb-0"><i class="bi bi-shield-exclamation me-2"></i>Block Status</h6>
+                </div>
+                <div class="card-body">
+                    <p><strong>Reason:</strong> ${blockInfo.reason || 'Unknown'}</p>
+                    <p><strong>Blocked At:</strong> ${blockInfo.blocked_at ? new Date(blockInfo.blocked_at).toLocaleString() : 'Unknown'}</p>
+                    <p><strong>Blocked By:</strong> ${blockInfo.blocked_by_name || blockInfo.blocked_by || 'System'}</p>
+                    <p><strong>Duration:</strong> ${blockInfo.block_duration || 7} days</p>
+                    <p><strong>Reports Count at Block:</strong> ${blockInfo.report_count || 'Unknown'}</p>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Individual Reports
+    if (reports.reporters && reports.reporters.length > 0) {
+        content += `
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="bi bi-list me-2"></i>Individual Reports (${reports.reporters.length})</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+        `;
+        
+        reports.reporters.forEach((report, index) => {
+            content += `
+                <div class="list-group-item">
+                    <div class="d-flex w-100 justify-content-between">
+                        <div>
+                            <strong>Report #${index + 1}</strong>
+                            <div class="mt-1">
+                                <span class="badge bg-secondary">${report.reason || 'Unknown'}</span>
+                                <small class="text-muted ms-2">${report.timestamp ? new Date(report.timestamp).toLocaleString() : ''}</small>
+                            </div>
+                            ${report.details ? `<p class="mt-2 mb-1">${report.details}</p>` : ''}
+                            <small class="text-muted">
+                                ${report.reporter_name ? `Reported by: ${report.reporter_name}` : 'Anonymous report'}
+                                ${report.reporter_email ? ` (${report.reporter_email})` : ''}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        content += `
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    contentEl.innerHTML = content;
+    
+    // In the renderReportDetails function, update the actions section:
+let actions = `
+    <button class="btn btn-outline-secondary me-2" onclick="viewForm('${data.form_id}')">
+        <i class="bi bi-eye"></i> View Form
+    </button>
+`;
+
+if (!isBlocked) {
+    actions += `
+        <button class="btn btn-danger me-2" onclick="blockForm('${data.form_id}')">
+            <i class="bi bi-shield-exclamation"></i> Block Form
+        </button>
+    `;
+} else {
+    actions += `
+        <button class="btn btn-success me-2" onclick="unblockForm('${data.form_id}')">
+            <i class="bi bi-shield-check"></i> Unblock Form
+        </button>
+    `;
+}
+
+actions += `
+    <button class="btn btn-outline-danger me-2" onclick="clearReports('${data.form_id}')">
+        <i class="bi bi-trash"></i> Clear Reports
+    </button>
+    <button class="btn btn-success me-2" onclick="markFormResolved('${data.form_id}')">
+        <i class="bi bi-check-circle"></i> Mark Resolved
+    </button>
+    <button class="btn btn-danger" onclick="deleteFormCompletely('${data.form_id}')">
+        <i class="bi bi-trash-fill"></i> Delete Form
+    </button>
+`;
+    
+    actionsEl.innerHTML = actions;
+}
+
+// ==================== FORM MANAGEMENT FUNCTIONS ====================
+function viewForm(formId) {
+    window.open(`/form/${formId}`, '_blank');
+}
+
+function checkUserStatus() {
+    fetch('/admin/check_my_status')
+        .then(response => response.json())
+        .then(data => {
+            if (data.blocked) {
+                alert('Your account has been blocked. You will be logged out.');
+                window.location.href = '/logout';
+            }
+        })
+        .catch(error => {
+            console.error('Error checking user status:', error);
+        });
+}
+
+// Check on page load
+document.addEventListener('DOMContentLoaded', checkUserStatus);
+
+// Check periodically (every 30 seconds)
+setInterval(checkUserStatus, 30000);
+
+function blockForm(formId) {
+    if (!confirm('Are you sure you want to block this form?\n\nBlocking will prevent all users from accessing it.')) {
+        return;
+    }
+    
+    const reason = prompt('Enter reason for blocking (optional):');
+    const duration = prompt('Block duration in days (default: 7):', '7');
+    
+    fetch(`/admin/block_form/${formId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            reason: reason || 'Manual block by admin',
+            duration: parseInt(duration) || 7
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ Form blocked successfully!');
+            location.reload();
+        } else {
+            alert('❌ Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('❌ Network error: ' + error.message);
+    });
+}
+
+function unblockForm(formId) {
+    if (!confirm('Are you sure you want to unblock this form?')) {
+        return;
+    }
+    
+    fetch(`/admin/unblock_form/${formId}`, {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ Form unblocked successfully!');
+            location.reload();
+        } else {
+            alert('❌ Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('❌ Network error: ' + error.message);
+    });
+}
+
+function clearReports(formId) {
+    if (!confirm('Are you sure you want to clear all reports for this form?\n\nThis action cannot be undone.')) {
+        return;
+    }
+    
+    fetch(`/admin/clear_form_reports/${formId}`, {
+        method: 'DELETE'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ Reports cleared successfully!');
+            location.reload();
+        } else {
+            alert('❌ Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('❌ Network error: ' + error.message);
+    });
+}
+
+// ==================== MODAL FUNCTIONS ====================
+function showDeleteFormModal() {
+    const modal = new bootstrap.Modal(document.getElementById('deleteFormModal'));
+    modal.show();
+    
+    // Enable/disable confirm button based on checkbox
+    document.getElementById('confirmDelete').addEventListener('change', function() {
+        document.getElementById('confirmDeleteBtn').disabled = !this.checked;
+    });
+}
+
+function confirmDeleteForm() {
+    const formId = document.getElementById('deleteFormId').value.trim();
+    const reason = document.getElementById('deleteReason').value.trim();
+    
+    if (!formId) {
+        alert('Please enter a Form ID');
+        return;
+    }
+    
+    if (!reason) {
+        alert('Please provide a reason for deletion');
+        return;
+    }
+    
+    deleteFormCompletely(formId);
+    
+    // Close modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('deleteFormModal'));
+    modal.hide();
+}
+
+// ==================== QUICK ACTION FUNCTIONS ====================
+function viewAllReports() {
+    alert('Feature coming soon: View all reports with filters and pagination');
+}
+
+function viewBlockedForms() {
+    alert('Feature coming soon: View all blocked forms');
+}
+
+function performSearch() {
+    alert('Feature coming soon: Search reports');
+}
+
+function exportReports() {
+    alert('Feature coming soon: Export reports to CSV');
+}
+
+function refreshReports() {
+    location.reload();
+}
+
+// ==================== UTILITY FUNCTIONS ====================
+// Auto-refresh every 5 minutes
+setTimeout(refreshReports, 5 * 60 * 1000);
+
+// Initialize tooltips
+document.addEventListener('DOMContentLoaded', function() {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
+{% endblock %}

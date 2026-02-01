@@ -1,0 +1,928 @@
+{% extends "base.html" %}
+{% block title %}System Settings - Admin{% endblock %}
+
+{% block page_title %}⚙️ System Settings{% endblock %}
+{% block page_subtitle %}
+<p class="lead text-muted mb-0">Configure EventFlow system parameters and preferences</p>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Left Sidebar - Settings Navigation -->
+    <div class="col-lg-3">
+        <div class="card card-glass mb-4">
+            <div class="card-header bg-transparent">
+                <h6 class="mb-0"><i class="bi bi-menu-button-wide me-2"></i>Settings Categories</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    <a href="#general" class="list-group-item list-group-item-action active" data-bs-toggle="list">
+                        <i class="bi bi-gear me-2"></i>General Settings
+                    </a>
+                    <a href="#email" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                        <i class="bi bi-envelope me-2"></i>Email Configuration
+                    </a>
+                    <a href="#security" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                        <i class="bi bi-shield-lock me-2"></i>Security Settings
+                    </a>
+                    <a href="#appearance" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                        <i class="bi bi-palette me-2"></i>Appearance
+                    </a>
+                    <a href="#notifications" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                        <i class="bi bi-bell me-2"></i>Notifications
+                    </a>
+                    <a href="#advanced" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                        <i class="bi bi-tools me-2"></i>Advanced
+                    </a>
+                    <a href="#backup" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                        <i class="bi bi-database me-2"></i>Backup & Restore
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card card-glass">
+            <div class="card-body text-center">
+                <h6 class="mb-3">💡 Quick Actions</h6>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-primary btn-sm" onclick="testAllSettings()">
+                        <i class="bi bi-play-circle me-1"></i>Test All Settings
+                    </button>
+                    <button class="btn btn-outline-success btn-sm" onclick="saveAllSettings()">
+                        <i class="bi bi-check-circle me-1"></i>Save All Changes
+                    </button>
+                    <button class="btn btn-outline-warning btn-sm" onclick="resetToDefaults()">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>Reset to Defaults
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm" onclick="showRevertModal()">
+                        <i class="bi bi-clock-history me-1"></i>Revert Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Settings Content -->
+    <div class="col-lg-9">
+        <div class="tab-content">
+            <!-- General Settings Tab -->
+            <div class="tab-pane fade show active" id="general">
+                <div class="card card-glass">
+                    <div class="card-header bg-transparent">
+                        <h5 class="mb-0"><i class="bi bi-gear me-2"></i>General Settings</h5>
+                        <small class="text-muted">Basic system configuration</small>
+                    </div>
+                    <div class="card-body">
+                        <form id="generalSettingsForm">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Site Name</label>
+                                    <input type="text" class="form-control" name="site_name" 
+                                           value="{{ settings.site_name if settings else 'EventFlow' }}">
+                                    <small class="text-muted">The name displayed throughout the site</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Site URL</label>
+                                    <input type="url" class="form-control" name="site_url" 
+                                           value="{{ settings.site_url if settings else 'http://localhost:5000' }}">
+                                    <small class="text-muted">Base URL of your EventFlow installation</small>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Time Zone</label>
+                                    <select class="form-select" name="timezone">
+                                        <option value="Asia/Kolkata" {% if settings and settings.timezone == 'Asia/Kolkata' %}selected{% endif %}>India (Asia/Kolkata)</option>
+                                        <option value="America/New_York" {% if settings and settings.timezone == 'America/New_York' %}selected{% endif %}>New York (EST)</option>
+                                        <option value="Europe/London" {% if settings and settings.timezone == 'Europe/London' %}selected{% endif %}>London (GMT)</option>
+                                        <option value="Asia/Tokyo" {% if settings and settings.timezone == 'Asia/Tokyo' %}selected{% endif %}>Tokyo (JST)</option>
+                                        <option value="Australia/Sydney" {% if settings and settings.timezone == 'Australia/Sydney' %}selected{% endif %}>Sydney (AEST)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Default Language</label>
+                                    <select class="form-select" name="language">
+                                        <option value="en" selected>English</option>
+                                        <option value="es">Spanish</option>
+                                        <option value="fr">French</option>
+                                        <option value="de">German</option>
+                                        <option value="ja">Japanese</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Contact Email</label>
+                                    <input type="email" class="form-control" name="contact_email" 
+                                           value="{{ settings.contact_email if settings else '' }}">
+                                    <small class="text-muted">Email address for system notifications</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Max File Size (MB)</label>
+                                    <input type="number" class="form-control" name="max_file_size" 
+                                           value="{{ settings.max_file_size if settings else 100 }}" min="1" max="500">
+                                    <small class="text-muted">Maximum file upload size in megabytes</small>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">System Registration</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="registration" 
+                                           value="open" {% if not settings or settings.registration == 'open' %}checked{% endif %}>
+                                    <label class="form-check-label">Open Registration (Anyone can sign up)</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="registration" 
+                                           value="invite" {% if settings and settings.registration == 'invite' %}checked{% endif %}>
+                                    <label class="form-check-label">Invite Only (Requires admin approval)</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="registration" 
+                                           value="closed" {% if settings and settings.registration == 'closed' %}checked{% endif %}>
+                                    <label class="form-check-label">Closed (No new registrations)</label>
+                                </div>
+                            </div>
+
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" name="maintenance_mode" 
+                                       value="enabled" {% if settings and settings.maintenance_mode == 'enabled' %}checked{% endif %}>
+                                <label class="form-check-label">Enable Maintenance Mode</label>
+                                <small class="text-muted d-block">When enabled, only admins can access the site</small>
+                            </div>
+
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" name="email_verification" 
+                                       value="required" {% if not settings or settings.get('email_verification', True) %}checked{% endif %}>
+                                <label class="form-check-label">Require Email Verification</label>
+                                <small class="text-muted d-block">Users must verify their email before accessing the system</small>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Email Configuration Tab -->
+            <div class="tab-pane fade" id="email">
+                <div class="card card-glass">
+                    <div class="card-header bg-transparent">
+                        <h5 class="mb-0"><i class="bi bi-envelope me-2"></i>Email Configuration</h5>
+                        <small class="text-muted">Configure email server settings</small>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>Note:</strong> Email settings are primarily configured via the .env file. You can test the configuration below.
+                        </div>
+
+                        <form id="emailSettingsForm">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Email System</label>
+                                    <select class="form-select" name="email_system">
+                                        <option value="enabled" {% if not settings or settings.email_system == 'enabled' %}selected{% endif %}>Enabled</option>
+                                        <option value="disabled" {% if settings and settings.email_system == 'disabled' %}selected{% endif %}>Disabled</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">SMTP Server</label>
+                                    <input type="text" class="form-control" value="{{ settings.MAIL_SERVER if settings else 'smtp.gmail.com' }}" readonly>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">SMTP Port</label>
+                                    <input type="text" class="form-control" value="{{ settings.MAIL_PORT if settings else '587' }}" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Sender Email</label>
+                                    <input type="email" class="form-control" value="{{ settings.MAIL_USERNAME if settings else 'your-email@gmail.com' }}" readonly>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Email Templates</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="welcome_email" checked>
+                                    <label class="form-check-label">Send welcome email to new users</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="form_notifications" checked>
+                                    <label class="form-check-label">Send form end notifications</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="feedback_notifications" checked>
+                                    <label class="form-check-label">Send feedback notifications</label>
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="button" class="btn btn-outline-primary" onclick="testEmailConfiguration()">
+                                    <i class="bi bi-envelope-check me-1"></i>Test Email Configuration
+                                </button>
+                                <button type="button" class="btn btn-outline-success" onclick="saveEmailSettings()">
+                                    <i class="bi bi-check-circle me-1"></i>Save Email Settings
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Settings Tab -->
+            <div class="tab-pane fade" id="security">
+                <div class="card card-glass">
+                    <div class="card-header bg-transparent">
+                        <h5 class="mb-0"><i class="bi bi-shield-lock me-2"></i>Security Settings</h5>
+                        <small class="text-muted">Configure security and access control</small>
+                    </div>
+                    <div class="card-body">
+                        <form id="securitySettingsForm">
+                            <h6 class="mb-3">🔐 Authentication Settings</h6>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Session Timeout (minutes)</label>
+                                    <input type="number" class="form-control" name="session_timeout" 
+                                           value="{{ settings.session_timeout if settings else 60 }}" min="5" max="1440">
+                                    <small class="text-muted">After this time, users must log in again</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Max Login Attempts</label>
+                                    <input type="number" class="form-control" name="max_login_attempts" 
+                                           value="{{ settings.max_login_attempts if settings else 5 }}" min="1" max="20">
+                                    <small class="text-muted">After this many failed attempts, account is locked</small>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Password Policy</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="password_complexity" checked>
+                                    <label class="form-check-label">Require complex passwords (min 8 chars, mixed case, numbers)</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="password_expiry">
+                                    <label class="form-check-label">Password expires every 90 days</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="prevent_reuse">
+                                    <label class="form-check-label">Prevent password reuse (last 5 passwords)</label>
+                                </div>
+                            </div>
+
+                            <h6 class="mb-3 mt-4">🔒 Access Control</h6>
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="ip_whitelist">
+                                    <label class="form-check-label">Enable IP Whitelist</label>
+                                    <small class="text-muted d-block">Only allow access from specific IP addresses</small>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="two_factor_auth">
+                                    <label class="form-check-label">Enable Two-Factor Authentication (for admins)</label>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">API Security</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="api_rate_limit" checked>
+                                    <label class="form-check-label">Enable API rate limiting (100 requests/hour)</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="api_key_required">
+                                    <label class="form-check-label">Require API key for all requests</label>
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="button" class="btn btn-outline-warning" onclick="runSecurityScan()">
+                                    <i class="bi bi-shield-check me-1"></i>Run Security Scan
+                                </button>
+                                <button type="button" class="btn btn-outline-success" onclick="saveSecuritySettings()">
+                                    <i class="bi bi-check-circle me-1"></i>Save Security Settings
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Appearance Tab -->
+            <div class="tab-pane fade" id="appearance">
+                <div class="card card-glass">
+                    <div class="card-header bg-transparent">
+                        <h5 class="mb-0"><i class="bi bi-palette me-2"></i>Appearance Settings</h5>
+                        <small class="text-muted">Customize the look and feel of EventFlow</small>
+                    </div>
+                    <div class="card-body">
+                        <form id="appearanceSettingsForm">
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label">Theme</label>
+                                    <select class="form-select" name="theme">
+                                        <option value="light">Light Theme</option>
+                                        <option value="dark">Dark Theme</option>
+                                        <option value="auto">Auto (System Preference)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Primary Color</label>
+                                    <input type="color" class="form-control" name="primary_color" value="#4361ee">
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label">Logo</label>
+                                <div class="mb-3">
+                                    <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Current Logo" 
+                                         class="img-thumbnail mb-2" style="max-height: 60px;">
+                                    <input type="file" class="form-control" accept="image/*" name="logo_upload">
+                                </div>
+                                <small class="text-muted">Upload a new logo (PNG or JPG, max 2MB)</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Favicon</label>
+                                <div class="mb-3">
+                                    <img src="{{ url_for('static', filename='img/favicon.ico') }}" alt="Current Favicon" 
+                                         class="img-thumbnail mb-2" style="max-height: 32px;">
+                                    <input type="file" class="form-control" accept=".ico,image/*" name="favicon_upload">
+                                </div>
+                                <small class="text-muted">Upload a new favicon (ICO, PNG, max 100KB)</small>
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="button" class="btn btn-outline-primary" onclick="previewChanges()">
+                                    <i class="bi bi-eye me-1"></i>Preview Changes
+                                </button>
+                                <button type="button" class="btn btn-outline-success" onclick="saveAppearanceSettings()">
+                                    <i class="bi bi-check-circle me-1"></i>Save Appearance
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notifications Tab -->
+            <div class="tab-pane fade" id="notifications">
+                <div class="card card-glass">
+                    <div class="card-header bg-transparent">
+                        <h5 class="mb-0"><i class="bi bi-bell me-2"></i>Notification Settings</h5>
+                        <small class="text-muted">Configure system notifications and alerts</small>
+                    </div>
+                    <div class="card-body">
+                        <form id="notificationSettingsForm">
+                            <h6 class="mb-3">📧 Email Notifications</h6>
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="notify_new_users" checked>
+                                    <label class="form-check-label">Notify admins of new user registrations</label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="notify_new_feedback" checked>
+                                    <label class="form-check-label">Notify admins of new feedback submissions</label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="notify_system_errors" checked>
+                                    <label class="form-check-label">Notify admins of system errors</label>
+                                </div>
+                            </div>
+
+                            <h6 class="mb-3 mt-4">📱 User Notifications</h6>
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="user_welcome_email" checked>
+                                    <label class="form-check-label">Send welcome email to new users</label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="user_feedback_confirmation" checked>
+                                    <label class="form-check-label">Send confirmation email when feedback is submitted</label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="user_form_end_notification" checked>
+                                    <label class="form-check-label">Notify users when their forms end</label>
+                                </div>
+                            </div>
+
+                            <h6 class="mb-3 mt-4">🔔 In-App Notifications</h6>
+                            <div class="mb-3">
+                                <label class="form-label">Notification Display Duration (seconds)</label>
+                                <input type="number" class="form-control" name="notification_duration" value="5" min="1" max="30">
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="button" class="btn btn-outline-primary" onclick="testNotifications()">
+                                    <i class="bi bi-bell me-1"></i>Test Notifications
+                                </button>
+                                <button type="button" class="btn btn-outline-success" onclick="saveNotificationSettings()">
+                                    <i class="bi bi-check-circle me-1"></i>Save Notification Settings
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Tab -->
+            <div class="tab-pane fade" id="advanced">
+                <div class="card card-glass">
+                    <div class="card-header bg-transparent">
+                        <h5 class="mb-0"><i class="bi bi-tools me-2"></i>Advanced Settings</h5>
+                        <small class="text-muted">Advanced system configuration (Use with caution)</small>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <strong>Warning:</strong> These settings are for advanced users only. Incorrect configuration may cause system instability.
+                        </div>
+
+                        <form id="advancedSettingsForm">
+                            <div class="mb-3">
+                                <label class="form-label">Debug Mode</label>
+                                <select class="form-select" name="debug_mode">
+                                    <option value="disabled">Disabled (Production)</option>
+                                    <option value="enabled">Enabled (Development)</option>
+                                </select>
+                                <small class="text-muted">Enable for detailed error messages (not recommended for production)</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Log Level</label>
+                                <select class="form-select" name="log_level">
+                                    <option value="ERROR">ERROR (Errors only)</option>
+                                    <option value="WARNING" selected>WARNING (Warnings and errors)</option>
+                                    <option value="INFO">INFO (Information messages)</option>
+                                    <option value="DEBUG">DEBUG (Detailed debugging)</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Database Connection Pool Size</label>
+                                <input type="number" class="form-control" name="db_pool_size" value="10" min="1" max="100">
+                                <small class="text-muted">Number of database connections to maintain</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Cache TTL (Time to Live in seconds)</label>
+                                <input type="number" class="form-control" name="cache_ttl" value="300" min="0" max="86400">
+                                <small class="text-muted">How long to cache data (0 = no caching)</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">API Rate Limit</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" name="api_rate_limit" value="100" min="1" max="1000">
+                                    <span class="input-group-text">requests per hour</span>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="enable_analytics" checked>
+                                    <label class="form-check-label">Enable Google Analytics</label>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="enable_background_tasks">
+                                    <label class="form-check-label">Enable Background Task Processing</label>
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="button" class="btn btn-outline-warning" onclick="showAdvancedConfirmation()">
+                                    <i class="bi bi-exclamation-triangle me-1"></i>Show Advanced Options
+                                </button>
+                                <button type="button" class="btn btn-outline-success" onclick="saveAdvancedSettings()">
+                                    <i class="bi bi-check-circle me-1"></i>Save Advanced Settings
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Backup & Restore Tab -->
+            <div class="tab-pane fade" id="backup">
+                <div class="card card-glass">
+                    <div class="card-header bg-transparent">
+                        <h5 class="mb-0"><i class="bi bi-database me-2"></i>Backup & Restore</h5>
+                        <small class="text-muted">Manage system backups and data restoration</small>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card bg-light border-0 mb-3">
+                                    <div class="card-body text-center">
+                                        <i class="bi bi-cloud-arrow-up display-4 text-primary mb-3"></i>
+                                        <h5>Backup System</h5>
+                                        <p class="text-muted">Create a complete backup of all system data</p>
+                                        <button type="button" class="btn btn-primary" onclick="createBackup()">
+                                            <i class="bi bi-plus-circle me-1"></i>Create Backup
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card bg-light border-0 mb-3">
+                                    <div class="card-body text-center">
+                                        <i class="bi bi-cloud-arrow-down display-4 text-success mb-3"></i>
+                                        <h5>Restore System</h5>
+                                        <p class="text-muted">Restore system from a previous backup</p>
+                                        <button type="button" class="btn btn-success" onclick="showRestoreModal()">
+                                            <i class="bi bi-arrow-clockwise me-1"></i>Restore Backup
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <h6 class="mb-3">Recent Backups</h6>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Backup Name</th>
+                                            <th>Date</th>
+                                            <th>Size</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>backup_20240115_143022.json</td>
+                                            <td>Today, 14:30</td>
+                                            <td>45.2 MB</td>
+                                            <td><span class="badge bg-success">Complete</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary">Download</button>
+                                                <button class="btn btn-sm btn-outline-success">Restore</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>backup_20240114_120015.json</td>
+                                            <td>Yesterday, 12:00</td>
+                                            <td>44.8 MB</td>
+                                            <td><span class="badge bg-success">Complete</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary">Download</button>
+                                                <button class="btn btn-sm btn-outline-success">Restore</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <h6 class="mb-3">Backup Schedule</h6>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="autoBackup" checked>
+                                    <label class="form-check-label" for="autoBackup">Enable Automatic Backups</label>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <label class="form-label">Frequency</label>
+                                    <select class="form-select" id="backupFrequency">
+                                        <option value="daily">Daily</option>
+                                        <option value="weekly" selected>Weekly</option>
+                                        <option value="monthly">Monthly</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Time</label>
+                                    <input type="time" class="form-control" id="backupTime" value="02:00">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Keep Backups</label>
+                                    <select class="form-select" id="keepBackups">
+                                        <option value="7">1 Week</option>
+                                        <option value="30" selected>1 Month</option>
+                                        <option value="90">3 Months</option>
+                                        <option value="365">1 Year</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Revert Changes Modal -->
+<div class="modal fade" id="revertModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title"><i class="bi bi-clock-history me-2"></i>Revert Changes</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    You are about to revert all unsaved changes. This action cannot be undone.
+                </div>
+                <p>Are you sure you want to revert all changes to their previous values?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning" onclick="confirmRevert()">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i>Revert Changes
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Restore Modal -->
+<div class="modal fade" id="restoreModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success">
+                <h5 class="modal-title"><i class="bi bi-arrow-clockwise me-2"></i>Restore Backup</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <strong>Warning:</strong> Restoring from backup will overwrite all current data. This action cannot be undone.
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Select Backup File</label>
+                    <select class="form-select" id="backupSelect">
+                        <option value="backup_20240115_143022.json">backup_20240115_143022.json (Today, 14:30)</option>
+                        <option value="backup_20240114_120015.json">backup_20240114_120015.json (Yesterday, 12:00)</option>
+                    </select>
+                </div>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="restoreConfirm">
+                    <label class="form-check-label" for="restoreConfirm">
+                        I understand this will overwrite all current data
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="restoreBtn" disabled>
+                    <i class="bi bi-arrow-clockwise me-1"></i>Restore Backup
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Tab functionality
+const triggerTabList = document.querySelectorAll('a[data-bs-toggle="list"]');
+triggerTabList.forEach(triggerEl => {
+    const tabTrigger = new bootstrap.Tab(triggerEl);
+    triggerEl.addEventListener('click', event => {
+        event.preventDefault();
+        tabTrigger.show();
+    });
+});
+
+// Settings functions
+function testAllSettings() {
+    alert('Testing all settings... This would validate each configuration in a real implementation.');
+}
+
+function saveAllSettings() {
+    if (confirm('Save all settings changes?')) {
+        // Collect data from all forms
+        const settings = {};
+        
+        // General settings
+        const generalForm = document.getElementById('generalSettingsForm');
+        const generalData = new FormData(generalForm);
+        for (let [key, value] of generalData.entries()) {
+            settings[key] = value;
+        }
+        
+        // Submit to server
+        fetch('/admin/save_settings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify(settings)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Settings saved successfully!');
+                location.reload();
+            } else {
+                alert('Error saving settings: ' + data.error);
+            }
+        });
+    }
+}
+
+function resetToDefaults() {
+    if (confirm('Reset all settings to default values?')) {
+        if (confirm('⚠️ This will erase all custom settings. Are you sure?')) {
+            fetch('/admin/reset_settings', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Settings reset to defaults!');
+                    location.reload();
+                } else {
+                    alert('Error resetting settings: ' + data.error);
+                }
+            });
+        }
+    }
+}
+
+function showRevertModal() {
+    const modal = new bootstrap.Modal(document.getElementById('revertModal'));
+    modal.show();
+}
+
+function confirmRevert() {
+    location.reload();
+}
+
+function testEmailConfiguration() {
+    alert('Testing email configuration... This would send a test email in a real implementation.');
+}
+
+function saveEmailSettings() {
+    alert('Email settings saved (in a real implementation, this would be saved to the database)');
+}
+
+function runSecurityScan() {
+    alert('Running security scan... This would check for vulnerabilities in a real implementation.');
+}
+
+function saveSecuritySettings() {
+    alert('Security settings saved');
+}
+
+function previewChanges() {
+    alert('Changes previewed (in a real implementation, you would see a live preview)');
+}
+
+function saveAppearanceSettings() {
+    alert('Appearance settings saved');
+}
+
+function testNotifications() {
+    alert('Test notification sent (in a real implementation, this would trigger all notification types)');
+}
+
+function saveNotificationSettings() {
+    alert('Notification settings saved');
+}
+
+function showAdvancedConfirmation() {
+    if (confirm('⚠️ Advanced settings can affect system stability. Are you sure you want to continue?')) {
+        // Show advanced options
+        alert('Showing advanced options...');
+    }
+}
+
+function saveAdvancedSettings() {
+    alert('Advanced settings saved');
+}
+
+function createBackup() {
+    if (confirm('Create a system backup now?')) {
+        fetch('/admin/create_backup', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Backup created successfully!');
+                location.reload();
+            } else {
+                alert('Error creating backup: ' + data.error);
+            }
+        });
+    }
+}
+
+function showRestoreModal() {
+    const modal = new bootstrap.Modal(document.getElementById('restoreModal'));
+    modal.show();
+}
+
+// Enable restore button when confirmed
+document.getElementById('restoreConfirm').addEventListener('change', function() {
+    document.getElementById('restoreBtn').disabled = !this.checked;
+});
+
+function restoreBackup() {
+    const backupFile = document.getElementById('backupSelect').value;
+    if (confirm(`Restore from backup: ${backupFile}?\n\n⚠️ This will overwrite ALL current data!`)) {
+        fetch('/admin/restore_backup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ backup_file: backupFile })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Backup restored successfully! The system will reload.');
+                location.reload();
+            } else {
+                alert('Error restoring backup: ' + data.error);
+            }
+        });
+    }
+}
+
+// Assign restore function to button
+document.getElementById('restoreBtn').onclick = restoreBackup;
+
+// Auto-save for critical settings
+let saveTimeout;
+function autoSave(formId) {
+    clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(() => {
+        console.log('Auto-saving', formId);
+        // In real implementation, would save via AJAX
+    }, 3000);
+}
+
+// Add change listeners to forms
+document.querySelectorAll('input, select, textarea').forEach(element => {
+    element.addEventListener('change', function() {
+        const form = this.closest('form');
+        if (form) {
+            autoSave(form.id);
+        }
+    });
+});
+</script>
+
+<style>
+.list-group-item.active {
+    background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
+    border-color: #4361ee;
+}
+
+.card-glass {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.tab-content {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.form-check-input:checked {
+    background-color: #4361ee;
+    border-color: #4361ee;
+}
+
+.input-group-text {
+    background-color: #f8f9fa;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+env/
+*.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Data files (don't commit user data)
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploads
+static/uploads/
+static/qr_codes/
+
+# Logs
+logs/
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp files
+*.tmp
+*.temp
+
+# Render
+render.yaml

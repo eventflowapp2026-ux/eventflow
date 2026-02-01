@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventFlow | Professional Event Registration Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Elegant Design System */
+        :root {
+            --primary: #2563EB;           /* Royal Blue */
+            --primary-dark: #1D4ED8;
+            --primary-light: #DBEAFE;
+            --secondary: #7C3AED;         /* Royal Purple */
+            --accent: #059669;            /* Emerald Green */
+            --success: #10B981;
+            --warning: #F59E0B;
+            --dark: #111827;              /* Deep Charcoal */
+            --light: #FFFFFF;
+            --surface: #F9FAFB;
+            --border: #E5E7EB;
+            --text-primary: #1F2937;
+            --text-secondary: #6B7280;
+            --text-tertiary: #9CA3AF;
+            
+            /* Elegant Gradients */
+            --gradient-primary: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%);
+            --gradient-secondary: linear-gradient(135deg, #059669 0%, #0D9488 100%);
+            --gradient-dark: linear-gradient(135deg, #111827 0%, #1F2937 100%);
+            --gradient-light: linear-gradient(135deg, #FFFFFF 0%, #F9FAFB 100%);
+            
+            /* Sophisticated Spacing */
+            --space-xs: 0.5rem;
+            --space-sm: 0.75rem;
+            --space-md: 1.25rem;
+            --space-lg: 2rem;
+            --space-xl: 3rem;
+            --space-2xl: 5rem;
+            
+            /* Refined Radius */
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --radius-2xl: 1.5rem;
+            --radius-full: 9999px;
+            
+            /* Premium Shadows */
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --shadow-blue: 0 10px 15px -3px rgba(37, 99, 235, 0.1);
+            
+            /* Smooth Transitions */
+            --transition-fast: 150ms ease;
+            --transition-base: 250ms ease;
+            --transition-slow: 400ms ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 80px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--light);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Typography */
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 700;
+            line-height: 1.2;
+            letter-spacing: -0.01em;
+            margin-bottom: var(--space-sm);
+        }
+
+        .text-gradient {
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Navigation */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(229, 231, 235, 0.8);
+            padding: 1rem 0;
+            transition: all var(--transition-base);
+        }
+
+        .navbar.scrolled {
+            box-shadow: var(--shadow-md);
+            padding: 0.75rem 0;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .navbar-brand img {
+            height: 40px;
+            width: auto;
+            transition: transform var(--transition-fast);
+        }
+
+        .navbar-brand:hover img {
+            transform: scale(1.05);
+        }
+
+        .brand-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: -0.01em;
+        }
+
+        .nav-link {
+            font-weight: 500;
+            color: var(--text-secondary) !important;
+            padding: 0.5rem 1rem !important;
+            border-radius: var(--radius-md);
+            transition: all var(--transition-fast);
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: var(--primary) !important;
+            background: var(--primary-light);
+        }
+
+        .nav-link.active {
+            color: var(--primary) !important;
+            background: var(--primary-light);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            padding-top: 120px;
+            background: linear-gradient(135deg,
+                rgba(249, 250, 251, 0.9) 0%,
+                rgba(241, 245, 249, 0.9) 50%,
+                rgba(226, 232, 240, 0.9) 100%
+            );
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0.4;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(37, 99, 235, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 80% 20%, rgba(124, 58, 237, 0.1) 0%, transparent 40%);
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(37, 99, 235, 0.1);
+            border: 1px solid rgba(37, 99, 235, 0.2);
+            color: var(--primary);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-full);
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: var(--space-lg);
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: var(--space-md);
+            background: linear-gradient(135deg, var(--dark) 0%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin-bottom: var(--space-xl);
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1.75rem;
+            font-weight: 600;
+            border-radius: var(--radius-md);
+            border: none;
+            transition: all var(--transition-base);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: var(--shadow-blue);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Stats */
+        .stats {
+            padding: var(--space-2xl) 0;
+            background: var(--gradient-dark);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stats::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><path d="M0,0Q250,200,500,200Q750,200,1000,0L1000,1000L0,1000Z" fill="rgba(255,255,255,0.05)"/></svg>');
+            background-size: cover;
+            opacity: 0.5;
+        }
+
+        .stat-item {
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            color: white;
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        /* Features */
+        .features {
+            padding: var(--space-2xl) 0;
+            background: var(--light);
+        }
+
+        .section-header {
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto var(--space-2xl);
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: var(--space-md);
+            color: var(--text-primary);
+        }
+
+        .section-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+            line-height: 1.6;
+        }
+
+        .feature-card {
+            background: var(--light);
+            border-radius: var(--radius-xl);
+            padding: var(--space-lg);
+            height: 100%;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            transition: all var(--transition-base);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-light);
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient-primary);
+            transform: scaleX(0);
+            transition: transform var(--transition-base);
+            transform-origin: left;
+        }
+
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .feature-icon {
+            width: 56px;
+            height: 56px;
+            background: var(--primary-light);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: var(--space-md);
+            font-size: 1.5rem;
+            color: var(--primary);
+            transition: all var(--transition-base);
+        }
+
+        .feature-card:hover .feature-icon {
+            background: var(--gradient-primary);
+            color: white;
+            transform: rotate(5deg) scale(1.05);
+        }
+
+        .feature-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: var(--space-sm);
+            color: var(--text-primary);
+        }
+
+        /* Process */
+        .process {
+            padding: var(--space-2xl) 0;
+            background: var(--surface);
+        }
+
+        .process-step {
+            background: var(--light);
+            border-radius: var(--radius-xl);
+            padding: var(--space-xl);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-md);
+            position: relative;
+            margin-bottom: var(--space-xl);
+            transition: all var(--transition-base);
+        }
+
+        .process-step:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .step-number {
+            position: absolute;
+            top: -20px;
+            left: var(--space-xl);
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.125rem;
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Testimonials */
+        .testimonials {
+            padding: var(--space-2xl) 0;
+            background: var(--light);
+        }
+
+        .testimonial-card {
+            background: var(--light);
+            border-radius: var(--radius-xl);
+            padding: var(--space-xl);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-md);
+            height: 100%;
+            transition: all var(--transition-base);
+        }
+
+        .testimonial-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .testimonial-text {
+            font-style: italic;
+            color: var(--text-primary);
+            margin-bottom: var(--space-lg);
+            line-height: 1.7;
+            position: relative;
+            padding-left: var(--space-md);
+        }
+
+        .testimonial-text::before {
+            content: '"';
+            position: absolute;
+            left: 0;
+            top: -0.5rem;
+            font-size: 3rem;
+            color: var(--primary-light);
+            font-family: Georgia, serif;
+            opacity: 0.5;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .author-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-md);
+            object-fit: cover;
+            border: 2px solid var(--primary-light);
+        }
+
+        /* CTA */
+        .cta {
+            padding: var(--space-2xl) 0;
+            background: var(--gradient-primary);
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><path d="M0,500Q250,600,500,500Q750,400,1000,500L1000,1000L0,1000Z" fill="rgba(255,255,255,0.1)"/></svg>') bottom center no-repeat;
+            background-size: cover;
+        }
+
+        .cta-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: var(--space-md);
+            position: relative;
+            z-index: 2;
+        }
+
+        .cta-subtitle {
+            font-size: 1.125rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: var(--space-xl);
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Free Plan */
+        .free-plan {
+            padding: var(--space-2xl) 0;
+            background: var(--light);
+        }
+
+        .plan-card {
+            background: var(--light);
+            border-radius: var(--radius-2xl);
+            padding: var(--space-2xl);
+            border: 2px solid var(--primary);
+            box-shadow: var(--shadow-xl);
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .plan-card::before {
+            content: 'FREE FOREVER';
+            position: absolute;
+            top: 25px;
+            right: -40px;
+            background: var(--gradient-secondary);
+            color: white;
+            padding: 0.5rem 3rem;
+            transform: rotate(45deg);
+            font-size: 0.875rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .plan-title {
+            font-size: 2.25rem;
+            font-weight: 800;
+            margin-bottom: var(--space-md);
+            color: var(--text-primary);
+        }
+
+        .plan-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--space-md);
+            margin: var(--space-xl) 0;
+        }
+
+        .plan-feature {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-sm);
+            padding: var(--space-md);
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            transition: all var(--transition-fast);
+        }
+
+        .plan-feature:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        .plan-feature i {
+            color: var(--primary);
+            font-size: 1.25rem;
+            margin-top: 0.25rem;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: rgba(255, 255, 255, 0.8);
+            padding: var(--space-2xl) 0 var(--space-lg);
+            position: relative;
+        }
+
+        footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: var(--space-md);
+        }
+
+        .footer-logo img {
+            height: 32px;
+            width: auto;
+        }
+
+        .footer-links h5 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--space-md);
+        }
+
+        .footer-links ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: all var(--transition-fast);
+        }
+
+        .footer-links a:hover {
+            color: white;
+            padding-left: 0.25rem;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: var(--space-md);
+        }
+
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-md);
+            color: white;
+            text-decoration: none;
+            transition: all var(--transition-fast);
+        }
+
+        .social-links a:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .hero-title {
+                font-size: 2.75rem;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .cta-title {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero {
+                padding-top: 100px;
+            }
+            
+            .hero-title {
+                font-size: 2.25rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.125rem;
+            }
+            
+            .navbar-nav {
+                padding-top: var(--space-md);
+            }
+            
+            .plan-features {
+                grid-template-columns: 1fr;
+            }
+            
+            .feature-card,
+            .process-step,
+            .testimonial-card {
+                padding: var(--space-md);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-title {
+                font-size: 2rem;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .plan-card {
+                padding: var(--space-xl) var(--space-md);
+            }
+            
+            .plan-card::before {
+                right: -45px;
+                padding: 0.4rem 2.5rem;
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <img src="/static/logo/icon.png" alt="EventFlow Logo">
+                <span class="brand-name">EventFlow</span>
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#process">How It Works</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#testimonials">Testimonials</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#feedback">Feedback</a>
+                    </li>
+                    
+                    {% if 'user_id' in session %}
+                    <li class="nav-item ms-3">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline">Dashboard</a>
+                    </li>
+                    <li class="nav-item ms-2">
+                        <a href="{{ url_for('logout') }}" class="btn btn-primary">Logout</a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item ms-3">
+                        <a href="{{ url_for('login') }}" class="btn btn-outline">Login</a>
+                    </li>
+                    <li class="nav-item ms-2">
+                        <a href="{{ url_for('signup') }}" class="btn btn-primary">Get Started Free</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-pattern"></div>
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <div class="hero-content">
+                        <span class="hero-badge">
+                            <i class="bi bi-stars"></i>
+                            Premium Event Platform
+                        </span>
+                        <h1 class="hero-title">
+                            Elevate Your Event Experience
+                        </h1>
+                        <p class="hero-subtitle">
+                            Create stunning registration forms, manage attendees with ease, and automate your entire event workflow. Professional tools for modern organizers.
+                        </p>
+                        <div class="d-flex flex-wrap gap-3">
+                            {% if 'user_id' in session %}
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-primary">Go to Dashboard</a>
+                            <a href="{{ url_for('create_event') }}" class="btn btn-outline">Create Event</a>
+                            {% else %}
+                            <a href="{{ url_for('signup') }}" class="btn btn-primary">Start Free Trial</a>
+                            <a href="#features" class="btn btn-outline">
+                                <i class="bi bi-play-circle"></i> Watch Demo
+                            </a>
+                            {% endif %}
+                        </div>
+                        <div class="mt-4 d-flex flex-wrap gap-4">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                <small>No credit card required</small>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                <small>Free forever plan</small>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                <small>Setup in minutes</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="position-relative mt-5 mt-lg-0">
+                        <div class="feature-card float">
+                            <div class="feature-icon">
+                                <i class="bi bi-calendar-check"></i>
+                            </div>
+                            <h4 class="feature-title">Real-time Dashboard</h4>
+                            <p>Monitor registrations, track attendance, and generate insights from a single dashboard.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats -->
+    <section class="stats">
+        <div class="container">
+            <div class="row text-center">
+                <div class="col-md-3 col-6 mb-4">
+                    <div class="stat-item">
+                        <div class="stat-number">{{ stats.users if stats else '1,500+' }}</div>
+                        <div class="stat-label">Active Users</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6 mb-4">
+                    <div class="stat-item">
+                        <div class="stat-number">{{ stats.events if stats else '350+' }}</div>
+                        <div class="stat-label">Events Created</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6 mb-4">
+                    <div class="stat-item">
+                        <div class="stat-number">{{ stats.forms if stats else '700+' }}</div>
+                        <div class="stat-label">Forms Built</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6 mb-4">
+                    <div class="stat-item">
+                        <div class="stat-number">{{ stats.registrations if stats else '8,500+' }}</div>
+                        <div class="stat-label">Total Registrations</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="features">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Powerful Features for Modern Events</h2>
+                <p class="section-subtitle">
+                    Everything you need to create, manage, and analyze successful events
+                </p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-pencil-square"></i>
+                        </div>
+                        <h4 class="feature-title">Custom Form Builder</h4>
+                        <p>Create beautiful registration forms with drag-and-drop interface and multiple field types.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-send-check"></i>
+                        </div>
+                        <h4 class="feature-title">Smart Automation</h4>
+                        <p>Automated emails, reminders, and follow-ups to keep attendees engaged.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-bar-chart"></i>
+                        </div>
+                        <h4 class="feature-title">Advanced Analytics</h4>
+                        <p>Real-time insights and detailed reports to measure event success.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-qr-code"></i>
+                        </div>
+                        <h4 class="feature-title">QR Code Check-in</h4>
+                        <p>Streamline event entry with unique QR codes for each attendee.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-shield-lock"></i>
+                        </div>
+                        <h4 class="feature-title">Enterprise Security</h4>
+                        <p>Bank-level security with encryption, backups, and compliance.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-phone"></i>
+                        </div>
+                        <h4 class="feature-title">Mobile First</h4>
+                        <p>Perfect experience on all devices with responsive design.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section id="process" class="process">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Simple 4-Step Process</h2>
+                <p class="section-subtitle">
+                    Get your event up and running in minutes
+                </p>
+            </div>
+            
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="process-step">
+                        <div class="step-number">1</div>
+                        <h4>Sign Up Free</h4>
+                        <p>Create your account in under a minute. No credit card required for the free plan.</p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="process-step">
+                        <div class="step-number">2</div>
+                        <h4>Create Event</h4>
+                        <p>Set up event details and customize your registration form with our intuitive builder.</p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="process-step">
+                        <div class="step-number">3</div>
+                        <h4>Share & Collect</h4>
+                        <p>Share your registration link via email, social media, or QR code to collect responses.</p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="process-step">
+                        <div class="step-number">4</div>
+                        <h4>Manage & Analyze</h4>
+                        <p>Track registrations in real-time and export data for detailed analysis.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section id="testimonials" class="testimonials"hidden>
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Trusted by Event Professionals</h2>
+                <p class="section-subtitle">
+                    See what organizers are saying about EventFlow
+                </p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="testimonial-card">
+                        <div class="testimonial-text">
+                            EventFlow has completely transformed how we manage our conference registrations. The automation saves us hours every week!
+                        </div>
+                        <div class="testimonial-author">
+                            <img src="https://randomuser.me/api/portraits/women/45.jpg" 
+                                 alt="Sarah Johnson" 
+                                 class="author-avatar">
+                            <div>
+                                <h6 class="mb-0">Sarah Johnson</h6>
+                                <small class="text-muted">Event Director, TechConference 2024</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="testimonial-card">
+                        <div class="testimonial-text">
+                            The custom form builder is incredibly intuitive. We created the perfect registration form for our workshop in under 10 minutes.
+                        </div>
+                        <div class="testimonial-author">
+                            <img src="https://randomuser.me/api/portraits/men/32.jpg" 
+                                 alt="Michael Chen" 
+                                 class="author-avatar">
+                            <div>
+                                <h6 class="mb-0">Michael Chen</h6>
+                                <small class="text-muted">Workshop Organizer</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="container">
+            <span class="badge bg-light text-dark mb-3">Limited Time Offer</span>
+            <h2 class="cta-title">Ready to Transform Your Events?</h2>
+            <p class="cta-subtitle">
+                Join {{ stats.users if stats else '1,500+' }}+ users for registration needs. Start free today.
+            </p>
+            
+            <div class="d-flex flex-wrap justify-content-center gap-3">
+                {% if 'user_id' in session %}
+                <a href="{{ url_for('create_event') }}" class="btn btn-light btn-lg">Create New Event</a>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-light btn-lg">View Dashboard</a>
+                {% else %}
+                <a href="{{ url_for('signup') }}" class="btn btn-light btn-lg">Start Free Now</a>
+                <a href="#features" class="btn btn-outline-light btn-lg">Explore Features</a>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Free Plan -->
+    <section class="free-plan">
+        <div class="container">
+            <div class="plan-card">
+                <h3 class="plan-title">🌟 Free Forever Plan</h3>
+                <p class="text-muted lead mb-4">
+                    We believe professional event tools should be accessible to everyone.
+                </p>
+                
+                <div class="plan-features">
+                    <div class="plan-feature">
+                        <i class="bi bi-infinity"></i>
+                        <div>
+                            <strong>Unlimited Events</strong>
+                            <p class="text-muted small mb-0">Create as many events as you need</p>
+                        </div>
+                    </div>
+                    
+                    <div class="plan-feature">
+                        <i class="bi bi-infinity"></i>
+                        <div>
+                            <strong>Unlimited Forms</strong>
+                            <p class="text-muted small mb-0">No limits on registration forms</p>
+                        </div>
+                    </div>
+                    
+                    <div class="plan-feature">
+                        <i class="bi bi-envelope-check"></i>
+                        <div>
+                            <strong>Email Automation</strong>
+                            <p class="text-muted small mb-0">Send unlimited invitation emails</p>
+                        </div>
+                    </div>
+                    
+                    <div class="plan-feature">
+                        <i class="bi bi-shield-check"></i>
+                        <div>
+                            <strong>All Features Included</strong>
+                            <p class="text-muted small mb-0">Access to everything listed above</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    {% if 'user_id' not in session %}
+                    <a href="{{ url_for('signup') }}" class="btn btn-primary btn-lg px-5">
+                        <i class="bi bi-rocket-takeoff me-2"></i> Start Free Now
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg px-5">
+                        <i class="bi bi-dashboard me-2"></i> Go to Dashboard
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <div class="footer-logo">
+                        <img src="/static/logo/logo.png" alt="EventFlow Logo">
+                        <span class="brand-name"hidden>EventFlow</span>
+                    </div>
+                    <p class="text-white-50 mb-4">
+                        Professional event management made simple. Free tools for modern organizers.
+                    </p>
+                    <div class="social-links">
+                        <a href="https://www.instagram.com/eventflow.app2026/">
+                            <i class="bi bi-instagram"></i>
+                        </a>
+                        <a href="#" hidden>
+                            <i class="bi bi-twitter"></i>
+                        </a>
+                        <a href="#" hidden>
+                            <i class="bi bi-linkedin"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-2 col-md-4 mb-4">
+                    <h5>Product</h5>
+                    <ul class="footer-links">
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#process">How It Works</a></li>
+                        <li><a href="#testimonials">Testimonials</a></li>
+                        <li><a href="#feedback">Feedback</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-lg-2 col-md-4 mb-4">
+                    <h5>Legal</h5>
+                    <ul class="footer-links">
+                        <li><a href="{{ url_for('privacy_policy') }}">Privacy Policy</a></li>
+                        <li><a href="{{ url_for('terms') }}">Terms of Service</a></li>
+                        <li><a href="mailto:eventflow.app2026@gmail.com">Contact Support</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-lg-4 col-md-4 mb-4">
+                    <h5>Get Started</h5>
+                    <p class="text-white-50 mb-3">
+                        Start creating professional events today.
+                    </p>
+                    {% if 'user_id' not in session %}
+                    <a href="{{ url_for('signup') }}" class="btn btn-outline-light">Sign Up Free</a>
+                    {% else %}
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-light">Go to Dashboard</a>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <hr class="bg-light opacity-25 my-4">
+            
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="mb-0 text-white-50">
+                        © 2024 EventFlow. All rights reserved.
+                    </p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0 text-white-50">
+                        Contact: <a href="mailto:eventflow.app2026@gmail.com" class="text-white-50">eventflow.app2026@gmail.com</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Close mobile menu if open
+                    const navbarToggler = document.querySelector('.navbar-toggler');
+                    if (navbarToggler && !navbarToggler.classList.contains('collapsed')) {
+                        navbarToggler.click();
+                    }
+                }
+            });
+        });
+
+        // Logo fallback handling
+        document.addEventListener('DOMContentLoaded', function() {
+            const logoImages = document.querySelectorAll('img[src*="logo"]');
+            logoImages.forEach(img => {
+                img.addEventListener('error', function() {
+                    const parent = this.parentElement;
+                    const textFallback = parent.querySelector('.brand-name');
+                    if (textFallback) {
+                        this.style.display = 'none';
+                        textFallback.style.display = 'block';
+                    }
+                });
+            });
+        });
+
+        // Animate elements on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('fade-in');
+                }
+            });
+        }, observerOptions);
+
+        // Observe elements for animation
+        document.querySelectorAll('.feature-card, .process-step, .testimonial-card').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Stats counter animation
+        function animateCounter(element, target) {
+            let current = 0;
+            const increment = target / 50;
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    current = target;
+                    clearInterval(timer);
+                }
+                element.textContent = Math.floor(current) + '+';
+            }, 30);
+        }
+
+        // Animate stats when in view
+        const statsObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const statNumbers = document.querySelectorAll('.stat-number');
+                    statNumbers.forEach(stat => {
+                        const currentText = stat.textContent;
+                        const target = parseInt(currentText.replace('+', '')) || 1000;
+                        animateCounter(stat, target);
+                    });
+                    statsObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        document.querySelector('.stats') && statsObserver.observe(document.querySelector('.stats'));
+    </script>
+</body>
+</html>

@@ -1,0 +1,842 @@
+{% extends "base.html" %}
+{% block title %}PDF Report - {{ event_name }}{% endblock %}
+
+{% block page_title %}Professional PDF Report{% endblock %}
+{% block page_subtitle %}
+<p class="text-muted mb-0">Event: {{ event_name }} | Form: {{ form_title }}</p>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ===== CRITICAL FIXES ===== */
+    
+    /* Fix for long filenames overflowing */
+    .filename-truncate {
+        word-break: break-word;
+        overflow-wrap: break-word;
+        display: block;
+        max-width: 100%;
+    }
+    
+    .info-card table td:nth-child(2) {
+        word-break: break-word;
+        overflow-wrap: anywhere;
+        max-width: 200px;
+    }
+    
+    /* Ensure content doesn't overlap floating buttons */
+    .container-fluid {
+        padding-bottom: 100px;
+    }
+    
+    /* ===== MOBILE RESPONSIVENESS FIXES ===== */
+    
+    @media (max-width: 768px) {
+        /* Hide desktop FABs on mobile - they overlap content */
+        .floating-action-buttons {
+            display: none !important;
+        }
+        
+        /* Show mobile bottom bar with safe area support */
+        .mobile-bottom-bar {
+            display: flex !important;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #dee2e6;
+            padding: 15px;
+            z-index: 2000;
+            box-shadow: 0 -2px 15px rgba(0,0,0,0.1);
+            justify-content: space-around;
+            padding-bottom: env(safe-area-inset-bottom, 15px);
+        }
+        
+        /* Fix PDF viewer for mobile */
+        .pdf-viewer-container {
+            margin-bottom: 80px; /* Space for mobile bottom bar */
+            height: 500px !important;
+        }
+        
+        /* Adjust PDF frame height for mobile */
+        .pdf-frame {
+            height: 500px !important;
+            min-height: 500px;
+        }
+        
+        /* Stack cards vertically */
+        .col-md-6 {
+            width: 100% !important;
+            flex: 0 0 100% !important;
+            max-width: 100% !important;
+            margin-bottom: 20px;
+        }
+        
+        /* Fix table layout in info card */
+        .info-card table {
+            width: 100%;
+        }
+        
+        .info-card table tr {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .info-card table tr:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .info-card table td {
+            width: 100% !important;
+            padding: 4px 0 !important;
+            border: none !important;
+        }
+        
+        .info-card table td.fw-bold {
+            color: #4361ee !important;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+        
+        .info-card table td:nth-child(2) {
+            max-width: 100% !important;
+            font-size: 0.9rem;
+        }
+        
+        /* Adjust card padding */
+        .card-body-modern {
+            padding: 1rem !important;
+        }
+        
+        /* Fix modal width */
+        .modal-dialog {
+            margin: 10px;
+            max-width: calc(100% - 20px);
+        }
+    }
+    
+    /* Extra small screens */
+    @media (max-width: 576px) {
+        .pdf-viewer-container {
+            height: 450px !important;
+        }
+        
+        .pdf-frame {
+            height: 450px !important;
+            min-height: 450px;
+        }
+        
+        .mobile-bottom-bar .btn {
+            padding: 10px 8px;
+            font-size: 0.85rem;
+        }
+        
+        .mobile-bottom-bar .btn i {
+            font-size: 1.1rem;
+        }
+        
+        /* Reduce padding in cards */
+        .card-modern {
+            margin: 0 0 15px 0;
+        }
+        
+        .info-card table td:nth-child(2) {
+            font-size: 0.85rem;
+        }
+    }
+    
+    /* Very small screens */
+    @media (max-width: 400px) {
+        .pdf-viewer-container {
+            height: 400px !important;
+        }
+        
+        .pdf-frame {
+            height: 400px !important;
+            min-height: 400px;
+        }
+        
+        .mobile-bottom-bar .btn {
+            padding: 8px 6px;
+            font-size: 0.75rem;
+        }
+        
+        /* Hide text in mobile bottom bar buttons, show only icons */
+        .mobile-bottom-bar .btn span {
+            display: none;
+        }
+    }
+    
+    /* Desktop styles - ensure mobile bottom bar is hidden */
+    @media (min-width: 769px) {
+        .mobile-bottom-bar {
+            display: none !important;
+        }
+        
+        .floating-action-buttons {
+            display: block !important;
+        }
+    }
+    
+    /* ===== GENERAL STYLES ===== */
+    
+    /* PDF Viewer Container */
+    .pdf-viewer-container {
+        position: relative;
+        width: 100%;
+        min-height: 300px;
+        height: 70vh;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        background: #525659; /* Matching PDF viewer dark background */
+        border: 1px solid rgba(67, 97, 238, 0.1);
+        margin-bottom: 20px;
+    }
+    
+    /* Ensure PDF frame is always visible */
+    .pdf-frame {
+        width: 100%;
+        height: 100%;
+        min-height: 600px;
+        border: none;
+    }
+    
+    /* Fix for long filenames */
+    .info-card {
+        word-break: break-word;
+        overflow-wrap: break-word;
+        background: #f8f9fa;
+        border-left: 5px solid #4361ee;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 15px 0;
+    }
+    
+    /* Mobile bottom bar styles */
+    .mobile-bottom-bar {
+        display: none; /* Hidden by default, shown by media query */
+    }
+    
+    .mobile-bottom-bar .btn {
+        flex: 1;
+        margin: 0 5px;
+        border-radius: 25px;
+        font-size: 0.85rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 10px 8px;
+        max-width: 140px;
+    }
+    
+    .mobile-bottom-bar .btn i {
+        font-size: 1.2rem;
+        margin-bottom: 4px;
+    }
+    
+    .mobile-bottom-bar .btn span {
+        font-size: 0.75rem;
+        line-height: 1.1;
+    }
+    
+    /* Animation Classes */
+    .animate-fade-in-up {
+        animation: fadeInUp 0.6s ease-out forwards;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .pdf-frame.fullscreen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        z-index: 9999;
+        background: white;
+    }
+    
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.95);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        flex-direction: column;
+        transition: opacity 0.5s ease;
+    }
+    
+    .loading-spinner {
+        width: 80px;
+        height: 80px;
+        border: 8px solid #f3f3f3;
+        border-top: 8px solid #4361ee;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .loading-text {
+        font-size: 1.2rem;
+        color: #4361ee;
+        font-weight: 500;
+    }
+    
+    .floating-action-buttons {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        z-index: 1000;
+    }
+    
+    .fab-btn {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 10px 0;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: 2px solid white;
+    }
+    
+    .fab-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    }
+    
+    .fab-btn.download {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+    }
+    
+    .fab-btn.print {
+        background: linear-gradient(135deg, #ffc107, #fd7e14);
+        color: white;
+    }
+    
+    .fab-btn.fullscreen {
+        background: linear-gradient(135deg, #4361ee, #3a56d4);
+        color: white;
+    }
+    
+    .fab-btn.share-everywhere {
+        background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+        color: white;
+    }
+    
+    .floating-notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: white;
+        padding: 15px 25px;
+        border-radius: 10px;
+        box-shadow: 0 5px 25px rgba(0,0,0,0.15);
+        transform: translateX(150%);
+        transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        z-index: 10000;
+        border-left: 5px solid #28a745;
+        max-width: 90%;
+        word-wrap: break-word;
+    }
+    
+    .floating-notification.show {
+        transform: translateX(0);
+    }
+    
+    /* Add to your existing CSS - in the mobile responsiveness section */
+@media (max-width: 768px) {
+    /* Add this to make the bottom bar hideable */
+    .mobile-bottom-bar {
+        display: flex !important;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        border-top: 1px solid #dee2e6;
+        padding: 15px;
+        z-index: 2000;
+        box-shadow: 0 -2px 15px rgba(0,0,0,0.1);
+        justify-content: space-around;
+        padding-bottom: env(safe-area-inset-bottom, 15px);
+        transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        transform: translateY(0);
+        opacity: 1;
+    }
+    
+    /* Hide the bottom bar when near footer */
+    .mobile-bottom-bar.hidden {
+        transform: translateY(100%);
+        opacity: 0;
+        pointer-events: none;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay" style="display: none;">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Preparing PDF...</div>
+</div>
+
+<!-- Floating Notification -->
+<div id="notification" class="floating-notification">
+    <i class="bi bi-check-circle-fill text-success me-2"></i>
+    <span id="notificationText">PDF shared successfully!</span>
+</div>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+            <!-- Header Card -->
+            <div class="card-modern mb-4 animate-fade-in-up">
+                <div class="card-header-modern">
+                    <h5 class="mb-0"><i class="bi bi-file-pdf me-2"></i>PDF Report Viewer</h5>
+                    <p class="text-muted mb-0 mt-1">Event: {{ event_name }} | Form: {{ form_title }}</p>
+                </div>
+                <div class="card-body-modern">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        This is a professional PDF report generated from your form responses.
+                    </div>
+                </div>
+            </div>
+
+            <!-- PDF Viewer Card -->
+            <div class="card-modern mb-4">
+                <div class="card-body-modern p-0">
+                    <div class="pdf-viewer-container">
+                        {% if pdf_url %}
+                        <iframe id="pdfFrame" class="pdf-frame" 
+                                title="PDF Report for {{ event_name }}"></iframe>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <div class="display-1 text-muted mb-4">
+                                <i class="bi bi-file-earmark-pdf"></i>
+                            </div>
+                            <h4 class="text-muted mb-3">PDF Not Available</h4>
+                            <p class="text-muted mb-4">The PDF report could not be loaded.</p>
+                            <button class="btn btn-primary" onclick="window.location.href='/view_form/{{ event_id }}/{{ form_id }}'">
+                                <i class="bi bi-arrow-left me-2"></i> Back to Form
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Info Cards -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card-modern h-100">
+                        <div class="card-header-modern">
+                            <h6 class="mb-0"><i class="bi bi-file-earmark-pdf me-2"></i>Document Details</h6>
+                        </div>
+                        <div class="card-body-modern">
+                            <div class="info-card">
+                                <table class="table table-borderless mb-0">
+                                    <tr>
+                                        <td class="fw-bold">Filename:</td>
+                                        <td class="filename-truncate">{{ pdf_filename }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Event:</td>
+                                        <td>{{ event_name }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Form:</td>
+                                        <td>{{ form_title }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 d-none d-md-block">
+                    <div class="card-modern h-100">
+                        <div class="card-header-modern">
+                            <h6 class="mb-0"><i class="bi bi-tools me-2"></i>Actions</h6>
+                        </div>
+                        <div class="card-body-modern">
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-primary" onclick="shareDocument()">
+                                    <i class="bi bi-share me-2"></i> Share Everywhere
+                                </button>
+                                <button class="btn btn-outline-primary" onclick="downloadPDF()">
+                                    <i class="bi bi-download me-2"></i> Download PDF
+                                </button>
+                                <button class="btn btn-outline-secondary" onclick="printPDF()">
+                                    <i class="bi bi-printer me-2"></i> Print
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Floating Action Buttons - Desktop Only -->
+            <div class="floating-action-buttons d-none d-md-block">
+                <div class="fab-btn share-everywhere" onclick="shareDocument()" title="Share Everywhere">
+                    <i class="bi bi-share fs-4"></i>
+                </div>
+                <div class="fab-btn download" onclick="downloadPDF()" title="Download PDF">
+                    <i class="bi bi-download fs-4"></i>
+                </div>
+                <div class="fab-btn fullscreen" onclick="toggleFullscreen()" title="Fullscreen">
+                    <i class="bi bi-arrows-fullscreen fs-4"></i>
+                </div>
+                <div class="fab-btn print" onclick="printPDF()" title="Print PDF">
+                    <i class="bi bi-printer fs-4"></i>
+                </div>
+            </div>
+            
+            <!-- Mobile Bottom Bar - Shows only on mobile -->
+            <div class="mobile-bottom-bar d-none">
+                <div class="d-flex justify-content-around w-100">
+                    <button class="btn btn-primary" onclick="shareDocument()" title="Share Everywhere">
+                        <i class="bi bi-share"></i>
+                        <span>Share</span>
+                    </button>
+                    <button class="btn btn-light border" onclick="downloadPDF()" title="Download">
+                        <i class="bi bi-download"></i>
+                        <span>Save</span>
+                    </button>
+                    <button class="btn btn-light border" onclick="printPDF()" title="Print">
+                        <i class="bi bi-printer"></i>
+                        <span>Print</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+// Alternative: Hide on scroll down, show on scroll up
+let lastScrollTop = 0;
+let bottomBarVisible = true;
+
+function handleScrollForBottomBar() {
+    if (window.innerWidth > 768) return;
+    
+    const bottomBar = document.querySelector('.mobile-bottom-bar');
+    if (!bottomBar) return;
+    
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    
+    // If scrolling down and bottom bar is visible
+    if (scrollTop > lastScrollTop && bottomBarVisible && scrollTop > 50) {
+        bottomBar.classList.add('hidden');
+        bottomBarVisible = false;
+    } 
+    // If scrolling up or at the top
+    else if (scrollTop < lastScrollTop || scrollTop < 100) {
+        bottomBar.classList.remove('hidden');
+        bottomBarVisible = true;
+    }
+    
+    lastScrollTop = scrollTop;
+}
+
+// Then in DOMContentLoaded, use this instead:
+if (window.innerWidth <= 768) {
+    window.addEventListener('scroll', handleScrollForBottomBar);
+}
+
+// DOM Elements
+const pdfFrame = document.getElementById('pdfFrame');
+const loadingOverlay = document.getElementById('loadingOverlay');
+const notification = document.getElementById('notification');
+
+// Check if mobile device
+function isMobileDevice() {
+    return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+}
+
+// Initialize PDF viewer based on device
+function initializePDFViewer() {
+    if (!pdfFrame) return;
+    
+    const pdfUrl = '{{ pdf_url }}';
+    const isMobile = isMobileDevice();
+    
+    if (isMobile) {
+        // IMPORTANT: Add Ngrok bypass parameter to URL
+        const bypassParam = 'ngrok-skip-browser-warning=true';
+        let fullUrl = pdfUrl;
+        
+        // Check if URL already has query parameters
+        if (fullUrl.includes('?')) {
+            fullUrl += '&' + bypassParam;
+        } else {
+            fullUrl += '?' + bypassParam;
+        }
+        
+        // Use Google Docs Viewer for mobile devices
+        const encodedUrl = encodeURIComponent(window.location.origin + fullUrl);
+        pdfFrame.src = `https://docs.google.com/viewer?url=${encodedUrl}&embedded=true`;
+        
+        console.log('Mobile device detected - using Google Docs Viewer with Ngrok bypass');
+    } else {
+        // Desktop browsers can display PDFs directly
+        // Add Ngrok bypass parameter for desktop too
+        let fullUrl = pdfUrl;
+        if (fullUrl.includes('?')) {
+            fullUrl += '&ngrok-skip-browser-warning=true';
+        } else {
+            fullUrl += '?ngrok-skip-browser-warning=true';
+        }
+        
+        pdfFrame.src = fullUrl + '#toolbar=1&navpanes=0&scrollbar=1';
+        
+        console.log('Desktop device - using native PDF viewer with Ngrok bypass');
+    }
+}
+
+// Show loading overlay
+function showLoading(message = 'Loading...') {
+    if (loadingOverlay) {
+        loadingOverlay.style.display = 'flex';
+        document.querySelector('.loading-text').textContent = message;
+    }
+}
+
+// Hide loading overlay
+function hideLoading() {
+    if (loadingOverlay) {
+        loadingOverlay.style.opacity = '0';
+        setTimeout(() => {
+            loadingOverlay.style.display = 'none';
+            loadingOverlay.style.opacity = '1';
+        }, 500);
+    }
+}
+
+// Show notification
+function showNotification(message, type = 'success') {
+    if (!notification) return;
+    
+    const icon = notification.querySelector('i');
+    const text = notification.querySelector('span');
+    
+    // Update content
+    text.textContent = message;
+    
+    // Update color based on type
+    if (type === 'success') {
+        icon.className = 'bi bi-check-circle-fill text-success me-2';
+        notification.style.borderLeftColor = '#28a745';
+    } else if (type === 'error') {
+        icon.className = 'bi bi-x-circle-fill text-danger me-2';
+        notification.style.borderLeftColor = '#dc3545';
+    } else if (type === 'warning') {
+        icon.className = 'bi bi-exclamation-triangle-fill text-warning me-2';
+        notification.style.borderLeftColor = '#ffc107';
+    } else if (type === 'info') {
+        icon.className = 'bi bi-info-circle-fill text-info me-2';
+        notification.style.borderLeftColor = '#4361ee';
+    }
+    
+    // Show notification
+    notification.classList.add('show');
+    
+    // Hide after 3 seconds
+    setTimeout(() => {
+        notification.classList.remove('show');
+    }, 3000);
+}
+
+/**
+ * THE FIX: Share to WhatsApp, Telegram, Gmail, Drive, etc. using Web Share API
+ * Works "everywhere" on mobile devices
+ */
+async function shareDocument() {
+    // IMPORTANT: Add Ngrok bypass parameter when fetching
+    let pdfUrl = '{{ pdf_url }}';
+    if (pdfUrl.includes('?')) {
+        pdfUrl += '&ngrok-skip-browser-warning=true';
+    } else {
+        pdfUrl += '?ngrok-skip-browser-warning=true';
+    }
+    
+    const fileName = '{{ pdf_filename }}' || 'Report.pdf';
+    const eventName = '{{ event_name }}';
+
+    showLoading('Preparing PDF for sharing...');
+
+    try {
+        // 1. Fetch the actual file bytes (Required for mobile apps to 'see' the file)
+        const response = await fetch(pdfUrl);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch PDF: ${response.status}`);
+        }
+        const blob = await response.blob();
+        
+        // 2. Wrap the data in a File object with correct MIME type
+        const file = new File([blob], fileName, { 
+            type: 'application/pdf',
+            lastModified: new Date().getTime()
+        });
+
+        // 3. Check if the browser supports sharing files
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+            // Use Web Share API - opens native share sheet
+            await navigator.share({
+                files: [file],
+                title: `PDF Report: ${eventName}`,
+                text: 'Sharing the generated PDF report.'
+            });
+            
+            hideLoading();
+            showNotification('PDF shared successfully!');
+            
+        } else {
+            // Fallback for Desktop or older browsers
+            hideLoading();
+            
+            if (confirm('Sharing not directly supported. Would you like to download the file first, then share it from your device?')) {
+                downloadPDF();
+                showNotification('File downloaded! You can now share it from your device.', 'info');
+            }
+        }
+        
+    } catch (err) {
+        hideLoading();
+        console.error('Sharing failed:', err);
+        
+        if (err.name === 'AbortError') {
+            // User cancelled the share
+            showNotification('Sharing cancelled', 'info');
+            return;
+        }
+        
+        // Fallback to download
+        showNotification('Direct sharing failed. Downloading file instead...', 'warning');
+        setTimeout(() => {
+            downloadPDF();
+        }, 500);
+    }
+}
+
+// Download PDF function
+function downloadPDF() {
+    showLoading('Preparing download...');
+    
+    try {
+        // Use the download URL from the template
+        let downloadUrl = '{{ download_url }}';
+        const filename = '{{ pdf_filename }}';
+        
+        // Add Ngrok bypass parameter
+        if (downloadUrl.includes('?')) {
+            downloadUrl += '&ngrok-skip-browser-warning=true';
+        } else {
+            downloadUrl += '?ngrok-skip-browser-warning=true';
+        }
+        
+        // Create download link
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = filename;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        
+        setTimeout(() => {
+            hideLoading();
+            showNotification(`Downloaded: ${filename}`);
+        }, 1000);
+        
+    } catch (error) {
+        console.error('Download error:', error);
+        hideLoading();
+        
+        // Direct download fallback
+        showNotification('Starting download...', 'info');
+        setTimeout(() => {
+            let downloadUrl = '{{ download_url }}';
+            if (downloadUrl.includes('?')) {
+                downloadUrl += '&ngrok-skip-browser-warning=true';
+            } else {
+                downloadUrl += '?ngrok-skip-browser-warning=true';
+            }
+            window.location.href = downloadUrl;
+        }, 500);
+    }
+}
+
+function printPDF() {
+    showLoading('Opening print dialog...');
+    setTimeout(() => {
+        if (pdfFrame && pdfFrame.contentWindow) {
+            pdfFrame.contentWindow.print();
+        } else {
+            window.print();
+        }
+        hideLoading();
+        showNotification('Print dialog opened');
+    }, 1000);
+}
+
+function toggleFullscreen() {
+    const frame = document.getElementById('pdfFrame');
+    
+    if (!frame.classList.contains('fullscreen')) {
+        frame.classList.add('fullscreen');
+        showNotification('Entered fullscreen mode');
+    } else {
+        frame.classList.remove('fullscreen');
+        showNotification('Exited fullscreen mode');
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize PDF viewer based on device
+    initializePDFViewer();
+    
+    // Animate elements
+    const elements = document.querySelectorAll('.animate-fade-in-up');
+    elements.forEach((el, index) => {
+        el.style.animationDelay = `${index * 0.1}s`;
+    });
+});
+</script>
+{% endblock %}

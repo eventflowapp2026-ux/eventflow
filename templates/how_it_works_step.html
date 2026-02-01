@@ -1,0 +1,559 @@
+<!-- how_it_works_step.html - CLEAN FIXED VERSION -->
+{% extends "base.html" %}
+{% block title %}Step {{ step }}: {{ step_data.title }}{% endblock %}
+
+{% block page_title %}Step {{ step }}: {{ step_data.title }}{% endblock %}
+{% block page_subtitle %}
+<p class="text-muted mb-0">{{ step_data.subtitle }}</p>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <!-- Progress Navigation -->
+        <div class="card-modern mb-4">
+            <div class="card-body-modern">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="d-flex align-items-center">
+                            <div class="step-number-active me-3">{{ step }}</div>
+                            <div>
+                                <h5 class="mb-1">{{ step_data.title }}</h5>
+                                <p class="text-muted mb-0 small">Step {{ step }} of 4</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <div class="progress mb-2" style="width: 150px; height: 8px;">
+                            <div class="progress-bar" role="progressbar" style="width: {{ (step/4)*100 }}%"></div>
+                        </div>
+                        <p class="text-muted small mb-0">{{ (step/4)*100 }}% Complete</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step Content -->
+        <div class="card-modern mb-5">
+            <div class="card-body-modern">
+                <!-- Step Header -->
+                <div class="text-center mb-5">
+                    <div class="step-icon-large mb-3">
+                        {{ step_data.icon|safe }}
+                    </div>
+                    <h3 class="mb-3">{{ step_data.title }}</h3>
+                    <p class="lead mb-0">{{ step_data.description }}</p>
+                </div>
+
+                <!-- Detailed Content -->
+                <div class="mb-5">
+                    {{ step_data.content|safe }}
+                </div>
+
+                <!-- Video Demonstration - SINGLE SIMPLIFIED VERSION -->
+                {% if step_data.video and step_data.video_file %}
+                {% set video_url = step_data.video_url_direct or url_for('static', filename=step_data.video_file) %}
+                {% set video_full_url = video_url if video_url.startswith('http') else url_for('static', filename=step_data.video_file, _external=true) %}
+
+                <div class="mb-5">
+                    <h5 class="mb-3"><i class="bi bi-play-circle me-2 text-primary"></i>Video Demonstration</h5>
+                    <div class="card bg-light border-0">
+                        <div class="card-body">
+                            <div class="video-container">
+                                {% if step_data.video_type == 'embed' %}
+                                    <!-- For embedded videos (YouTube, Vimeo) -->
+                                    <div class="ratio ratio-16x9">
+                                        <iframe src="{{ step_data.video_url }}" 
+                                                title="Step {{ step }} Video" 
+                                                frameborder="0" 
+                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                                allowfullscreen>
+                                        </iframe>
+                                    </div>
+                                {% elif step_data.video_type == 'file' and step_data.video_file %}
+                                    <!-- SINGLE Video Player with Play Prompt -->
+                                    <div class="ratio ratio-16x9 position-relative">
+                                        <!-- Video Player -->
+                                        <video id="tutorial-video-{{ step }}" 
+                                               class="w-100 h-100 bg-dark rounded"
+                                               controls 
+                                               preload="metadata"
+                                               playsinline
+                                               style="object-fit: contain;">
+                                            <source src="{{ video_url }}" type="video/mp4">
+                                            Your browser does not support HTML5 video.
+                                        </video>
+                                        
+                                        <!-- Simple Play Prompt -->
+                                        <div id="tutorial-play-prompt-{{ step }}" 
+                                             class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center align-items-center text-white"
+                                             style="cursor: pointer; z-index: 2; background: rgba(0,0,0,0.3);">
+                                            <div class="play-button-circle mb-3" 
+                                                 style="width: 80px; height: 80px; background: rgba(67, 97, 238, 0.9); border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
+                                                <i class="bi bi-play-fill display-4"></i>
+                                            </div>
+                                            <h4 class="mb-1">Click to Play Tutorial</h4>
+                                            <p class="text-muted mb-0">Click the video to start</p>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <!-- Coming Soon Placeholder -->
+                                    <div class="coming-soon-placeholder ratio ratio-16x9 d-flex flex-column justify-content-center align-items-center text-center bg-dark text-white rounded">
+                                        <div>
+                                            <i class="bi bi-camera-video display-1 mb-3 opacity-50"></i>
+                                            <h4 class="mb-2">Video Coming Soon</h4>
+                                            <p class="mb-0 opacity-75">We're preparing a detailed video tutorial for this step.</p>
+                                            <div class="mt-3">
+                                                <span class="badge bg-warning text-dark">
+                                                    <i class="bi bi-clock me-1"></i>Under Production
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            {% if step_data.video_caption %}
+                            <div class="mt-3 text-center">
+                                <p class="text-muted small mb-0">{{ step_data.video_caption }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Video Info & Actions -->
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div>
+                            {% if step_data.video_type == 'file' and step_data.video_file %}
+                            <a href="{{ video_url }}" download class="badge bg-primary text-decoration-none me-2">
+                                <i class="bi bi-download me-1"></i>Download Video
+                            </a>
+                            <a href="{{ video_full_url }}" target="_blank" class="badge bg-info text-decoration-none me-2">
+                                <i class="bi bi-link-45deg me-1"></i>Open Directly
+                            </a>
+                            <a href="/test-video-setup/{{ step }}" class="badge bg-warning text-decoration-none">
+                                <i class="bi bi-wrench me-1"></i>Test Player
+                            </a>
+                            {% endif %}
+                        </div>
+                        <div class="text-muted small">
+                            <i class="bi bi-info-circle me-1"></i>Click the video controls to play
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Screenshot Gallery -->
+                {% if step_data.screenshots %}
+                <div class="mb-5">
+                    <h5 class="mb-3"><i class="bi bi-images me-2 text-primary"></i>Screenshots</h5>
+                    <div class="row g-3">
+                        {% for screenshot in step_data.screenshots %}
+                        <div class="col-md-4">
+                            <a href="{{ screenshot.url }}" data-bs-toggle="modal" data-bs-target="#screenshotModal{{ loop.index }}">
+                                <div class="card border-0 shadow-sm">
+                                    <img src="{{ screenshot.thumbnail }}" class="card-img-top" alt="Screenshot {{ loop.index }}" style="height: 150px; object-fit: cover;">
+                                    <div class="card-body text-center py-2">
+                                        <small class="text-muted">{{ screenshot.caption }}</small>
+                                    </div>
+                                </div>
+                            </a>
+                            
+                            <!-- Modal for full-size screenshot -->
+                            <div class="modal fade" id="screenshotModal{{ loop.index }}" tabindex="-1">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h6 class="modal-title">{{ step_data.title }} - Screenshot {{ loop.index }}</h6>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <img src="{{ screenshot.url }}" class="img-fluid" alt="Full screenshot">
+                                        </div>
+                                        <div class="modal-footer">
+                                            <a href="{{ screenshot.url }}" download class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-download me-1"></i>Download
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Tips & Best Practices -->
+                {% if step_data.tips %}
+                <div class="mb-5">
+                    <h5 class="mb-3"><i class="bi bi-lightbulb text-warning me-2"></i>Tips & Best Practices</h5>
+                    <div class="row">
+                        {% for tip in step_data.tips %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card bg-light border-0 h-100">
+                                <div class="card-body">
+                                    <div class="d-flex">
+                                        <div class="flex-shrink-0">
+                                            <div class="tip-number">{{ loop.index }}</div>
+                                        </div>
+                                        <div class="flex-grow-1 ms-3">
+                                            <h6 class="mb-2">{{ tip.title }}</h6>
+                                            <p class="small mb-0">{{ tip.content }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Next Steps -->
+                <div class="alert alert-info">
+                    <h5 class="alert-heading"><i class="bi bi-arrow-right-circle me-2"></i>What's Next?</h5>
+                    <p class="mb-0">{{ step_data.next_step }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="d-flex justify-content-between mb-5">
+            {% if step > 1 %}
+            <a href="{{ url_for('how_it_works_step', step=step-1) }}" class="btn btn-outline-primary btn-modern">
+                <i class="bi bi-arrow-left me-2"></i> Previous: Step {{ step-1 }}
+            </a>
+            {% else %}
+            <a href="{{ url_for('how_it_works') }}" class="btn btn-outline-primary btn-modern">
+                <i class="bi bi-arrow-left me-2"></i> Back to Overview
+            </a>
+            {% endif %}
+
+            <div class="d-flex gap-2">
+                {% if step < 4 %}
+                <a href="{{ url_for('how_it_works_step', step=step+1) }}" class="btn btn-primary-modern btn-modern">
+                    Next: Step {{ step+1 }} <i class="bi bi-arrow-right ms-2"></i>
+                </a>
+                {% else %}
+                <a href="{{ url_for('how_it_works') }}" class="btn btn-primary-modern btn-modern">
+                    <i class="bi bi-check-circle me-2"></i> Complete Guide
+                </a>
+                {% endif %}
+                
+                {% if step_data.action_url and step_data.action_text %}
+                <a href="{{ step_data.action_url }}" class="btn btn-success btn-modern">
+                    {{ step_data.action_text }} <i class="bi bi-arrow-up-right ms-2"></i>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- All Steps Navigation -->
+        <div class="card-modern">
+            <div class="card-header-modern">
+                <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>All Steps</h5>
+            </div>
+            <div class="card-body-modern">
+                <div class="row g-3">
+                    {% for s in range(1, 5) %}
+                    <div class="col-md-3">
+                        <a href="{{ url_for('how_it_works_step', step=s) }}" class="text-decoration-none">
+                            <div class="card h-100 {% if s == step %}border-primary{% else %}border-light{% endif %}">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div class="step-number-sm me-2">{{ s }}</div>
+                                        <h6 class="mb-0">
+                                            {% if s == 1 %}Create Account
+                                            {% elif s == 2 %}Create Event & Form
+                                            {% elif s == 3 %}Share & Collect
+                                            {% else %}Manage Data
+                                            {% endif %}
+                                        </h6>
+                                    </div>
+                                    <p class="text-muted small mb-0">
+                                        {% if s == 1 %}Sign up and get started
+                                        {% elif s == 2 %}Build your registration form
+                                        {% elif s == 3 %}Distribute and gather responses
+                                        {% else %}Analyze and export results
+                                        {% endif %}
+                                    </p>
+                                    {% if step_data.video and s == step %}
+                                    <div class="mt-2">
+                                        <small class="text-success">
+                                            <i class="bi bi-play-circle me-1"></i> Video available
+                                        </small>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% if s == step %}
+                                <div class="card-footer bg-primary text-white small">
+                                    <i class="bi bi-check-circle me-1"></i> You are here
+                                </div>
+                                {% endif %}
+                            </div>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Action -->
+        <div class="text-center mt-5">
+            {% if 'user_id' not in session %}
+            <h5 class="mb-3">Ready to try it yourself?</h5>
+            <a href="{{ url_for('signup') }}" class="btn btn-primary-modern btn-lg btn-modern">
+                <i class="bi bi-person-plus me-2"></i> Create Free Account
+            </a>
+            {% else %}
+            <h5 class="mb-3">Ready to continue?</h5>
+            <a href="{% if step == 1 %}{{ url_for('signup') }}
+                     {% elif step == 2 %}{{ url_for('create_event') }}
+                     {% elif step == 3 %}{{ url_for('dashboard') }}
+                     {% else %}{{ url_for('dashboard') }}
+                     {% endif %}" class="btn btn-primary-modern btn-lg btn-modern">
+                {% if step == 1 %}<i class="bi bi-person-plus me-2"></i> Sign Up
+                {% elif step == 2 %}<i class="bi bi-plus-circle me-2"></i> Create Event
+                {% else %}<i class="bi bi-speedometer2 me-2"></i> Go to Dashboard
+                {% endif %}
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+/* Step Components */
+.step-number-active {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #4361ee 0%, #3f37c9 100%);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.step-icon-large {
+    font-size: 4rem;
+    color: #4361ee;
+}
+
+.step-number-sm {
+    width: 30px;
+    height: 30px;
+    background: #e2e8f0;
+    color: #64748b;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.tip-number {
+    width: 30px;
+    height: 30px;
+    background: #4361ee;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* Video Container */
+.video-container {
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* Video Player */
+#tutorial-video-{{ step }} {
+    width: 100%;
+    height: 100%;
+    background: #000;
+    border-radius: 8px;
+    position: relative;
+    z-index: 1;
+}
+
+/* Play Prompt */
+#tutorial-play-prompt-{{ step }} {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    transition: background 0.3s;
+    border-radius: 8px;
+    cursor: pointer;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+}
+
+#tutorial-play-prompt-{{ step }}:hover {
+    background: rgba(0, 0, 0, 0.7);
+}
+
+#tutorial-play-prompt-{{ step }} .play-button-circle {
+    width: 80px;
+    height: 80px;
+    background: rgba(67, 97, 238, 0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+#tutorial-play-prompt-{{ step }} .play-button-circle:hover {
+    transform: scale(1.1);
+    background: #4361ee !important;
+}
+
+/* Coming Soon Placeholder */
+.coming-soon-placeholder {
+    border-radius: 8px;
+    background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+}
+
+/* Ensure video fits container properly */
+video {
+    object-fit: contain; /* Shows entire video without cropping */
+    background: #000; /* Black background for letterboxing */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .step-icon-large {
+        font-size: 3rem;
+    }
+    
+    #tutorial-play-prompt-{{ step }} .play-button-circle {
+        width: 60px;
+        height: 60px;
+    }
+}
+
+@media (max-width: 576px) {
+    .step-icon-large {
+        font-size: 2.5rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    initializeTutorialVideo({{ step }});
+});
+
+function initializeTutorialVideo(step) {
+    const videoPlayer = document.getElementById(`tutorial-video-${step}`);
+    const playPrompt = document.getElementById(`tutorial-play-prompt-${step}`);
+    
+    if (!videoPlayer) {
+        console.log(`No tutorial video found for step ${step}`);
+        return;
+    }
+    
+    console.log(`🎬 Setting up tutorial video for step ${step}`);
+    
+    // Show play prompt initially
+    if (playPrompt) {
+        playPrompt.style.display = 'flex';
+        
+        // Click play prompt to play video
+        playPrompt.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            videoPlayer.play().catch(error => {
+                console.log('Play failed:', error);
+                // Hide prompt if autoplay fails
+                playPrompt.style.display = 'none';
+            });
+        });
+    }
+    
+    // Also allow clicking the video itself
+    videoPlayer.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        if (videoPlayer.paused) {
+            videoPlayer.play();
+        } else {
+            videoPlayer.pause();
+        }
+    });
+    
+    // Hide play prompt when video starts playing
+    videoPlayer.addEventListener('play', function() {
+        if (playPrompt) {
+            playPrompt.style.display = 'none';
+        }
+    });
+    
+    // Show play prompt when video pauses
+    videoPlayer.addEventListener('pause', function() {
+        if (!videoPlayer.ended && playPrompt) {
+            playPrompt.style.display = 'flex';
+            if (playPrompt.querySelector('h4')) {
+                playPrompt.querySelector('h4').textContent = 'Click to Resume';
+            }
+        }
+    });
+    
+    // Show play prompt when video ends
+    videoPlayer.addEventListener('ended', function() {
+        if (playPrompt) {
+            playPrompt.style.display = 'flex';
+            if (playPrompt.querySelector('h4')) {
+                playPrompt.querySelector('h4').textContent = 'Watch Again';
+            }
+        }
+    });
+    
+    // Handle video errors
+    videoPlayer.addEventListener('error', function() {
+        console.error(`Video error for step ${step}:`, videoPlayer.error);
+        
+        if (playPrompt) {
+            playPrompt.innerHTML = `
+                <div class="text-center p-4">
+                    <i class="bi bi-exclamation-triangle display-4 text-warning mb-3"></i>
+                    <h4 class="mb-2">Video Error</h4>
+                    <p class="mb-3">Could not load video</p>
+                    <div class="d-flex gap-2 justify-content-center">
+                        <a href="${videoPlayer.querySelector('source')?.src || '#'}" download class="btn btn-sm btn-primary">
+                            <i class="bi bi-download me-1"></i>Download
+                        </a>
+                        <a href="${videoPlayer.querySelector('source')?.src || '#'}" target="_blank" class="btn btn-sm btn-info text-white">
+                            <i class="bi bi-box-arrow-up-right me-1"></i>Open Directly
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+    });
+    
+    // Load the video
+    videoPlayer.load();
+}
+</script>
+{% endblock %}

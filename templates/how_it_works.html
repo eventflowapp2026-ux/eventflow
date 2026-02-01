@@ -1,0 +1,273 @@
+<!-- how_it_works.html -->
+{% extends "base.html" %}
+{% block title %}How It Works{% endblock %}
+
+{% block page_title %}How EventFlow Works{% endblock %}
+{% block page_subtitle %}
+<p class="text-muted mb-0">Simple, powerful event registration in four easy steps</p>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <!-- Introduction -->
+        <div class="card-modern mb-5">
+            <div class="card-body-modern text-center">
+                <div class="mb-4">
+                    <i class="bi bi-calendar-event display-1 text-primary"></i>
+                </div>
+                <h3 class="mb-3">Welcome to EventFlow</h3>
+                <p class="lead mb-4">
+                    EventFlow is your all-in-one solution for creating, managing, and distributing event registration forms.
+                    Whether you're organizing a conference, workshop, or social gathering, we make registration effortless.
+                </p>
+                <div class="row mt-4">
+                    <div class="col-md-3">
+                        <div class="feature-box">
+                            <i class="bi bi-lightning-charge text-success h3"></i>
+                            <p class="mb-0 fw-semibold">Fast Setup</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="feature-box">
+                            <i class="bi bi-envelope-check text-primary h3"></i>
+                            <p class="mb-0 fw-semibold">Email Invitations</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="feature-box">
+                            <i class="bi bi-bar-chart text-warning h3"></i>
+                            <p class="mb-0 fw-semibold">Real-time Analytics</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="feature-box">
+                            <i class="bi bi-download text-danger h3"></i>
+                            <p class="mb-0 fw-semibold">Easy Export</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step-by-Step Navigation -->
+        <div class="card-modern mb-5">
+            <div class="card-header-modern">
+                <h4 class="mb-0"><i class="bi bi-list-ol me-2"></i>Step-by-Step Guide</h4>
+            </div>
+            <div class="card-body-modern">
+                <p class="mb-4">Follow these four simple steps to get started with EventFlow:</p>
+                <!-- In the Step-by-Step Navigation section, update the step cards: -->
+<div class="col-md-3">
+    <a href="{{ url_for('how_it_works_step', step=1) }}" class="text-decoration-none">
+        
+                <!-- In the step cards, add: -->
+<div class="mt-2">
+    {% if step == 1 %}
+        <small class="text-warning">
+            <i class="bi bi-clock me-1"></i>Video coming soon
+        </small>
+    {% elif step == 2 %}
+        <small class="text-warning">
+            <i class="bi bi-clock me-1"></i>Video coming soon
+        </small>
+    {% elif step == 3 %}
+        <small class="text-warning">
+            <i class="bi bi-clock me-1"></i>Video coming soon
+        </small>
+    {% elif step == 4 %}
+        <small class="text-warning">
+            <i class="bi bi-clock me-1"></i>Video coming soon
+        </small>
+    {% endif %}
+</div>
+            </div>
+            <div class="card-footer bg-transparent">
+                <span class="text-primary">Learn more <i class="bi bi-arrow-right"></i></span>
+            </div>
+        </div>
+    </a>
+</div>
+                <div class="row g-4">
+                    <!-- Step 1 Card -->
+                    <div class="col-md-3">
+                        <a href="{{ url_for('how_it_works_step', step=1) }}" class="text-decoration-none">
+                            <div class="card step-card h-100 text-center">
+                                <div class="card-body">
+                                    <div class="step-number-sm mb-3 mx-auto">1</div>
+                                    <h5 class="text-primary">Create Account</h5>
+                                    <p class="text-muted small mb-0">Sign up in less than a minute</p>
+                                </div>
+                                <div class="card-footer bg-transparent">
+                                    <span class="text-primary">Learn more <i class="bi bi-arrow-right"></i></span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <!-- Step 2 Card -->
+                    <div class="col-md-3">
+                        <a href="{{ url_for('how_it_works_step', step=2) }}" class="text-decoration-none">
+                            <div class="card step-card h-100 text-center">
+                                <div class="card-body">
+                                    <div class="step-number-sm mb-3 mx-auto">2</div>
+                                    <h5 class="text-primary">Create Event & Form</h5>
+                                    <p class="text-muted small mb-0">Set up your registration form</p>
+                                </div>
+                                <div class="card-footer bg-transparent">
+                                    <span class="text-primary">Learn more <i class="bi bi-arrow-right"></i></span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <!-- Step 3 Card -->
+                    <div class="col-md-3">
+                        <a href="{{ url_for('how_it_works_step', step=3) }}" class="text-decoration-none">
+                            <div class="card step-card h-100 text-center">
+                                <div class="card-body">
+                                    <div class="step-number-sm mb-3 mx-auto">3</div>
+                                    <h5 class="text-primary">Share & Collect</h5>
+                                    <p class="text-muted small mb-0">Distribute and gather responses</p>
+                                </div>
+                                <div class="card-footer bg-transparent">
+                                    <span class="text-primary">Learn more <i class="bi bi-arrow-right"></i></span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <!-- Step 4 Card -->
+                    <div class="col-md-3">
+                        <a href="{{ url_for('how_it_works_step', step=4) }}" class="text-decoration-none">
+                            <div class="card step-card h-100 text-center">
+                                <div class="card-body">
+                                    <div class="step-number-sm mb-3 mx-auto">4</div>
+                                    <h5 class="text-primary">Manage Data</h5>
+                                    <p class="text-muted small mb-0">Analyze and export results</p>
+                                </div>
+                                <div class="card-footer bg-transparent">
+                                    <span class="text-primary">Learn more <i class="bi bi-arrow-right"></i></span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Progress Navigation -->
+                <div class="mt-5 pt-4 border-top">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted">Start your journey</span>
+                            <h5 class="mb-0">Ready to begin?</h5>
+                        </div>
+                        <a href="{{ url_for('how_it_works_step', step=1) }}" class="btn btn-primary-modern btn-modern">
+                            Start with Step 1 <i class="bi bi-arrow-right ms-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Overview -->
+        <div class="card-modern mb-5">
+            <div class="card-header-modern">
+                <h4 class="mb-0"><i class="bi bi-clock-history me-2"></i>Quick Start</h4>
+            </div>
+            <div class="card-body-modern">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h5>Get Started in 2 Minutes</h5>
+                        <p>You don't need to be a tech expert to use EventFlow. Our intuitive interface guides you through every step.</p>
+                        <ul class="list-check">
+                            <li>No coding required</li>
+                            <li>Drag-and-drop form builder</li>
+                            <li>Pre-built templates available</li>
+                            <li>Instant email setup</li>
+                            <li>Mobile-optimized forms</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6 text-center">
+                        <div class="display-1 text-muted opacity-25">
+                            2min
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA Section -->
+        <div class="text-center mt-5">
+            <h3 class="mb-4">Ready to Transform Your Event Registration?</h3>
+            <p class="lead mb-4">Follow our step-by-step guide to get started quickly.</p>
+            <div class="d-flex justify-content-center gap-3">
+                {% if 'user_id' not in session %}
+                <a href="{{ url_for('signup') }}" class="btn btn-primary-modern btn-lg btn-modern">
+                    <i class="bi bi-rocket-takeoff me-2"></i> Get Started Free
+                </a>
+                <a href="{{ url_for('how_it_works_step', step=1) }}" class="btn btn-outline-primary btn-lg btn-modern">
+                    <i class="bi bi-play-circle me-2"></i> Start Guide
+                </a>
+                {% else %}
+                <a href="{{ url_for('create_event') }}" class="btn btn-primary-modern btn-lg btn-modern">
+                    <i class="bi bi-plus-circle me-2"></i> Create New Event
+                </a>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary btn-lg btn-modern">
+                    <i class="bi bi-speedometer2 me-2"></i> Go to Dashboard
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .step-number-sm {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #4361ee 0%, #3f37c9 100%);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        font-weight: bold;
+    }
+    
+    .step-card {
+        border: 2px solid #e2e8f0;
+        transition: all 0.3s;
+    }
+    
+    .step-card:hover {
+        border-color: #4361ee;
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(67, 97, 238, 0.15);
+    }
+    
+    .list-check {
+        list-style: none;
+        padding-left: 0;
+    }
+    
+    .list-check li {
+        padding-left: 1.5rem;
+        margin-bottom: 0.5rem;
+        position: relative;
+    }
+    
+    .list-check li:before {
+        content: "✓";
+        position: absolute;
+        left: 0;
+        color: #4361ee;
+        font-weight: bold;
+    }
+    
+    .feature-box {
+        text-align: center;
+        padding: 1rem;
+    }
+</style>
+{% endblock %}

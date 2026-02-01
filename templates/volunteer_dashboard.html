@@ -1,0 +1,3266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volunteer Dashboard - EventFlow</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a0ca3;
+            --secondary: #7209b7;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --warning-dark: #d97706;
+            --light: #f8f9fa;
+        }
+        
+        body {
+            background: #f5f7fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar-volunteer {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            box-shadow: 0 4px 20px rgba(67, 97, 238, 0.2);
+        }
+        
+        .volunteer-header {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+        
+        .participant-card {
+            background: white;
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .participant-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+        
+        /* Status border colors */
+        .participant-card.passed {
+            border-left: 4px solid var(--success);
+        }
+        
+        .participant-card.declined {
+            border-left: 4px solid var(--danger);
+        }
+        
+        .participant-card.pending {
+            border-left: 4px solid var(--warning);
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .status-passed {
+            background-color: var(--success);
+        }
+        
+        .status-declined {
+            background-color: var(--danger);
+        }
+        
+        .status-pending {
+            background-color: var(--warning);
+        }
+        
+        .chat-container {
+            background: white;
+            border-radius: 15px;
+            height: 500px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        
+        .chat-input {
+            border-top: 1px solid #eee;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 0 0 15px 15px;
+        }
+        
+        .message {
+            padding: 12px 15px;
+            border-radius: 15px;
+            margin-bottom: 10px;
+            max-width: 80%;
+            position: relative;
+        }
+        
+        .message.sent {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .message.received {
+            background: #f0f2f5;
+            color: #333;
+            margin-right: auto;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .message-time {
+            font-size: 11px;
+            opacity: 0.7;
+            margin-top: 5px;
+            display: block;
+        }
+        
+        .verified-badge {
+            background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .declined-badge {
+            background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .pending-badge {
+            background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .search-box {
+            position: relative;
+        }
+        
+        .search-box input {
+            padding-left: 45px;
+            border-radius: 25px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+        
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        
+        .btn-pass {
+            background-color: var(--success);
+            border-color: var(--success);
+            color: white;
+        }
+        
+        .btn-pass:hover:not(:disabled) {
+            background-color: #0da271;
+            border-color: #0da271;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+        }
+        
+        .btn-decline {
+            background-color: var(--danger);
+            border-color: var(--danger);
+            color: white;
+        }
+        
+        .btn-decline:hover:not(:disabled) {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
+        }
+        
+        /* Revoke Button Styles - FOR PASSED DECISIONS */
+        .btn-revoke-passed {
+            background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+            border-color: #ffc107;
+            color: #000;
+            width: 100%;
+            margin-top: 8px;
+        }
+        
+        .btn-revoke-passed:hover:not(:disabled) {
+            background: linear-gradient(135deg, #e0a800 0%, #c69500 100%);
+            border-color: #e0a800;
+            color: #000;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.3);
+        }
+        
+        /* Revoke Button Styles - FOR DECLINED DECISIONS */
+        .btn-revoke-declined {
+            background: linear-gradient(135deg, #fd7e14 0%, #e8590c 100%);
+            border-color: #fd7e14;
+            color: white;
+            width: 100%;
+            margin-top: 8px;
+        }
+        
+        .btn-revoke-declined:hover:not(:disabled) {
+            background: linear-gradient(135deg, #e8590c 0%, #d9480f 100%);
+            border-color: #e8590c;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(253, 126, 20, 0.3);
+        }
+        
+        .btn-revoke-passed:disabled,
+        .btn-revoke-declined:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+        
+        .stats-refresh {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        .session-ended-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
+            z-index: 99999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .session-ended-content {
+            background: white;
+            padding: 50px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .session-ended-icon {
+            font-size: 80px;
+            color: #4361ee;
+            margin-bottom: 20px;
+        }
+
+        .session-ended-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #4361ee 0%, #7209b7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .session-ended-message {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .session-ended-button {
+            background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(67, 97, 238, 0.3);
+        }
+
+        .session-ended-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(67, 97, 238, 0.4);
+        }
+        
+        .action-buttons .btn {
+            padding: 8px 12px;
+            font-size: 14px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .action-buttons .btn-sm {
+            padding: 6px 10px;
+            font-size: 13px;
+            border-radius: 6px;
+        }
+
+        .btn-outline-info {
+            border-color: #0dcaf0;
+            color: #0dcaf0;
+        }
+
+        .btn-outline-info:hover {
+            background-color: #0dcaf0;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(13, 202, 240, 0.3);
+        }
+
+        .btn-outline-success {
+            border-color: #198754;
+            color: #198754;
+        }
+
+        .btn-outline-success:hover {
+            background-color: #198754;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(25, 135, 84, 0.3);
+        }
+
+        .action-buttons .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .action-buttons .text-start {
+            text-align: left;
+            display: flex;
+            align-items: center;
+        }
+
+        .action-buttons .text-start i {
+            width: 16px;
+        }
+        
+        /* Response Details Modal Styles */
+        .response-details-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .response-details-content {
+            background: white;
+            border-radius: 15px;
+            width: 100%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: fadeInUp 0.3s ease-out;
+            position: relative;
+        }
+
+        .details-close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #6c757d;
+            cursor: pointer;
+            z-index: 10;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .details-close-btn:hover {
+            background: #f8f9fa;
+            color: #dc3545;
+        }
+
+        .details-modal-header {
+            padding: 30px 30px 20px 30px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .details-modal-body {
+            padding: 30px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .details-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #e9ecef;
+        }
+
+        .details-card-header {
+            background: #e9ecef;
+            padding: 12px 15px;
+            font-weight: 600;
+            color: #495057;
+            font-size: 14px;
+        }
+
+        .details-card-body {
+            padding: 15px;
+            color: #212529;
+            word-break: break-word;
+            font-size: 14px;
+        }
+        
+        /* Animation for alerts */
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .volunteer-header {
+                padding: 20px;
+            }
+            
+            .session-ended-content {
+                padding: 30px 20px;
+                margin: 20px;
+            }
+            
+            .action-buttons {
+                gap: 5px;
+            }
+        }
+        /* Report Modal Styles */
+#verificationReportModal .modal-xl {
+    max-width: 1200px;
+}
+
+#reportTable {
+    font-size: 13px;
+}
+
+#reportTable th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+}
+
+#reportTable td {
+    vertical-align: middle;
+}
+
+#reportTable .badge {
+    font-size: 11px;
+    padding: 4px 8px;
+}
+
+.date-inputs .form-control {
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.date-inputs .form-control:focus {
+    border-color: #4361ee;
+    box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+}
+
+.report-card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+.report-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.pagination .page-link {
+    border-radius: 5px;
+    margin: 0 3px;
+    border: none;
+    color: #4361ee;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #4361ee;
+    border-color: #4361ee;
+}
+
+.pagination .page-link:hover {
+    background-color: #f8f9fa;
+    color: #3a0ca3;
+}
+    </style>
+</head>
+<body>
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-dark navbar-volunteer">
+    <div class="container">
+        <a class="navbar-brand" href="#">
+            <i class="bi bi-shield-check me-2"></i>
+            EventFlow Volunteer
+        </a>
+        
+        <div class="d-flex align-items-center">
+            <!-- Report Button -->
+            <button class="btn btn-outline-light btn-sm me-3" data-bs-toggle="modal" data-bs-target="#verificationReportModal">
+                <i class="bi bi-file-bar-graph me-1"></i> View Report
+            </button>
+            
+            <span class="text-light me-3">
+                <i class="bi bi-person-circle me-1"></i>
+                {{ volunteer_name }}
+            </span>
+            <button class="btn btn-outline-light btn-sm" onclick="logoutVolunteer()">
+                <i class="bi bi-box-arrow-right"></i> Logout
+            </button>
+        </div>
+    </div>
+</nav>
+    
+    <div class="container py-4">
+        <!-- Welcome Header -->
+        <div class="volunteer-header">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="mb-2">Hello, {{ volunteer_name }}! 👋</h1>
+                    <p class="text-muted mb-3">
+                        Welcome to the {{ event.name }} verification dashboard. 
+                        You are helping with: <strong>{{ form.title }}</strong>
+                    </p>
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="badge bg-primary">
+                            <i class="bi bi-people me-1"></i> {{ responses|length }} Participants
+                        </span>
+                        <span class="badge bg-success">
+                            <i class="bi bi-clock me-1"></i> {{ current_time.strftime('%I:%M %p') }}
+                        </span>
+                        <span class="badge bg-info">
+                            <i class="bi bi-calendar-check me-1"></i> {{ current_time.strftime('%b %d, %Y') }}
+                        </span>
+                    </div>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <div class="alert alert-light border-primary">
+                        <h6 class="mb-1"><i class="bi bi-info-circle me-1"></i> Your Role</h6>
+                        <p class="mb-0 small">Verify participants and assist with check-in. You can revoke your decisions if needed.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <!-- Left Column - Participants -->
+            <div class="col-lg-8">
+                <!-- Search Bar -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <div class="search-box">
+                            <i class="bi bi-search"></i>
+                            <input type="text" class="form-control" id="participantSearch" 
+                                   placeholder="Search by name, response ID, verification ID...">
+                        </div>
+                        <div class="form-text mt-2">
+                            Search participants to verify their registration
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Participants Grid -->
+                <div id="searchResults" class="mb-4" style="display: none;"></div>
+                
+                <h4 class="mb-3">Registered Participants ({{ responses|length }})</h4>
+                
+                {% if responses %}
+                <div class="row" id="participantsGrid">
+                    {% for response in responses %}
+                    <div class="col-md-6 col-lg-4 mb-3 participant-item" 
+                         data-name="{{ response.get('Name', response.get('Full Name', ''))|lower }}"
+                         data-response-id="{{ response.get('Response ID', '')|lower }}"
+                         data-verification-id="ver-{{ form.id[:8] }}-{{ response['Entry Number'] }}-{{ response.get('Response ID', '00000000')[:8] }}"
+                         id="participant-{{ response.get('Response ID', '') }}">
+                        <div class="participant-card pending" id="card-{{ response.get('Response ID', '') }}">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <h6 class="mb-1">
+                                            {{ response.get('Name', response.get('Full Name', 'Participant')) }}
+                                        </h6>
+                                        <small class="text-muted">
+                                            Entry #{{ response['Entry Number'] }}
+                                        </small>
+                                    </div>
+                                    <span class="pending-badge" id="badge-{{ response.get('Response ID', '') }}">
+                                        <i class="bi bi-clock me-1"></i> Pending
+                                    </span>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    {% for key, value in response.items() %}
+                                        {% if key in ['Email', 'Phone', 'Ticket Type'] and value %}
+                                            <div class="mb-1">
+                                                <small class="text-muted">{{ key }}:</small>
+                                                <div class="small">{{ value[:30] }}{% if value|length > 30 %}...{% endif %}</div>
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    <div class="mb-1">
+                                        <small class="text-muted">Response ID:</small>
+                                        <div class="small font-monospace">
+                                            {{ response.get('Response ID', 'N/A')[:12] }}...
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-1">
+                                        <small class="text-muted">Submitted:</small>
+                                        <div class="small">
+                                            {% if response.get('Timestamp') %}
+                                                {{ response['Timestamp'][:19].replace('T', ' ') }}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Action Buttons Section -->
+                                <div class="action-buttons" id="action-buttons-{{ response.get('Response ID', '') }}">
+                                    <!-- Quick Verification Buttons -->
+                                    <button class="btn btn-pass" 
+                                            onclick="markAsPassed('{{ response.get('Response ID', '') }}')"
+                                            id="pass-btn-{{ response.get('Response ID', '') }}">
+                                        <i class="bi bi-check-circle me-1"></i> Pass
+                                    </button>
+                                    <button class="btn btn-decline" 
+                                            onclick="markAsDeclined('{{ response.get('Response ID', '') }}')"
+                                            id="decline-btn-{{ response.get('Response ID', '') }}">
+                                        <i class="bi bi-x-circle me-1"></i> Decline
+                                    </button>
+                                    
+                                    <!-- Revoke Button Container (Will be populated by JavaScript) -->
+                                    <div id="revoke-container-{{ response.get('Response ID', '') }}"></div>
+                                    
+                                    <!-- Additional Action Buttons -->
+                                    <div class="mt-2 d-grid gap-1">
+                                        <button class="btn btn-sm btn-outline-info text-start" 
+                                                onclick="viewResponseDetailsById('{{ response.get('Response ID', '') }}')">
+                                            <i class="bi bi-eye me-1"></i> View Details
+                                        </button>
+                                        
+                                        <!-- Verify Response Button -->
+                                        <a href="{{ url_for('verify_response', event_id=event.id, form_id=form.id, response_id=response.get('Response ID', '')) }}" 
+                                           class="btn btn-sm btn-outline-success text-start" target="_blank">
+                                            <i class="bi bi-qr-code-scan me-1"></i> Verify Response
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-people display-4 text-muted mb-3"></i>
+                    <h5 class="text-muted">No participants registered yet</h5>
+                    <p class="text-muted">Participants will appear here once they register</p>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Right Column - Chat and Stats -->
+            <div class="col-lg-4">
+                <div class="sticky-top" style="top: 20px;">
+                    <div class="chat-container">
+                        <div class="p-3 border-bottom">
+                            <h5 class="mb-0">
+                                <i class="bi bi-chat-dots me-2"></i> Volunteer Chat
+                            </h5>
+                            <small class="text-muted">Chat with other volunteers</small>
+                        </div>
+                        
+                        <div class="chat-messages" id="chatMessages">
+                            {% for message in messages %}
+                            <div class="message {% if message.sender == volunteer_name %}sent{% else %}received{% endif %}" 
+                                 data-message-id="{{ message.id if message.id else loop.index }}">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <strong>{{ message.sender }}</strong>
+                                    <small class="message-time">
+                                        {{ message.timestamp[11:16] }}
+                                    </small>
+                                </div>
+                                {{ message.message }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="chat-input">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="chatInput" 
+                                       placeholder="Type your message..." onkeypress="handleChatKeyPress(event)">
+                                <button class="btn btn-primary" onclick="sendChatMessage()">
+                                    <i class="bi bi-send"></i>
+                                </button>
+                            </div>
+                            <small class="text-muted mt-2 d-block">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Chat is visible to all volunteers
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <!-- Stats Panel -->
+                    <div class="card border-0 shadow-sm mt-4">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0"><i class="bi bi-graph-up me-2"></i> Verification Stats</h6>
+                                <small class="text-muted stats-refresh" id="lastUpdated">
+                                    Updating...
+                                </small>
+                            </div>
+                            <div class="row text-center">
+                                <div class="col-4 mb-3">
+                                    <div class="display-6 fw-bold text-primary" id="totalCount">{{ responses|length }}</div>
+                                    <small class="text-muted">Total</small>
+                                </div>
+                                <div class="col-4 mb-3">
+                                    <div class="display-6 fw-bold text-success" id="passedCount">0</div>
+                                    <small class="text-muted">Passed</small>
+                                </div>
+                                <div class="col-4 mb-3">
+                                    <div class="display-6 fw-bold text-danger" id="declinedCount">0</div>
+                                    <small class="text-muted">Declined</small>
+                                </div>
+                            </div>
+                            <div class="progress mb-2" style="height: 10px;">
+                                <div class="progress-bar bg-success" style="width: 0%" id="passedBar"></div>
+                                <div class="progress-bar bg-danger" style="width: 0%" id="declinedBar"></div>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">Verification Progress</small>
+                                <small class="text-muted" id="progressText">0% Complete</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Session Ended Modal -->
+    <div id="sessionEndedModal" class="session-ended-modal" style="display: none;">
+        <div class="session-ended-content">
+            <div class="session-ended-icon">
+                <i class="bi bi-shield-check"></i>
+            </div>
+            <h1 class="session-ended-title">Session Ended</h1>
+            <p class="session-ended-message" id="sessionEndedMessage">
+                Thank you for your service!<br>
+                The volunteer session has been ended by the administrator.
+            </p>
+            <p class="text-muted mb-4">
+                <i class="bi bi-info-circle me-1"></i>
+                Volunteer mode has been disabled or the access code has been changed.
+            </p>
+            <button class="session-ended-button" onclick="redirectToHome()">
+                <i class="bi bi-house-door me-2"></i> Return to Home
+            </button>
+        </div>
+    </div>
+    
+    <!-- Response Details Modal -->
+    <div id="responseDetailsModal" class="response-details-modal" style="display: none;">
+        <div class="response-details-content">
+            <button class="details-close-btn" onclick="closeResponseDetails()">
+                <i class="bi bi-x"></i>
+            </button>
+            
+            <div class="details-modal-header">
+                <h3 class="mb-1">
+                    <i class="bi bi-person-badge me-2"></i>
+                    <span id="detailsParticipantName">Participant Details</span>
+                </h3>
+                <p class="mb-0 text-muted" id="detailsEntryNumber">Entry #0</p>
+            </div>
+            
+            <div class="details-modal-body" id="detailsModalBody">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Loading details...</p>
+                </div>
+            </div>
+            
+            <div class="details-actions">
+                <button class="btn btn-secondary" onclick="closeResponseDetails()">
+                    <i class="bi bi-x-circle me-1"></i> Close
+                </button>
+                <a href="#" class="btn btn-primary" id="modalVerifyBtn" target="_blank">
+                    <i class="bi bi-qr-code-scan me-1"></i> Verify Response
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Verification Report Modal -->
+<div class="modal fade" id="verificationReportModal" tabindex="-1" aria-labelledby="verificationReportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="verificationReportModalLabel">
+                    <i class="bi bi-file-earmark-bar-graph me-2"></i>Verification Report
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Date Selection -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6 class="card-title">
+                                    <i class="bi bi-calendar-date me-2"></i>Select Date Range
+                                </h6>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">From Date</label>
+                                        <input type="date" class="form-control" id="reportFromDate" 
+                                               value="{{ current_time.strftime('%Y-%m-%d') }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">To Date</label>
+                                        <input type="date" class="form-control" id="reportToDate" 
+                                               value="{{ current_time.strftime('%Y-%m-%d') }}">
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <button class="btn btn-primary" onclick="generateReport()">
+                                        <i class="bi bi-arrow-clockwise me-1"></i> Generate Report
+                                    </button>
+                                    <button class="btn btn-outline-secondary ms-2" onclick="setToday()">
+                                        <i class="bi bi-calendar-day me-1"></i> Today
+                                    </button>
+                                    <button class="btn btn-outline-secondary ms-2" onclick="setYesterday()">
+                                        <i class="bi bi-calendar me-1"></i> Yesterday
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6 class="card-title">
+                                    <i class="bi bi-download me-2"></i>Download Options
+                                </h6>
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-success" onclick="downloadCurrentReport()">
+                                        <i class="bi bi-file-earmark-arrow-down me-1"></i> Download Current Report (CSV)
+                                    </button>
+                                    <button class="btn btn-outline-success" onclick="downloadFullReport()">
+                                        <i class="bi bi-file-earmark-text me-1"></i> Download Full Details (CSV)
+                                    </button>
+                                    <button class="btn btn-outline-primary" onclick="downloadStatisticsReport()">
+                                        <i class="bi bi-bar-chart me-1"></i> Download Statistics (CSV)
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Report Summary -->
+                <div id="reportLoading" class="text-center py-4" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Generating report...</p>
+                </div>
+                
+                <div id="reportContent">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Select date range and click "Generate Report" to view verification statistics
+                    </div>
+                </div>
+                
+                <!-- Detailed Report Table -->
+                <div class="mt-4" id="reportTableSection" style="display: none;">
+                    <h6 class="mb-3">
+                        <i class="bi bi-table me-2"></i>
+                        Detailed Verification Records
+                        <span class="badge bg-secondary ms-2" id="recordCount">0 records</span>
+                    </h6>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm" id="reportTable">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Entry #</th>
+                                    <th>Participant</th>
+                                    <th>Response ID</th>
+                                    <th>Verification ID</th>
+                                    <th>Status</th>
+                                    <th>Verified By</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportTableBody">
+                                <!-- Will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center mt-3" id="reportPagination">
+                        <!-- Pagination will be added here -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="printReportBtn" onclick="printReport()" style="display: none;">
+                    <i class="bi bi-printer me-1"></i> Print Report
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    // Get verification status passed from server
+let serverVerificationStatus = {{ verification_status|tojson|safe }};
+        // ===== GLOBAL VARIABLES =====
+        let allResponses = {{ responses|tojson }};
+        let verificationStatus = {};
+        let verificationRefreshInterval = null;
+        let sessionCheckInterval = null;
+        let isSessionActive = true;
+        let chatRefreshInterval = null;
+        let statsRefreshInterval = null;
+        
+        // ===== RESPONSE DETAILS MODAL FUNCTIONS =====
+        
+        function viewResponseDetailsById(responseId) {
+            console.log('Opening details for response ID:', responseId);
+            
+            const response = allResponses.find(r => r['Response ID'] === responseId);
+            
+            if (!response) {
+                showAlert('Response data not found!', 'danger');
+                console.error('Response not found for ID:', responseId);
+                return;
+            }
+            
+            const participantName = response.Name || response['Full Name'] || 'Participant';
+            openResponseDetailsModal(response, participantName);
+        }
+        
+        function openResponseDetailsModal(response, participantName) {
+            console.log('Opening modal for:', participantName);
+            
+            const modal = document.getElementById('responseDetailsModal');
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            
+            document.getElementById('detailsParticipantName').textContent = participantName || 'Participant';
+            document.getElementById('detailsEntryNumber').textContent = `Entry #${response['Entry Number'] || '0'}`;
+            
+            const responseId = response['Response ID'];
+            if (responseId) {
+                const verifyBtn = document.getElementById('modalVerifyBtn');
+                verifyBtn.href = `/verify_response/{{ event.id }}/{{ form.id }}/${responseId}`;
+                verifyBtn.style.display = 'inline-block';
+            } else {
+                document.getElementById('modalVerifyBtn').style.display = 'none';
+            }
+            
+            displayResponseDetails(response);
+        }
+        
+        function displayResponseDetails(response) {
+            const detailsBody = document.getElementById('detailsModalBody');
+            
+            let html = '<div class="details-grid">';
+            
+            if (response['Timestamp']) {
+                html += `
+                    <div class="details-card">
+                        <div class="details-card-header">
+                            <i class="bi bi-clock me-2"></i>Submission Time
+                        </div>
+                        <div class="details-card-body">
+                            ${response['Timestamp']}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            if (response['Response ID']) {
+                html += `
+                    <div class="details-card">
+                        <div class="details-card-header">
+                            <i class="bi bi-upc-scan me-2"></i>Response ID
+                        </div>
+                        <div class="details-card-body">
+                            <code class="small">${response['Response ID']}</code>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            html += `
+                <div class="details-card">
+                    <div class="details-card-header">
+                        <i class="bi bi-hash me-2"></i>Entry Number
+                    </div>
+                    <div class="details-card-body">
+                        ${response['Entry Number'] || 'N/A'}
+                    </div>
+                </div>
+            `;
+            
+            const excludedFields = ['Timestamp', 'Response ID', 'Entry Number', '_row_number', '_qr_code', '_verification_url', '_response_id'];
+            
+            Object.keys(response).forEach(key => {
+                if (excludedFields.includes(key) || key.startsWith('_')) {
+                    return;
+                }
+                
+                let value = response[key];
+                
+                if (value === null || value === undefined || value === '' || value === 'N/A') {
+                    return;
+                }
+                
+                const displayKey = key
+                    .replace(/_/g, ' ')
+                    .replace(/\b\w/g, l => l.toUpperCase());
+                
+                html += `
+                    <div class="details-card">
+                        <div class="details-card-header">
+                            ${displayKey}
+                        </div>
+                        <div class="details-card-body">
+                            ${formatValueForDisplay(value)}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            
+            detailsBody.innerHTML = html || '<p class="text-muted text-center py-4">No data available</p>';
+        }
+        
+        function formatValueForDisplay(value) {
+            if (Array.isArray(value)) {
+                return value.join(', ');
+            }
+            
+            if (typeof value === 'string') {
+                try {
+                    if (value.startsWith('[') || value.startsWith('{')) {
+                        const parsed = JSON.parse(value);
+                        if (Array.isArray(parsed)) {
+                            return parsed.join(', ');
+                        } else if (typeof parsed === 'object') {
+                            return JSON.stringify(parsed, null, 2);
+                        }
+                    }
+                } catch (e) {
+                    // Not JSON, return as-is
+                }
+                
+                if (value.length > 200) {
+                    return value.substring(0, 200) + '...';
+                }
+                
+                return value;
+            }
+            
+            return String(value);
+        }
+        
+        function closeResponseDetails() {
+            const modal = document.getElementById('responseDetailsModal');
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+        
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('responseDetailsModal');
+            if (event.target === modal) {
+                closeResponseDetails();
+            }
+        });
+        
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const modal = document.getElementById('responseDetailsModal');
+                if (modal.style.display === 'flex') {
+                    closeResponseDetails();
+                }
+            }
+        });
+        
+        // ===== VERIFICATION STATUS FUNCTIONS =====
+async function initializeVerificationStatus() {
+    try {
+        console.log('Initializing verification status...');
+        
+        // First try to get from server
+        const response = await fetch(`/get_verification_status/{{ event.id }}/{{ form.id }}?t=${Date.now()}`);
+        
+        if (response.ok) {
+            const data = await response.json();
+            
+            if (data.success) {
+                verificationStatus = data.verifications || {};
+                console.log(`Loaded ${Object.keys(verificationStatus).length} verification records from server`);
+            } else {
+                console.warn('Server returned error:', data.error);
+                verificationStatus = {};
+            }
+        } else {
+            console.warn('Failed to fetch verification status from server');
+            verificationStatus = {};
+        }
+        
+        // Fallback to localStorage
+        if (Object.keys(verificationStatus).length === 0) {
+            const savedStatus = localStorage.getItem(`verificationStatus_{{ event.id }}_{{ form.id }}`);
+            if (savedStatus) {
+                try {
+                    verificationStatus = JSON.parse(savedStatus);
+                    console.log(`Loaded ${Object.keys(verificationStatus).length} verification records from localStorage`);
+                } catch (e) {
+                    console.error('Error parsing localStorage verification status:', e);
+                    verificationStatus = {};
+                }
+            }
+        }
+        
+        // Update UI
+        updateUIFromStatus();
+        updateStats();
+        
+        console.log('Verification status initialized successfully');
+        
+    } catch (error) {
+        console.error('Error loading verification status:', error);
+        verificationStatus = {};
+        updateUIFromStatus();
+        updateStats();
+    }
+}
+
+// ===== DOWNLOAD DROPDOWN FUNCTION =====
+
+function addDownloadDropdown() {
+    // Check if dropdown already exists
+    if (document.getElementById('downloadDropdown')) {
+        return;
+    }
+    
+    const navbarButtons = document.querySelector('.navbar .d-flex.align-items-center');
+    if (!navbarButtons) return;
+    
+    // Create dropdown
+    const dropdownDiv = document.createElement('div');
+    dropdownDiv.className = 'dropdown me-3';
+    
+    dropdownDiv.innerHTML = `
+        <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" id="downloadDropdown" 
+                data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-download me-1"></i> Download Report
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="downloadDropdown">
+            <li><a class="dropdown-item" href="#" onclick="downloadCurrentReport()">
+                <i class="bi bi-file-text me-2"></i> Basic Report (CSV)
+            </a></li>
+            <li><a class="dropdown-item" href="#" onclick="downloadFullReport()">
+                <i class="bi bi-file-earmark-text me-2"></i> Detailed Report (CSV)
+            </a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="#" onclick="downloadStatisticsReport()">
+                <i class="bi bi-bar-chart me-2"></i> Statistics Report
+            </a></li>
+        </ul>
+    `;
+    
+    // Insert before the volunteer name
+    const volunteerSpan = navbarButtons.querySelector('span.text-light');
+    if (volunteerSpan) {
+        navbarButtons.insertBefore(dropdownDiv, volunteerSpan);
+    } else {
+        navbarButtons.insertBefore(dropdownDiv, navbarButtons.firstChild);
+    }
+}
+        
+function updateUIFromStatus() {
+    console.log('Updating UI from verification status...');
+    
+    // Update each participant card
+    allResponses.forEach(response => {
+        const responseId = response['Response ID'];
+        if (responseId) {
+            const status = verificationStatus[responseId]?.status || 'pending';
+            const verifiedBy = verificationStatus[responseId]?.verified_by || null;
+            
+            updateCardStatus(responseId, status, verifiedBy);
+        }
+    });
+    
+    console.log('UI update complete');
+}
+        
+function updateCardStatus(responseId, status, verifiedBy = null) {
+    const card = document.getElementById(`card-${responseId}`);
+    const badge = document.getElementById(`badge-${responseId}`);
+    const passBtn = document.getElementById(`pass-btn-${responseId}`);
+    const declineBtn = document.getElementById(`decline-btn-${responseId}`);
+    
+    if (!card || !badge || !passBtn || !declineBtn) {
+        console.warn(`Card elements not found for response ID: ${responseId}`);
+        return;
+    }
+    
+    // Remove all status classes and add new one
+    card.classList.remove('passed', 'declined', 'pending');
+    card.classList.add(status);
+    
+    // Update badge
+    let badgeHtml = '';
+    let badgeClass = '';
+    let showRevoke = false;
+    
+    switch(status) {
+        case 'passed':
+            badgeHtml = `<i class="bi bi-check-circle me-1"></i> Passed`;
+            if (verifiedBy) {
+                badgeHtml += `<br><small class="text-muted">by ${verifiedBy}</small>`;
+            }
+            badgeClass = 'verified-badge';
+            showRevoke = verifiedBy === '{{ volunteer_name }}';
+            break;
+        case 'declined':
+            badgeHtml = `<i class="bi bi-x-circle me-1"></i> Declined`;
+            if (verifiedBy) {
+                badgeHtml += `<br><small class="text-muted">by ${verifiedBy}</small>`;
+            }
+            badgeClass = 'declined-badge';
+            showRevoke = verifiedBy === '{{ volunteer_name }}';
+            break;
+        case 'pending':
+        default:
+            badgeHtml = `<i class="bi bi-clock me-1"></i> Pending`;
+            badgeClass = 'pending-badge';
+            showRevoke = false;
+            break;
+    }
+    
+    badge.className = badgeClass;
+    badge.innerHTML = badgeHtml;
+    
+    // Show or hide revoke button
+    if (showRevoke) {
+        showRevokeButton(responseId, verifiedBy, status);
+    } else {
+        hideRevokeButton(responseId);
+    }
+    
+    // Update action buttons
+    updateActionButtons(responseId, status);
+}
+
+function updateActionButtons(responseId, status) {
+    const passBtn = document.getElementById(`pass-btn-${responseId}`);
+    const declineBtn = document.getElementById(`decline-btn-${responseId}`);
+    
+    if (!passBtn || !declineBtn) {
+        console.warn(`Action buttons not found for response ID: ${responseId}`);
+        return;
+    }
+    
+    if (status === 'passed' || status === 'declined') {
+        // Already verified - disable buttons
+        passBtn.disabled = true;
+        declineBtn.disabled = true;
+        passBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i> Verified';
+        declineBtn.innerHTML = '<i class="bi bi-x-circle me-1"></i> Verified';
+        
+        passBtn.classList.remove('btn-pass');
+        passBtn.classList.add('btn-secondary');
+        declineBtn.classList.remove('btn-decline');
+        declineBtn.classList.add('btn-secondary');
+    } else {
+        // Not verified - enable buttons
+        passBtn.disabled = false;
+        declineBtn.disabled = false;
+        passBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i> Pass';
+        declineBtn.innerHTML = '<i class="bi bi-x-circle me-1"></i> Decline';
+        
+        passBtn.classList.remove('btn-secondary');
+        passBtn.classList.add('btn-pass');
+        declineBtn.classList.remove('btn-secondary');
+        declineBtn.classList.add('btn-decline');
+    }
+}
+        
+        // ===== REVOKE BUTTON FUNCTIONS =====
+        
+        function showRevokeButton(responseId, verifiedBy, originalStatus) {
+            const revokeContainer = document.getElementById(`revoke-container-${responseId}`);
+            if (!revokeContainer) return;
+            
+            // Remove any existing revoke button
+            hideRevokeButton(responseId);
+            
+            // Determine button text and color based on original status
+            let buttonText = '';
+            let buttonIcon = 'bi-arrow-counterclockwise';
+            let buttonClass = '';
+            
+            if (originalStatus === 'passed') {
+                buttonText = 'Revoke Pass';
+                buttonIcon = 'bi-x-circle';
+                buttonClass = 'btn-revoke-passed';
+            } else if (originalStatus === 'declined') {
+                buttonText = 'Revoke Decline';
+                buttonIcon = 'bi-check-circle';
+                buttonClass = 'btn-revoke-declined';
+            } else {
+                buttonText = 'Revoke Decision';
+                buttonClass = 'btn-revoke-passed';
+            }
+            
+            // Create new revoke button
+            const revokeBtn = document.createElement('button');
+            revokeBtn.id = `revoke-btn-${responseId}`;
+            revokeBtn.className = `btn ${buttonClass}`;
+            revokeBtn.setAttribute('data-original-status', originalStatus);
+            revokeBtn.innerHTML = `<i class="bi ${buttonIcon} me-1"></i> ${buttonText}`;
+            revokeBtn.onclick = () => revokeVerification(responseId, originalStatus);
+            
+            revokeContainer.appendChild(revokeBtn);
+        }
+        
+        function hideRevokeButton(responseId) {
+            const revokeBtn = document.getElementById(`revoke-btn-${responseId}`);
+            if (revokeBtn) {
+                revokeBtn.remove();
+            }
+        }
+        
+// Enhanced verifyResponse function for volunteer dashboard
+async function verifyResponse(eventId, formId, responseId, action) {
+    try {
+        // First check current verification status
+        const checkResponse = await fetch(`/check_verification_status/${eventId}/${formId}/${responseId}`);
+        const checkData = await checkResponse.json();
+        
+        if (checkData.success) {
+            // Check if it's already verified (passed or declined)
+            if (checkData.status === 'passed' || checkData.status === 'declined') {
+                // Check if current user can revoke
+                const currentUserId = '{{ session.volunteer_code }}';
+                const currentUserRole = '{{ session.user_id }}';
+                
+                let canRevoke = false;
+                
+                // Admin can always revoke
+                if (currentUserRole === 'admin') {
+                    canRevoke = true;
+                }
+                // Original verifier can revoke
+                else if (checkData.verified_by_id && currentUserId === checkData.verified_by_id) {
+                    canRevoke = true;
+                }
+                
+                if (canRevoke) {
+                    // Show revoke confirmation
+                    showRevokeConfirmation(eventId, formId, responseId, checkData);
+                } else {
+                    // Show blocked message
+                    showBlockedMessage(eventId, formId, responseId, checkData);
+                }
+                return;
+            }
+            
+            // If pending or revoked, proceed with verification
+            showVerificationModal(eventId, formId, responseId, action);
+        } else {
+            // If error, still try to proceed
+            showVerificationModal(eventId, formId, responseId, action);
+        }
+        
+    } catch (error) {
+        console.error('Check verification error:', error);
+        showVerificationModal(eventId, formId, responseId, action);
+    }
+}
+
+// Show revoke confirmation
+function showRevokeConfirmation(eventId, formId, responseId, verificationData) {
+    const message = verificationData.status === 'passed' 
+        ? 'This response was already marked as PASSED. Do you want to revoke this decision and set it back to pending?'
+        : 'This response was already marked as DECLINED. Do you want to revoke this decision and set it back to pending?';
+    
+    if (confirm(message)) {
+        revokeVerification(responseId, verificationData.status);
+    }
+}
+
+// Your existing revokeVerification function (with improvements)
+async function revokeVerification(responseId, originalStatus) {
+    let message = '';
+    if (originalStatus === 'passed') {
+        message = 'Are you sure you want to revoke your PASS decision? The participant will be marked as pending again.';
+    } else {
+        message = 'Are you sure you want to revoke your DECLINE decision? The participant will be marked as pending again.';
+    }
+    
+    if (!confirm(message)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/revoke_verification_status/{{ event.id }}/{{ form.id }}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                response_id: responseId
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Update the UI
+            updateCardStatus(responseId, 'pending', null);
+            updateStats();
+            
+            // Hide revoke button and show pass/decline buttons
+            const card = document.querySelector(`[data-response-id="${responseId}"]`);
+            if (card) {
+                const buttonGroup = card.querySelector('.btn-group');
+                if (buttonGroup) {
+                    buttonGroup.innerHTML = `
+                        <button class="btn btn-sm btn-outline-primary" onclick="viewResponseDetails('{{ event.id }}', '{{ form.id }}', '${responseId}')">
+                            <i class="bi bi-eye me-1"></i> View
+                        </button>
+                        <button class="verification-btn btn-sm btn-pass" onclick="verifyResponse('{{ event.id }}', '{{ form.id }}', '${responseId}', 'pass')">
+                            <i class="bi bi-check"></i> Pass
+                        </button>
+                        <button class="verification-btn btn-sm btn-decline" onclick="verifyResponse('{{ event.id }}', '{{ form.id }}', '${responseId}', 'decline')">
+                            <i class="bi bi-x"></i> Decline
+                        </button>
+                    `;
+                }
+            }
+            
+            // Add chat notification
+            const participant = allResponses.find(r => r['Response ID'] === responseId);
+            if (participant) {
+                const participantName = participant.Name || participant['Full Name'] || 'Participant';
+                const action = originalStatus === 'passed' ? 'pass' : 'decline';
+                addVerificationChatMessage(`${'{{ volunteer_name }}'} revoked their ${action} decision for "${participantName}"`);
+            }
+            
+            showAlert(`${originalStatus === 'passed' ? 'Pass' : 'Decline'} decision revoked! Participant is now pending.`, 'success');
+            
+            // IMPORTANT: After successful revocation, the verification page should now show normally
+            // Open the verification page in a new tab to show it's now accessible
+            setTimeout(() => {
+                const verifyUrl = `/verify_response/{{ event.id }}/{{ form.id }}/${responseId}`;
+                window.open(verifyUrl, '_blank');
+            }, 500);
+            
+        } else {
+            showAlert('Error revoking decision: ' + data.error, 'danger');
+        }
+    } catch (error) {
+        console.error('Revoke error:', error);
+        showAlert('Error revoking decision. Please try again.', 'danger');
+    }
+}
+
+// Show blocked message for unauthorized users
+function showBlockedMessage(eventId, formId, responseId, verificationData) {
+    const modalHtml = `
+        <div class="modal fade" id="blockedModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">
+                            <i class="bi bi-shield-lock me-2"></i> Already Verified
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <strong>This response has already been verified</strong>
+                            <p class="mb-0 mt-1">Status: <span class="badge bg-${verificationData.status === 'passed' ? 'success' : 'danger'}">${verificationData.status.toUpperCase()}</span> by ${verificationData.verified_by || 'Unknown'}</p>
+                        </div>
+                        
+                        <p class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Only the original verifier or an administrator can modify this decision.
+                        </p>
+                        
+                        <div class="mt-3">
+                            <button class="btn btn-primary w-100" onclick="viewResponseDetails('${eventId}', '${formId}', '${responseId}')">
+                                <i class="bi bi-eye me-2"></i> View Verification Details
+                            </button>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remove existing modal if any
+    const existingModal = document.getElementById('blockedModal');
+    if (existingModal) existingModal.remove();
+    
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Show modal
+    const blockedModal = new bootstrap.Modal(document.getElementById('blockedModal'));
+    blockedModal.show();
+}
+
+// Check if user can revoke
+async function checkRevokePermission(verificationData, eventId, formId, responseId) {
+    const currentUserId = '{{ session.volunteer_code }}';
+    const currentUserRole = '{{ session.get("user_id") }}'; // Could be 'admin' or regular user
+    
+    // Admin can always revoke
+    if (currentUserRole === 'admin') return true;
+    
+    // Original verifier can revoke
+    if (verificationData.verified_by_id === currentUserId) return true;
+    
+    // Event creator can revoke
+    try {
+        const eventResponse = await fetch(`/api/get_event_creator/${eventId}`);
+        const eventData = await eventResponse.json();
+        if (eventData.success && eventData.creator_id === currentUserRole) {
+            return true;
+        }
+    } catch (error) {
+        console.error('Error checking event creator:', error);
+    }
+    
+    return false;
+}
+
+// Show revoke option
+function showRevokeOption(eventId, formId, responseId, verificationData) {
+    const modalHtml = `
+        <div class="modal fade" id="revokeModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-warning text-dark">
+                        <h5 class="modal-title">
+                            <i class="bi bi-shield-exclamation me-2"></i> Already Verified
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-warning">
+                            <h6><i class="bi bi-info-circle me-2"></i> This response is already verified</h6>
+                            <p class="mb-0">Status: <strong>${verificationData.status.toUpperCase()}</strong> by ${verificationData.verified_by}</p>
+                        </div>
+                        
+                        <p>You can revoke this verification decision because you are the original verifier.</p>
+                        
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="confirmRevoke">
+                            <label class="form-check-label" for="confirmRevoke">
+                                I understand this will reset the verification status
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-warning" id="confirmRevokeBtn">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i> Revoke Decision
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remove existing modal if any
+    const existingModal = document.getElementById('revokeModal');
+    if (existingModal) existingModal.remove();
+    
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Show modal
+    const revokeModal = new bootstrap.Modal(document.getElementById('revokeModal'));
+    revokeModal.show();
+    
+    // Handle confirm button
+    document.getElementById('confirmRevokeBtn').addEventListener('click', async function() {
+        const confirmCheckbox = document.getElementById('confirmRevoke');
+        if (!confirmCheckbox.checked) {
+            alert('Please confirm you understand the consequences');
+            return;
+        }
+        
+        // Call your existing revokeVerification function
+        await revokeVerification(responseId, verificationData.status);
+        
+        revokeModal.hide();
+    });
+}
+
+// Your existing revokeVerification function (with small improvements)
+async function revokeVerification(responseId, originalStatus) {
+    let message = '';
+    if (originalStatus === 'passed') {
+        message = 'Are you sure you want to revoke your PASS decision? The participant will be marked as pending again.';
+    } else {
+        message = 'Are you sure you want to revoke your DECLINE decision? The participant will be marked as pending again.';
+    }
+    
+    if (!confirm(message)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/revoke_verification_status/{{ event.id }}/{{ form.id }}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                response_id: responseId
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Update the UI
+            updateCardStatus(responseId, 'pending', null);
+            updateStats();
+            
+            // Hide revoke button
+            hideRevokeButton(responseId);
+            
+            // Add chat notification
+            const participant = allResponses.find(r => r['Response ID'] === responseId);
+            if (participant) {
+                const participantName = participant.Name || participant['Full Name'] || 'Participant';
+                const action = originalStatus === 'passed' ? 'pass' : 'decline';
+                addVerificationChatMessage(`${'{{ volunteer_name }}'} revoked their ${action} decision for "${participantName}"`);
+            }
+            
+            showAlert(`${originalStatus === 'passed' ? 'Pass' : 'Decline'} decision revoked! Participant is now pending.`, 'success');
+            
+            // IMPORTANT: After successful revocation, the verification page should now show normally
+            // You can optionally auto-open the verification page
+            setTimeout(() => {
+                window.open(`/verify_response/{{ event.id }}/{{ form.id }}/${responseId}`, '_blank');
+            }, 1000);
+            
+        } else {
+            showAlert('Error revoking decision: ' + data.error, 'danger');
+        }
+    } catch (error) {
+        console.error('Revoke error:', error);
+        showAlert('Error revoking decision. Please try again.', 'danger');
+    }
+}
+
+// Show blocked message for unauthorized users
+function showBlockedMessage(eventId, formId, responseId, verificationData) {
+    const modalHtml = `
+        <div class="modal fade" id="blockedModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">
+                            <i class="bi bi-shield-lock me-2"></i> Verification Blocked
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-danger">
+                            <h6><i class="bi bi-exclamation-triangle me-2"></i> Cannot Modify Verification</h6>
+                            <p class="mb-0">This response has already been verified as <strong>${verificationData.status.toUpperCase()}</strong>.</p>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-body">
+                                <h6>Verification Details:</h6>
+                                <p><strong>Status:</strong> <span class="badge bg-${verificationData.status === 'passed' ? 'success' : 'danger'}">${verificationData.status.toUpperCase()}</span></p>
+                                <p><strong>Verified By:</strong> ${verificationData.verified_by || 'Unknown'}</p>
+                                <p><strong>Time:</strong> ${new Date(verificationData.timestamp).toLocaleString()}</p>
+                                ${verificationData.notes ? `<p><strong>Notes:</strong> ${verificationData.notes}</p>` : ''}
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <p class="text-muted small">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Only the original verifier or an administrator can revoke this decision.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" onclick="viewResponseDetails('${eventId}', '${formId}', '${responseId}')">
+                            <i class="bi bi-eye me-1"></i> View Details
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remove existing modal if any
+    const existingModal = document.getElementById('blockedModal');
+    if (existingModal) existingModal.remove();
+    
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Show modal
+    const blockedModal = new bootstrap.Modal(document.getElementById('blockedModal'));
+    blockedModal.show();
+}
+        
+        // ===== VERIFICATION ACTION FUNCTIONS =====
+        
+async function markAsPassed(responseId) {
+    const currentStatus = verificationStatus[responseId]?.status;
+    
+    if (currentStatus === 'passed' || currentStatus === 'declined') {
+        showAlert('This participant has already been verified by another volunteer.', 'warning');
+        return;
+    }
+    
+    if (confirm('Mark this participant as PASSED?')) {
+        try {
+            showAlert('Updating verification status...', 'info');
+            
+            const response = await fetch(`/update_verification_status/{{ event.id }}/{{ form.id }}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    response_id: responseId,
+                    status: 'passed',
+                    verified_by: '{{ volunteer_name }}'
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Update local state
+                verificationStatus[responseId] = {
+                    status: 'passed',
+                    verified_by: '{{ volunteer_name }}',
+                    timestamp: new Date().toISOString()
+                };
+                
+                // Save to localStorage for fallback
+                localStorage.setItem(`verificationStatus_{{ event.id }}_{{ form.id }}`, JSON.stringify(verificationStatus));
+                
+                // Update UI immediately
+                updateCardStatus(responseId, 'passed', '{{ volunteer_name }}');
+                updateStats();
+                
+                // Add chat notification
+                addVerificationNotification(responseId, 'passed');
+                
+                showAlert('✓ Participant marked as PASSED!', 'success');
+                
+                // Refresh verification status from server to sync with others
+                setTimeout(() => {
+                    refreshVerificationStatus();
+                }, 1000);
+                
+            } else {
+                showAlert('Error updating status: ' + data.error, 'danger');
+            }
+        } catch (error) {
+            console.error('Update error:', error);
+            showAlert('Error updating status. Please try again.', 'danger');
+        }
+    }
+}
+
+async function markAsDeclined(responseId) {
+    const currentStatus = verificationStatus[responseId]?.status;
+    
+    if (currentStatus === 'passed' || currentStatus === 'declined') {
+        showAlert('This participant has already been verified by another volunteer.', 'warning');
+        return;
+    }
+    
+    if (confirm('Mark this participant as DECLINED?')) {
+        try {
+            showAlert('Updating verification status...', 'info');
+            
+            const response = await fetch(`/update_verification_status/{{ event.id }}/{{ form.id }}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    response_id: responseId,
+                    status: 'declined',
+                    verified_by: '{{ volunteer_name }}'
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Update local state
+                verificationStatus[responseId] = {
+                    status: 'declined',
+                    verified_by: '{{ volunteer_name }}',
+                    timestamp: new Date().toISOString()
+                };
+                
+                // Save to localStorage for fallback
+                localStorage.setItem(`verificationStatus_{{ event.id }}_{{ form.id }}`, JSON.stringify(verificationStatus));
+                
+                // Update UI immediately
+                updateCardStatus(responseId, 'declined', '{{ volunteer_name }}');
+                updateStats();
+                
+                // Add chat notification
+                addVerificationNotification(responseId, 'declined');
+                
+                showAlert('✗ Participant marked as DECLINED!', 'warning');
+                
+                // Refresh verification status from server to sync with others
+                setTimeout(() => {
+                    refreshVerificationStatus();
+                }, 1000);
+                
+            } else {
+                showAlert('Error updating status: ' + data.error, 'danger');
+            }
+        } catch (error) {
+            console.error('Update error:', error);
+            showAlert('Error updating status. Please try again.', 'danger');
+        }
+    }
+}
+        
+        function addVerificationNotification(responseId, status) {
+            const participant = allResponses.find(r => r['Response ID'] === responseId);
+            if (!participant) return;
+            
+            const participantName = participant.Name || participant['Full Name'] || 'Participant';
+            const message = `${'{{ volunteer_name }}'} marked "${participantName}" as ${status.toUpperCase()}`;
+            
+            addVerificationChatMessage(message);
+        }
+        
+        function addVerificationChatMessage(message) {
+            const chatMessages = document.getElementById('chatMessages');
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message received verification-notification';
+            messageDiv.setAttribute('data-message-id', `verification-${Date.now()}`);
+            messageDiv.innerHTML = `
+                <div class="d-flex justify-content-between align-items-start">
+                    <strong><i class="bi bi-bell me-1"></i> System</strong>
+                    <small class="message-time">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</small>
+                </div>
+                ${message}
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // ===== VERIFICATION REPORT MODAL FUNCTIONS =====
+
+let currentReportData = [];
+let currentFilteredData = [];
+let currentPage = 1;
+const recordsPerPage = 10;
+
+function openReportModal() {
+    const modal = new bootstrap.Modal(document.getElementById('verificationReportModal'));
+    modal.show();
+    setToday(); // Default to today
+    generateReport();
+}
+
+function setToday() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('reportFromDate').value = today;
+    document.getElementById('reportToDate').value = today;
+}
+
+function setYesterday() {
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    document.getElementById('reportFromDate').value = yesterdayStr;
+    document.getElementById('reportToDate').value = yesterdayStr;
+}
+
+async function generateReport() {
+    const fromDate = document.getElementById('reportFromDate').value;
+    const toDate = document.getElementById('reportToDate').value;
+    
+    if (!fromDate || !toDate) {
+        showAlert('Please select both date ranges', 'warning');
+        return;
+    }
+    
+    document.getElementById('reportLoading').style.display = 'block';
+    document.getElementById('reportContent').innerHTML = '';
+    document.getElementById('reportTableSection').style.display = 'none';
+    
+    try {
+        // Get verification data
+        const response = await fetch(`/get_verification_status/{{ event.id }}/{{ form.id }}`);
+        const data = await response.json();
+        
+        if (!data.success) {
+            throw new Error('Failed to load verification data');
+        }
+        
+        const verificationData = data.verifications || {};
+        currentReportData = [];
+        
+        // Filter and format data based on date range
+        allResponses.forEach(response => {
+            const responseId = response['Response ID'];
+            const verification = verificationData[responseId] || {};
+            const verificationTime = verification.timestamp;
+            
+            // Check if verification is within date range
+            if (verificationTime) {
+                const verifyDate = verificationTime.split('T')[0];
+                if (verifyDate >= fromDate && verifyDate <= toDate) {
+                    const entryNumber = response['Entry Number'] || '';
+                    const participantName = response.Name || response['Full Name'] || 'Participant';
+                    const verificationId = `VER-{{ form.id[:8] }}-${entryNumber}-${responseId.substring(0, 8)}`;
+                    const submissionTime = response['Timestamp'] || '';
+                    
+                    currentReportData.push({
+                        entryNumber,
+                        participantName,
+                        responseId,
+                        verificationId,
+                        status: verification.status || 'pending',
+                        verifiedBy: verification.verified_by || '',
+                        verificationTime,
+                        submissionTime,
+                        fullResponse: response
+                    });
+                }
+            }
+        });
+        
+        // Sort by verification time (newest first)
+        currentReportData.sort((a, b) => new Date(b.verificationTime) - new Date(a.verificationTime));
+        currentFilteredData = [...currentReportData];
+        
+        // Display report summary
+        displayReportSummary(fromDate, toDate);
+        
+        // Display table if there's data
+        if (currentReportData.length > 0) {
+            displayReportTable();
+            document.getElementById('reportTableSection').style.display = 'block';
+            document.getElementById('printReportBtn').style.display = 'inline-block';
+        } else {
+            document.getElementById('reportTableSection').style.display = 'none';
+            document.getElementById('printReportBtn').style.display = 'none';
+        }
+        
+    } catch (error) {
+        console.error('Error generating report:', error);
+        showAlert('Error generating report: ' + error.message, 'danger');
+    } finally {
+        document.getElementById('reportLoading').style.display = 'none';
+    }
+}
+
+function displayReportSummary(fromDate, toDate) {
+    const reportContent = document.getElementById('reportContent');
+    
+    // Calculate statistics
+    const total = currentReportData.length;
+    const passed = currentReportData.filter(r => r.status === 'passed').length;
+    const declined = currentReportData.filter(r => r.status === 'declined').length;
+    const pending = currentReportData.filter(r => r.status === 'pending').length;
+    
+    const volunteers = {};
+    currentReportData.forEach(record => {
+        if (record.verifiedBy) {
+            volunteers[record.verifiedBy] = (volunteers[record.verifiedBy] || 0) + 1;
+        }
+    });
+    
+    const volunteerStats = Object.entries(volunteers)
+        .map(([name, count]) => `${name}: ${count}`)
+        .join(', ');
+    
+    // Format dates for display
+    const fromDisplay = new Date(fromDate).toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric',
+        year: 'numeric'
+    });
+    
+    const toDisplay = new Date(toDate).toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric',
+        year: 'numeric'
+    });
+    
+    const dateRange = fromDate === toDate ? fromDisplay : `${fromDisplay} to ${toDisplay}`;
+    
+    reportContent.innerHTML = `
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card bg-primary bg-opacity-10 border-primary">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-calendar-check me-2"></i>
+                            Verification Report: ${dateRange}
+                        </h5>
+                        <div class="row mt-3">
+                            <div class="col-6 col-md-3 mb-3">
+                                <div class="text-center">
+                                    <div class="display-6 fw-bold text-primary">${total}</div>
+                                    <small class="text-muted">Total Verifications</small>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3 mb-3">
+                                <div class="text-center">
+                                    <div class="display-6 fw-bold text-success">${passed}</div>
+                                    <small class="text-muted">Passed</small>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3 mb-3">
+                                <div class="text-center">
+                                    <div class="display-6 fw-bold text-danger">${declined}</div>
+                                    <small class="text-muted">Declined</small>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3 mb-3">
+                                <div class="text-center">
+                                    <div class="display-6 fw-bold text-warning">${pending}</div>
+                                    <small class="text-muted">Pending</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <h6><i class="bi bi-people me-2"></i>Volunteer Activity</h6>
+                            <p class="mb-1">${volunteerStats || 'No volunteer activity recorded'}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-success">
+                    <div class="card-body">
+                        <h6 class="card-title">
+                            <i class="bi bi-speedometer2 me-2"></i>Verification Progress
+                        </h6>
+                        <div class="progress mb-3" style="height: 20px;">
+                            <div class="progress-bar bg-success" style="width: ${total > 0 ? (passed / total * 100) : 0}%">
+                                ${Math.round((passed / total * 100) || 0)}% Passed
+                            </div>
+                            <div class="progress-bar bg-danger" style="width: ${total > 0 ? (declined / total * 100) : 0}%">
+                                ${Math.round((declined / total * 100) || 0)}% Declined
+                            </div>
+                            <div class="progress-bar bg-warning" style="width: ${total > 0 ? (pending / total * 100) : 0}%">
+                                ${Math.round((pending / total * 100) || 0)}% Pending
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <div class="display-5 fw-bold">
+                                ${total > 0 ? Math.round(((passed + declined) / total) * 100) : 0}%
+                            </div>
+                            <small class="text-muted">Overall Completion</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function displayReportTable() {
+    const tableBody = document.getElementById('reportTableBody');
+    tableBody.innerHTML = '';
+    
+    // Calculate pagination
+    const totalPages = Math.ceil(currentFilteredData.length / recordsPerPage);
+    const startIndex = (currentPage - 1) * recordsPerPage;
+    const endIndex = Math.min(startIndex + recordsPerPage, currentFilteredData.length);
+    const currentData = currentFilteredData.slice(startIndex, endIndex);
+    
+    // Update record count
+    document.getElementById('recordCount').textContent = `${currentFilteredData.length} records`;
+    
+    // Populate table
+    currentData.forEach(record => {
+        const row = document.createElement('tr');
+        
+        const verificationTime = new Date(record.verificationTime);
+        const timeString = verificationTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        const dateString = verificationTime.toLocaleDateString([], {month: 'short', day: 'numeric'});
+        
+        let statusBadge = '';
+        switch(record.status) {
+            case 'passed':
+                statusBadge = '<span class="badge bg-success">PASSED</span>';
+                break;
+            case 'declined':
+                statusBadge = '<span class="badge bg-danger">DECLINED</span>';
+                break;
+            default:
+                statusBadge = '<span class="badge bg-warning">PENDING</span>';
+                break;
+        }
+        
+        row.innerHTML = `
+            <td>
+                <div class="small">${dateString}</div>
+                <div class="text-muted">${timeString}</div>
+            </td>
+            <td>${record.entryNumber}</td>
+            <td>
+                <strong>${record.participantName}</strong>
+                <div class="small text-muted">${record.responseId.substring(0, 8)}...</div>
+            </td>
+            <td>
+                <code class="small">${record.responseId.substring(0, 12)}...</code>
+            </td>
+            <td>
+                <code class="small">${record.verificationId}</code>
+            </td>
+            <td>${statusBadge}</td>
+            <td>
+                ${record.verifiedBy || '-'}
+                ${record.verifiedBy === '{{ volunteer_name }}' ? 
+                    '<span class="badge bg-info ms-1">You</span>' : ''}
+            </td>
+        `;
+        
+        tableBody.appendChild(row);
+    });
+    
+    // Update pagination
+    updatePagination(totalPages);
+}
+
+function updatePagination(totalPages) {
+    const paginationDiv = document.getElementById('reportPagination');
+    
+    if (totalPages <= 1) {
+        paginationDiv.innerHTML = '';
+        return;
+    }
+    
+    let html = `
+        <nav aria-label="Report pagination">
+            <ul class="pagination justify-content-center">
+    `;
+    
+    // Previous button
+    html += `
+        <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+            <a class="page-link" href="#" onclick="changePage(${currentPage - 1})" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+    `;
+    
+    // Page numbers
+    for (let i = 1; i <= totalPages; i++) {
+        if (i === currentPage || i === 1 || i === totalPages || 
+            (i >= currentPage - 1 && i <= currentPage + 1)) {
+            html += `
+                <li class="page-item ${i === currentPage ? 'active' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
+                </li>
+            `;
+        } else if (i === currentPage - 2 || i === currentPage + 2) {
+            html += '<li class="page-item disabled"><span class="page-link">...</span></li>';
+        }
+    }
+    
+    // Next button
+    html += `
+        <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+            <a class="page-link" href="#" onclick="changePage(${currentPage + 1})" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+    `;
+    
+    html += `
+            </ul>
+        </nav>
+        <div class="text-center mt-2">
+            <small class="text-muted">
+                Showing ${((currentPage - 1) * recordsPerPage) + 1} to 
+                ${Math.min(currentPage * recordsPerPage, currentFilteredData.length)} 
+                of ${currentFilteredData.length} records
+            </small>
+        </div>
+    `;
+    
+    paginationDiv.innerHTML = html;
+}
+
+function changePage(page) {
+    currentPage = page;
+    displayReportTable();
+}
+
+// ===== DOWNLOAD FUNCTIONS FOR THE REPORT =====
+
+function downloadCurrentReport() {
+    if (currentReportData.length === 0) {
+        showAlert('No data to download. Please generate a report first.', 'warning');
+        return;
+    }
+    
+    const fromDate = document.getElementById('reportFromDate').value;
+    const toDate = document.getElementById('reportToDate').value;
+    
+    let csvContent = "Date Range,Entry Number,Participant Name,Response ID,Verification ID,Status,Verified By,Verification Time,Submission Time\n";
+    
+    currentReportData.forEach(record => {
+        const escapeCSV = (str) => {
+            if (str === null || str === undefined) return '';
+            str = String(str);
+            if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+                return '"' + str.replace(/"/g, '""') + '"';
+            }
+            return str;
+        };
+        
+        csvContent += `${escapeCSV(`${fromDate} to ${toDate}`)},`;
+        csvContent += `${escapeCSV(record.entryNumber)},`;
+        csvContent += `${escapeCSV(record.participantName)},`;
+        csvContent += `${escapeCSV(record.responseId)},`;
+        csvContent += `${escapeCSV(record.verificationId)},`;
+        csvContent += `${escapeCSV(record.status.toUpperCase())},`;
+        csvContent += `${escapeCSV(record.verifiedBy)},`;
+        csvContent += `${escapeCSV(record.verificationTime)},`;
+        csvContent += `${escapeCSV(record.submissionTime)}\n`;
+    });
+    
+    const eventName = '{{ event.name if event.name else "Event" }}'.replace(/[^a-z0-9]/gi, '_');
+    const dateStr = fromDate === toDate ? fromDate : `${fromDate}_to_${toDate}`;
+    const filename = `verification_report_${eventName}_${dateStr}.csv`;
+    
+    downloadCSV(csvContent, filename);
+}
+
+function downloadFullReport() {
+    if (currentReportData.length === 0) {
+        showAlert('No data to download. Please generate a report first.', 'warning');
+        return;
+    }
+    
+    const fromDate = document.getElementById('reportFromDate').value;
+    const toDate = document.getElementById('reportToDate').value;
+    const currentVolunteer = '{{ volunteer_name }}';
+    const currentTime = new Date().toISOString();
+    
+    // Get all unique field names
+    const allFields = new Set();
+    currentReportData.forEach(record => {
+        Object.keys(record.fullResponse || {}).forEach(key => {
+            if (!key.startsWith('_') && key !== 'Timestamp' && key !== 'Response ID') {
+                allFields.add(key);
+            }
+        });
+    });
+    
+    // Prepare headers
+    const headers = [
+        'Date Range',
+        'Entry Number',
+        'Participant Name',
+        'Response ID',
+        'Verification ID',
+        'Status',
+        'Verified By',
+        'Verification Time',
+        'Submission Time',
+        'Report Generated By',
+        'Report Generated At'
+    ];
+    
+    // Add all response fields to headers
+    allFields.forEach(field => {
+        headers.push(field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()));
+    });
+    
+    let csvContent = headers.join(',') + '\n';
+    
+    // Add data rows
+    currentReportData.forEach(record => {
+        const row = [];
+        
+        // Basic fields
+        row.push(escapeCSV(`${fromDate} to ${toDate}`));
+        row.push(escapeCSV(record.entryNumber));
+        row.push(escapeCSV(record.participantName));
+        row.push(escapeCSV(record.responseId));
+        row.push(escapeCSV(record.verificationId));
+        row.push(escapeCSV(record.status.toUpperCase()));
+        row.push(escapeCSV(record.verifiedBy));
+        row.push(escapeCSV(record.verificationTime));
+        row.push(escapeCSV(record.submissionTime));
+        row.push(escapeCSV(currentVolunteer));
+        row.push(escapeCSV(currentTime));
+        
+        // Response fields
+        allFields.forEach(field => {
+            const value = record.fullResponse ? record.fullResponse[field] || '' : '';
+            row.push(escapeCSV(value));
+        });
+        
+        csvContent += row.join(',') + '\n';
+    });
+    
+    const eventName = '{{ event.name if event.name else "Event" }}'.replace(/[^a-z0-9]/gi, '_');
+    const dateStr = fromDate === toDate ? fromDate : `${fromDate}_to_${toDate}`;
+    const filename = `full_verification_report_${eventName}_${dateStr}.csv`;
+    
+    downloadCSV(csvContent, filename);
+}
+
+function escapeCSV(str) {
+    if (str === null || str === undefined) return '';
+    str = String(str);
+    if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+        return '"' + str.replace(/"/g, '""') + '"';
+    }
+    return str;
+}
+
+function downloadCSV(content, filename) {
+    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+    
+    // Create download link
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.style.display = 'none';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    URL.revokeObjectURL(link.href);
+    
+    showAlert(`${filename} downloaded successfully!`, 'success');
+}
+
+function printReport() {
+    const printWindow = window.open('', '_blank');
+    
+    const reportContent = document.getElementById('reportContent').innerHTML;
+    const tableContent = document.getElementById('reportTableSection').innerHTML;
+    const fromDate = document.getElementById('reportFromDate').value;
+    const toDate = document.getElementById('reportToDate').value;
+    
+    const dateRange = fromDate === toDate ? 
+        new Date(fromDate).toLocaleDateString('en-US', { 
+            month: 'long', 
+            day: 'numeric',
+            year: 'numeric'
+        }) : 
+        `${fromDate} to ${toDate}`;
+    
+    const printHTML = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Verification Report - {{ event.name }} - {{ form.title }}</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                .header { text-align: center; margin-bottom: 30px; }
+                .summary { margin-bottom: 30px; }
+                table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                th { background-color: #f2f2f2; }
+                .badge { padding: 3px 8px; border-radius: 3px; font-size: 12px; }
+                .bg-success { background-color: #28a745; color: white; }
+                .bg-danger { background-color: #dc3545; color: white; }
+                .bg-warning { background-color: #ffc107; color: black; }
+                .bg-info { background-color: #17a2b8; color: white; }
+                @media print {
+                    body { margin: 0; }
+                    .no-print { display: none; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>EventFlow Verification Report</h1>
+                <h3>{{ event.name }} - {{ form.title }}</h3>
+                <p>Date Range: ${dateRange}</p>
+                <p>Generated by: {{ volunteer_name }} on ${new Date().toLocaleDateString('en-US', { 
+                    month: 'long', 
+                    day: 'numeric',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })}</p>
+            </div>
+            
+            <div class="summary">
+                ${reportContent}
+            </div>
+            
+            ${currentReportData.length > 0 ? tableContent : '<p>No verification records found for selected date range.</p>'}
+            
+            <script>
+                window.onload = function() {
+                    window.print();
+                };
+            <\/script>
+        </body>
+        </html>
+    `;
+    
+    printWindow.document.write(printHTML);
+    printWindow.document.close();
+}
+
+// ===== MODAL INITIALIZATION =====
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize date pickers
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('reportFromDate').max = today;
+    document.getElementById('reportToDate').max = today;
+    
+    // Set default values if they're not already set
+    if (!document.getElementById('reportFromDate').value) {
+        setToday();
+    }
+});
+        
+        // ===== SESSION MANAGEMENT =====
+        
+        function startSessionCheck() {
+            // Check session every 5 minutes (300,000 milliseconds)
+            sessionCheckInterval = setInterval(() => {
+                checkVolunteerSession();
+            }, 300000);
+            
+            console.log('Session check started: Checking every 5 minutes');
+        }
+        
+        async function checkVolunteerSession() {
+            try {
+                console.log('Checking volunteer session status...');
+                
+                const response = await fetch(`/check_volunteer_dashboard_status/{{ event.id }}/{{ form.id }}/{{ volunteer_name }}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (data.active === false) {
+                        endSession(data.message || 'Your volunteer session has ended.');
+                    }
+                }
+            } catch (error) {
+                console.error('Volunteer session check error:', error);
+            }
+        }
+        
+        function endSession(message = null) {
+            if (!isSessionActive) return;
+            
+            isSessionActive = false;
+            
+            stopAllIntervals();
+            
+            showSessionEndedModal(message);
+            
+            disablePageInteraction();
+        }
+        
+        function showSessionEndedModal(message = null) {
+            const modal = document.getElementById('sessionEndedModal');
+            const messageElement = document.getElementById('sessionEndedMessage');
+            
+            if (message) {
+                messageElement.innerHTML = `Thank you for your service!<br>${message}`;
+            }
+            
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function disablePageInteraction() {
+            document.querySelectorAll('button, input, textarea, select, a').forEach(element => {
+                element.disabled = true;
+                element.style.pointerEvents = 'none';
+                element.style.opacity = '0.5';
+            });
+        }
+        
+        function stopAllIntervals() {
+            if (sessionCheckInterval) {
+                clearInterval(sessionCheckInterval);
+                console.log('Session check interval stopped');
+            }
+            if (verificationRefreshInterval) clearInterval(verificationRefreshInterval);
+            if (chatRefreshInterval) clearInterval(chatRefreshInterval);
+            if (statsRefreshInterval) clearInterval(statsRefreshInterval);
+        }
+        
+        function redirectToHome() {
+            window.location.href = '/';
+        }
+        
+        // ===== CHAT FUNCTIONS =====
+        
+        async function sendChatMessage() {
+            const chatInput = document.getElementById('chatInput');
+            const message = chatInput.value.trim();
+            
+            if (!message) {
+                return;
+            }
+            
+            chatInput.value = '';
+            
+            try {
+                const response = await fetch('/volunteer_chat/{{ event.id }}/{{ form.id }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        volunteer_name: '{{ volunteer_name }}'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    loadChatMessages(true);
+                } else {
+                    showAlert('Error sending message: ' + data.error, 'danger');
+                }
+            } catch (error) {
+                console.error('Chat error:', error);
+                showAlert('Error sending message. Please try again.', 'danger');
+            }
+        }
+        
+        function handleChatKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendChatMessage();
+            }
+        }
+        
+        async function loadChatMessages(forceRefresh = false) {
+            try {
+                const response = await fetch(`/get_chat_messages/{{ event.id }}/{{ form.id }}?t=${Date.now()}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateChatUI(data.messages);
+                }
+            } catch (error) {
+                console.error('Error loading chat messages:', error);
+            }
+        }
+        
+        function updateChatUI(messages) {
+            const chatMessages = document.getElementById('chatMessages');
+            const currentMessageIds = new Set();
+            
+            Array.from(chatMessages.querySelectorAll('.message')).forEach(msg => {
+                const msgId = msg.getAttribute('data-message-id');
+                if (msgId) {
+                    currentMessageIds.add(msgId);
+                }
+            });
+            
+            messages.forEach(msg => {
+                if (!currentMessageIds.has(msg.id.toString())) {
+                    addChatMessage(msg, msg.sender === '{{ volunteer_name }}');
+                }
+            });
+            
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        function addChatMessage(messageData, isSent = false) {
+            const chatMessages = document.getElementById('chatMessages');
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
+            messageDiv.setAttribute('data-message-id', messageData.id);
+            
+            const messageTime = new Date(messageData.timestamp);
+            const timeString = messageTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            messageDiv.innerHTML = `
+                <div class="d-flex justify-content-between align-items-start">
+                    <strong>${messageData.sender}</strong>
+                    <small class="message-time">${timeString}</small>
+                </div>
+                ${messageData.message}
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+        }
+        
+        // ===== STATS FUNCTIONS =====
+        
+        function updateStats() {
+            const totalResponses = allResponses.length;
+            let passedCount = 0;
+            let declinedCount = 0;
+            
+            allResponses.forEach(response => {
+                const responseId = response['Response ID'];
+                const status = verificationStatus[responseId]?.status || 'pending';
+                
+                switch(status) {
+                    case 'passed':
+                        passedCount++;
+                        break;
+                    case 'declined':
+                        declinedCount++;
+                        break;
+                }
+            });
+            
+            document.getElementById('totalCount').textContent = totalResponses;
+            document.getElementById('passedCount').textContent = passedCount;
+            document.getElementById('declinedCount').textContent = declinedCount;
+            
+            const passedPercentage = totalResponses > 0 ? (passedCount / totalResponses) * 100 : 0;
+            const declinedPercentage = totalResponses > 0 ? (declinedCount / totalResponses) * 100 : 0;
+            const totalVerifiedPercentage = passedPercentage + declinedPercentage;
+            
+            document.getElementById('passedBar').style.width = `${passedPercentage}%`;
+            document.getElementById('declinedBar').style.width = `${declinedPercentage}%`;
+            document.getElementById('progressText').textContent = `${Math.round(totalVerifiedPercentage)}% Complete`;
+            
+            document.getElementById('lastUpdated').textContent = getTimeAgoString();
+        }
+        
+        function getTimeAgoString() {
+            const now = new Date();
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const hour = now.getHours();
+            const ampm = hour >= 12 ? 'PM' : 'AM';
+            const hour12 = hour % 12 || 12;
+            
+            return `Updated ${hour12}:${minutes} ${ampm}`;
+        }
+        
+        // ===== SEARCH FUNCTIONALITY =====
+        
+        function setupSearch() {
+            const searchInput = document.getElementById('participantSearch');
+            
+            if (!searchInput) return;
+            
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase().trim();
+                const resultsContainer = document.getElementById('searchResults');
+                const mainGrid = document.getElementById('participantsGrid');
+                
+                if (!searchTerm) {
+                    resultsContainer.style.display = 'none';
+                    if (mainGrid) mainGrid.style.display = 'flex';
+                    return;
+                }
+                
+                const filtered = allResponses.filter(response => {
+                    const name = (response.Name || response['Full Name'] || '').toLowerCase();
+                    const responseId = (response['Response ID'] || '').toLowerCase();
+                    const email = (response.Email || '').toLowerCase();
+                    const phone = (response.Phone || '').toLowerCase();
+                    
+                    return name.includes(searchTerm) ||
+                           responseId.includes(searchTerm) ||
+                           email.includes(searchTerm) ||
+                           phone.includes(searchTerm);
+                });
+                
+                if (filtered.length > 0) {
+                    displaySearchResults(filtered);
+                    resultsContainer.style.display = 'block';
+                    if (mainGrid) mainGrid.style.display = 'none';
+                } else {
+                    resultsContainer.innerHTML = `
+                        <div class="alert alert-info">
+                            <i class="bi bi-search me-2"></i>
+                            No participants found matching "${searchTerm}"
+                        </div>
+                    `;
+                    resultsContainer.style.display = 'block';
+                    if (mainGrid) mainGrid.style.display = 'none';
+                }
+            });
+        }
+        
+        function displaySearchResults(results) {
+            const container = document.getElementById('searchResults');
+            
+            if (results.length === 0) {
+                container.innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="bi bi-search me-2"></i>
+                        No participants found matching your search
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '<div class="row">';
+            
+            results.forEach(response => {
+                const responseId = response['Response ID'];
+                const status = verificationStatus[responseId]?.status || 'pending';
+                const verifiedBy = verificationStatus[responseId]?.verified_by;
+                const participantName = response.Name || response['Full Name'] || 'Participant';
+                const currentVolunteer = '{{ volunteer_name }}';
+                const showRevoke = (status === 'passed' || status === 'declined') && verifiedBy === currentVolunteer;
+                
+                let revokeButtonHtml = '';
+                if (showRevoke) {
+                    let buttonText = status === 'passed' ? 'Revoke Pass' : 'Revoke Decline';
+                    let buttonClass = status === 'passed' ? 'btn-revoke-passed' : 'btn-revoke-declined';
+                    let buttonIcon = status === 'passed' ? 'bi-x-circle' : 'bi-check-circle';
+                    
+                    revokeButtonHtml = `
+                        <button class="btn ${buttonClass}" 
+                                onclick="revokeVerification('${responseId}', '${status}')"
+                                id="revoke-btn-search-${responseId}">
+                            <i class="bi ${buttonIcon} me-1"></i> ${buttonText}
+                        </button>
+                    `;
+                }
+                
+                html += `
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="participant-card ${status}">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <h6 class="mb-1">${participantName}</h6>
+                                        <small class="text-muted">Entry #${response['Entry Number']}</small>
+                                    </div>
+                                    <span class="${status === 'passed' ? 'verified-badge' : status === 'declined' ? 'declined-badge' : 'pending-badge'}">
+                                        <i class="bi ${status === 'passed' ? 'bi-check-circle' : status === 'declined' ? 'bi-x-circle' : 'bi-clock'} me-1"></i>
+                                        ${status.charAt(0).toUpperCase() + status.slice(1)}
+                                        ${verifiedBy ? `<br><small class="text-muted">by ${verifiedBy}</small>` : ''}
+                                    </span>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    ${getResponseFields(response)}
+                                </div>
+                                
+                                <div class="action-buttons" id="action-buttons-search-${responseId}">
+                                    <button class="btn ${status === 'passed' ? 'btn-secondary' : 'btn-pass'}" 
+                                            onclick="markAsPassed('${responseId}')"
+                                            ${status === 'passed' || status === 'declined' ? 'disabled' : ''}>
+                                        <i class="bi ${status === 'passed' ? 'bi-check-circle' : 'bi-check-circle'} me-1"></i>
+                                        ${status === 'passed' || status === 'declined' ? 'Verified' : 'Pass'}
+                                    </button>
+                                    <button class="btn ${status === 'declined' ? 'btn-secondary' : 'btn-decline'}" 
+                                            onclick="markAsDeclined('${responseId}')"
+                                            ${status === 'passed' || status === 'declined' ? 'disabled' : ''}>
+                                        <i class="bi ${status === 'declined' ? 'bi-x-circle' : 'bi-x-circle'} me-1"></i>
+                                        ${status === 'passed' || status === 'declined' ? 'Verified' : 'Decline'}
+                                    </button>
+                                    
+                                    ${revokeButtonHtml}
+                                    
+                                    <div class="mt-2 d-grid gap-1">
+                                        <button class="btn btn-sm btn-outline-info text-start" 
+                                                onclick="viewResponseDetailsById('${responseId}')">
+                                            <i class="bi bi-eye me-1"></i> View Details
+                                        </button>
+                                        
+                                        <a href="/verify_response/{{ event.id }}/{{ form.id }}/${responseId}" 
+                                           class="btn btn-sm btn-outline-success text-start" target="_blank">
+                                            <i class="bi bi-qr-code-scan me-1"></i> Verify Response
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        function getResponseFields(response) {
+            let html = '';
+            const fieldsToShow = ['Email', 'Phone', 'Ticket Type'];
+            
+            fieldsToShow.forEach(field => {
+                if (response[field]) {
+                    html += `
+                        <div class="mb-1">
+                            <small class="text-muted">${field}:</small>
+                            <div class="small">${response[field].substring(0, 30)}${response[field].length > 30 ? '...' : ''}</div>
+                        </div>
+                    `;
+                }
+            });
+            
+            html += `
+                <div class="mb-1">
+                    <small class="text-muted">Response ID:</small>
+                    <div class="small font-monospace">
+                        ${response['Response ID'].substring(0, 12)}...
+                    </div>
+                </div>
+                <div class="mb-1">
+                    <small class="text-muted">Submitted:</small>
+                    <div class="small">
+                        ${response['Timestamp'] ? response['Timestamp'].substring(0, 19).replace('T', ' ') : 'N/A'}
+                    </div>
+                </div>
+            `;
+            
+            return html;
+        }
+        
+        // ===== UTILITY FUNCTIONS =====
+        
+        function showAlert(message, type) {
+            let alertContainer = document.getElementById('alertContainer');
+            if (!alertContainer) {
+                alertContainer = document.createElement('div');
+                alertContainer.id = 'alertContainer';
+                alertContainer.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999;';
+                document.body.appendChild(alertContainer);
+            }
+            
+            const alertId = 'alert-' + Date.now();
+            const alertDiv = document.createElement('div');
+            alertDiv.id = alertId;
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.style.cssText = 'min-width: 300px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); animation: slideIn 0.3s ease;';
+            
+            alertDiv.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="bi ${getAlertIcon(type)} me-2"></i>
+                    <div>${message}</div>
+                    <button type="button" class="btn-close ms-auto" onclick="document.getElementById('${alertId}').remove()"></button>
+                </div>
+            `;
+            
+            alertContainer.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                const alertToRemove = document.getElementById(alertId);
+                if (alertToRemove) {
+                    alertToRemove.remove();
+                }
+            }, 5000);
+        }
+        
+        function getAlertIcon(type) {
+            switch(type) {
+                case 'success': return 'bi-check-circle-fill';
+                case 'danger': return 'bi-exclamation-circle-fill';
+                case 'warning': return 'bi-exclamation-triangle-fill';
+                case 'info': return 'bi-info-circle-fill';
+                default: return 'bi-info-circle-fill';
+            }
+        }
+        
+        function logoutVolunteer() {
+            if (confirm('Are you sure you want to logout?')) {
+                stopAllIntervals();
+                window.location.href = '/';
+            }
+        }
+        
+        // ===== REFRESH FUNCTIONS =====
+
+async function refreshVerificationStatus() {
+    try {
+        const response = await fetch(`/get_verification_status/{{ event.id }}/{{ form.id }}?t=${Date.now()}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            let hasChanges = false;
+            
+            Object.keys(data.verifications).forEach(responseId => {
+                const serverStatus = data.verifications[responseId];
+                const localStatus = verificationStatus[responseId];
+                
+                if (!localStatus || 
+                    localStatus.status !== serverStatus.status || 
+                    localStatus.verified_by !== serverStatus.verified_by ||
+                    localStatus.timestamp !== serverStatus.timestamp) {
+                    
+                    hasChanges = true;
+                    verificationStatus[responseId] = serverStatus;
+                    
+                    // Update UI for this specific response
+                    updateCardStatus(responseId, serverStatus.status, serverStatus.verified_by);
+                }
+            });
+            
+            // Check for responses that are verified locally but not on server
+            Object.keys(verificationStatus).forEach(responseId => {
+                if (!data.verifications[responseId] && verificationStatus[responseId].status !== 'pending') {
+                    hasChanges = true;
+                    // Reset to pending if not found on server
+                    verificationStatus[responseId].status = 'pending';
+                    verificationStatus[responseId].verified_by = '';
+                    updateCardStatus(responseId, 'pending', null);
+                }
+            });
+            
+            if (hasChanges) {
+                updateStats();
+                console.log('Verification status refreshed with changes');
+            }
+        } else {
+            console.error('Failed to refresh verification status:', data.error);
+        }
+    } catch (error) {
+        console.error('Refresh verification status error:', error);
+    }
+}
+        
+        // ===== INITIALIZATION =====
+        
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Volunteer dashboard initializing...');
+    
+    // Initialize functions in order
+    addDownloadDropdown(); // Add this FIRST
+    initializeVerificationStatus();
+    updateStats();
+    setupSearch();
+    loadChatMessages();
+    
+    // Set up report modal date pickers
+    const today = new Date().toISOString().split('T')[0];
+    const dateInputs = document.querySelectorAll('input[type="date"]');
+    dateInputs.forEach(input => {
+        input.max = today;
+    });
+    
+    // Auto-generate report when modal opens
+    const reportModal = document.getElementById('verificationReportModal');
+    if (reportModal) {
+        reportModal.addEventListener('shown.bs.modal', function() {
+            if (!document.getElementById('reportFromDate').value) {
+                setToday();
+            }
+            // Small delay to ensure modal is fully rendered
+            setTimeout(() => {
+                generateReport();
+            }, 300);
+        });
+    }
+    
+    // Start intervals
+    verificationRefreshInterval = setInterval(() => {
+        refreshVerificationStatus();
+    }, 5000);
+    
+    chatRefreshInterval = setInterval(() => {
+        loadChatMessages(false);
+    }, 3000);
+    
+    statsRefreshInterval = setInterval(() => {
+        updateStats();
+    }, 10000);
+    
+    startSessionCheck();
+    
+    console.log('Volunteer dashboard initialized successfully');
+});
+
+
+// ===== STATISTICS REPORT FUNCTION =====
+
+async function downloadStatisticsReport() {
+    try {
+        showAlert('Generating statistics report...', 'info');
+        
+        const fromDate = document.getElementById('reportFromDate').value;
+        const toDate = document.getElementById('reportToDate').value;
+        
+        if (currentReportData.length === 0) {
+            showAlert('No data available. Please generate a report first.', 'warning');
+            return;
+        }
+        
+        // Calculate statistics
+        const total = currentReportData.length;
+        const passed = currentReportData.filter(r => r.status === 'passed').length;
+        const declined = currentReportData.filter(r => r.status === 'declined').length;
+        const pending = currentReportData.filter(r => r.status === 'pending').length;
+        
+        const volunteers = {};
+        currentReportData.forEach(record => {
+            if (record.verifiedBy && record.verifiedBy.trim()) {
+                volunteers[record.verifiedBy] = (volunteers[record.verifiedBy] || 0) + 1;
+            }
+        });
+        
+        const currentTime = new Date().toISOString();
+        const formattedDate = new Date().toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        // Prepare CSV content
+        let csvContent = `EventFlow Verification Statistics Report\n`;
+        csvContent += `Event: {{ event.name if event.name else "Event" }}\n`;
+        csvContent += `Form: {{ form.title if form.title else "Form" }}\n`;
+        csvContent += `Date Range: ${fromDate} to ${toDate}\n`;
+        csvContent += `Generated By: {{ volunteer_name }}\n`;
+        csvContent += `Generated At: ${formattedDate}\n`;
+        csvContent += `\n`;
+        
+        // Summary section
+        csvContent += `SUMMARY\n`;
+        csvContent += `Category,Count,Percentage\n`;
+        csvContent += `Total Participants,${total},100%\n`;
+        csvContent += `Passed,${passed},${total > 0 ? ((passed / total) * 100).toFixed(1) : 0}%\n`;
+        csvContent += `Declined,${declined},${total > 0 ? ((declined / total) * 100).toFixed(1) : 0}%\n`;
+        csvContent += `Pending,${pending},${total > 0 ? ((pending / total) * 100).toFixed(1) : 0}%\n`;
+        csvContent += `Verification Completion,${passed + declined},${total > 0 ? (((passed + declined) / total) * 100).toFixed(1) : 0}%\n`;
+        csvContent += `\n`;
+        
+        // Volunteer activity section
+        csvContent += `VOLUNTEER ACTIVITY\n`;
+        csvContent += `Volunteer Name,Verifications Completed,Percentage of Total\n`;
+        
+        let volunteerTotal = 0;
+        Object.keys(volunteers).forEach(volunteer => {
+            const count = volunteers[volunteer];
+            volunteerTotal += count;
+        });
+        
+        Object.entries(volunteers).forEach(([volunteer, count]) => {
+            const percentage = volunteerTotal > 0 ? ((count / volunteerTotal) * 100).toFixed(1) : 0;
+            csvContent += `${escapeCSV(volunteer)},${count},${percentage}%\n`;
+        });
+        
+        csvContent += `\n`;
+        
+        // Hourly activity
+        csvContent += `HOURLY VERIFICATION ACTIVITY\n`;
+        csvContent += `Hour,Passed,Declined,Total,Percentage\n`;
+        
+        const hourlyStats = {};
+        currentReportData.forEach(record => {
+            if (record.verificationTime) {
+                const hour = record.verificationTime.substring(11, 13); // Get hour
+                if (!hourlyStats[hour]) {
+                    hourlyStats[hour] = { passed: 0, declined: 0, total: 0 };
+                }
+                if (record.status === 'passed') {
+                    hourlyStats[hour].passed++;
+                    hourlyStats[hour].total++;
+                } else if (record.status === 'declined') {
+                    hourlyStats[hour].declined++;
+                    hourlyStats[hour].total++;
+                }
+            }
+        });
+        
+        // Sort hours
+        const sortedHours = Object.keys(hourlyStats).sort();
+        const hourTotal = sortedHours.reduce((sum, hour) => sum + hourlyStats[hour].total, 0);
+        
+        sortedHours.forEach(hour => {
+            const stats = hourlyStats[hour];
+            const percentage = hourTotal > 0 ? ((stats.total / hourTotal) * 100).toFixed(1) : 0;
+            csvContent += `${hour}:00,${stats.passed},${stats.declined},${stats.total},${percentage}%\n`;
+        });
+        
+        // Create and download CSV file
+        const eventName = '{{ event.name if event.name else "Event" }}'.replace(/[^a-z0-9]/gi, '_');
+        const currentDateStr = new Date().toISOString().split('T')[0];
+        const filename = `statistics_report_${eventName}_${currentDateStr}.csv`;
+        
+        downloadCSV(csvContent, filename);
+        
+    } catch (error) {
+        console.error('Error downloading statistics report:', error);
+        showAlert('Error downloading statistics report: ' + error.message, 'danger');
+    }
+}
+        
+        // Test function
+        function testModal() {
+            if (allResponses.length > 0) {
+                const firstResponse = allResponses[0];
+                const participantName = firstResponse.Name || firstResponse['Full Name'] || 'Test Participant';
+                openResponseDetailsModal(firstResponse, participantName);
+            } else {
+                const testResponse = {
+                    'Entry Number': 1,
+                    'Response ID': 'test-id-123',
+                    'Timestamp': '2024-01-27 10:30:00',
+                    'Name': 'Test Participant',
+                    'Email': 'test@example.com',
+                    'Phone': '123-456-7890',
+                    'Ticket Type': 'VIP',
+                    'Category': 'General Admission'
+                };
+                
+                openResponseDetailsModal(testResponse, 'Test Participant');
+            }
+        }
+    </script>
+</body>
+</html>

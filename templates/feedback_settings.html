@@ -1,0 +1,125 @@
+[file name]: feedback_settings.html
+[file content begin]
+<!DOCTYPE html>
+<html lang="en">
+{% extends "base.html" %}
+{% block title %}Feedback Settings - EventFlow{% endblock %}
+
+{% block page_title %}⚙️ Feedback System Settings{% endblock %}
+{% block page_subtitle %}
+<p class="lead text-muted mb-0">Configure feedback email notifications and preferences</p>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-body">
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <div class="mb-4">
+                        <h5 class="card-title mb-4">📧 Email Notifications</h5>
+                        
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="send_thank_you_emails" 
+                                   name="send_thank_you_emails" {% if settings.send_thank_you_emails %}checked{% endif %}>
+                            <label class="form-check-label" for="send_thank_you_emails">
+                                <strong>Send thank you emails to users</strong>
+                                <small class="d-block text-muted">
+                                    Send confirmation emails when users submit feedback
+                                </small>
+                            </label>
+                        </div>
+                        
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="notify_admin_on_feedback" 
+                                   name="notify_admin_on_feedback" {% if settings.notify_admin_on_feedback %}checked{% endif %}>
+                            <label class="form-check-label" for="notify_admin_on_feedback">
+                                <strong>Notify admin on new feedback</strong>
+                                <small class="d-block text-muted">
+                                    Send email notifications to admin when new feedback is received
+                                </small>
+                            </label>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Admin Notification Email</label>
+                            <input type="email" class="form-control" name="admin_email" 
+                                   value="{{ settings.admin_email }}" required>
+                            <small class="text-muted">Where to send admin notifications</small>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="mb-4">
+                        <h5 class="card-title mb-4">🤖 Auto-Reply Settings</h5>
+                        
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="auto_reply_enabled" 
+                                   name="auto_reply_enabled" {% if settings.auto_reply_enabled %}checked{% endif %}>
+                            <label class="form-check-label" for="auto_reply_enabled">
+                                <strong>Enable auto-reply messages</strong>
+                                <small class="d-block text-muted">
+                                    Send automated replies to feedback submissions
+                                </small>
+                            </label>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Auto-Reply Message</label>
+                            <textarea class="form-control" name="auto_reply_message" rows="4">{{ settings.auto_reply_message }}</textarea>
+                            <small class="text-muted">Message to include in thank you emails</small>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="mb-4">
+                        <h5 class="card-title mb-4">📊 Feedback Categories</h5>
+                        <p class="text-muted mb-3">Available feedback types:</p>
+                        <div class="row">
+                            {% for category in settings.feedback_categories %}
+                            <div class="col-md-4 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="cat_{{ category }}" checked disabled>
+                                    <label class="form-check-label" for="cat_{{ category }}">
+                                        {{ category.replace('_', ' ').title() }}
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('feedback_viewer') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i> Back to Feedback
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-2"></i> Save Settings
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card shadow mt-4">
+            <div class="card-body">
+                <h5 class="card-title mb-4">📨 Test Email System</h5>
+                <p class="text-muted mb-3">Test the feedback email system:</p>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                    <a href="{{ url_for('test_email') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-envelope-check me-2"></i> Test Email Configuration
+                    </a>
+                    <a href="{{ url_for('debug_otp_email', email=session.get('email', '')) }}" class="btn btn-outline-info">
+                        <i class="bi bi-bug me-2"></i> Debug Email
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+[file content end]

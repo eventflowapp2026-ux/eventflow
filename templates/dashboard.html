@@ -1,0 +1,824 @@
+[file name]: dashboard.html
+[file content begin]
+{% extends "base.html" %}
+{% block title %}Dashboard - EventFlow{% endblock %}
+
+{% block page_title %}🏠 Dashboard{% endblock %}
+{% block page_subtitle %}
+<p class="lead text-muted mb-0">Welcome to your EventFlow dashboard</p>
+{% endblock %}
+
+{% block content %}
+<!-- Dashboard Layout -->
+<div class="row g-4">
+    <!-- ========== LEFT SIDEBAR ========== -->
+    <div class="col-lg-3">
+        <!-- User Profile Card -->
+        <div class="card card-glass mb-4">
+            <div class="card-body text-center">
+                <div class="avatar-lg mx-auto mb-3">
+                    <div class="avatar-title bg-gradient-primary rounded-circle" style="width: 80px; height: 80px; line-height: 80px;">
+                        <i class="bi bi-person display-4 text-white"></i>
+                    </div>
+                </div>
+                <h5 class="mb-1">{{ session.username }}</h5>
+                <p class="text-muted small mb-3">{{ session.email }}</p>
+                <span class="badge bg-primary mb-3">User</span>
+                
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('create_event') }}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-plus-circle me-2"></i>Create Event
+                    </a>
+                    <a href="{{ url_for('logout') }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-box-arrow-right me-2"></i>Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card card-glass mb-4">
+            <div class="card-header bg-transparent">
+                <h6 class="mb-0"><i class="bi bi-lightning me-2"></i>Quick Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('create_event') }}" class="btn btn-primary">
+                        <i class="bi bi-calendar-plus me-2"></i>Create Event
+                    </a>
+                    <a href="{{ url_for('feedback_viewer') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-chat-text me-2"></i>My Feedback
+                    </a>
+                    <a href="{{ url_for('feedback') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-megaphone me-2"></i>Submit Feedback
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Info -->
+        <div class="card card-glass">
+            <div class="card-header bg-transparent">
+                <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Account Info</h6>
+            </div>
+            <div class="card-body">
+                <div class="account-info mb-3">
+                    <div class="info-item d-flex align-items-center mb-2">
+                        <i class="bi bi-calendar-event text-primary me-2"></i>
+                        <small>Events Created: {{ event_count }}</small>
+                    </div>
+                    <div class="info-item d-flex align-items-center mb-2">
+                        <i class="bi bi-file-text text-success me-2"></i>
+                        <small>Forms Created: {{ form_count }}</small>
+                    </div>
+                    <div class="info-item d-flex align-items-center">
+                        <i class="bi bi-clock-history text-info me-2"></i>
+                        <small>Member Since: {{ now.strftime('%Y-%m-%d') }}</small>
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <small class="text-muted d-block">Need Help?</small>
+                    <a href="{{ url_for('how_it_works') }}" class="btn btn-outline-info btn-sm w-100">
+                        <i class="bi bi-question-circle me-2"></i>View Tutorial
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== MAIN CONTENT AREA ========== -->
+    <div class="col-lg-9">
+        <!-- Welcome & Quick Stats -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-8">
+                <div class="card card-glass h-100">
+                    <div class="card-body">
+                        <h4 class="mb-3">👋 Welcome, {{ session.username }}</h4>
+                        <p class="text-muted mb-4">Manage your events, registration forms, and feedback.</p>
+                        
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="stat-card bg-light p-3 rounded">
+                                    <div class="stat-icon bg-primary">
+                                        <i class="bi bi-calendar-event"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-value">{{ event_count }}</div>
+                                        <div class="stat-label">Your Events</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="stat-card bg-light p-3 rounded">
+                                    <div class="stat-icon bg-success">
+                                        <i class="bi bi-file-text"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-value">{{ form_count }}</div>
+                                        <div class="stat-label">Registration Forms</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card card-glass h-100">
+                    <div class="card-body">
+                        <h6 class="mb-3">⚡ Quick Tools</h6>
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('create_event') }}" class="btn btn-primary btn-sm">
+                                <i class="bi bi-plus-circle me-2"></i>Create Event
+                            </a>
+                            
+                            <a href="{{ url_for('feedback') }}" class="btn btn-outline-info btn-sm">
+                                <i class="bi bi-chat-dots me-2"></i>Submit Feedback
+                            </a>
+                            <a href="{{ url_for('feedback_viewer') }}" class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-eye me-2"></i>View My Feedback
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Your Events -->
+        <div class="card card-glass mb-4">
+            <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-0"><i class="bi bi-calendar-event me-2"></i>Your Events</h5>
+                    <small class="text-muted">Events you have created</small>
+                </div>
+                <a href="{{ url_for('create_event') }}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-circle me-1"></i>New Event
+                </a>
+            </div>
+            
+            <div class="card-body">
+                {% if events %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Event Name</th>
+                                <th>Description</th>
+                                <th>Forms</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for event in events %}
+                            <tr>
+                                <td>
+                                    <div><strong>{{ event.name }}</strong></div>
+                                    <small class="text-muted">{{ event.category|title }}</small>
+                                </td>
+                                <td>
+                                    <div class="text-truncate" style="max-width: 200px;">
+                                        {{ event.description[:80] }}{% if event.description|length > 80 %}...{% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{ event.forms|length }}</span>
+                                    {% if event.forms %}
+                                    <small class="d-block text-muted">
+                                        {% for form in event.forms[:2] %}
+                                        {{ form.title[:15] }}{% if form.title|length > 15 %}...{% endif %}{% if not loop.last %}, {% endif %}
+                                        {% endfor %}
+                                        {% if event.forms|length > 2 %}
+                                        +{{ event.forms|length - 2 }} more
+                                        {% endif %}
+                                    </small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small>{{ event.created_at[:10] }}</small>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url_for('create_form', event_id=event.id) }}" class="btn btn-outline-primary btn-sm" data-bs-toggle="tooltip" title="Add Form">
+                                            <i class="bi bi-file-plus"></i>
+                                        </a>
+                                        {% if event.forms %}
+                                        <div class="dropdown">
+                                            <button class="btn btn-outline-success btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-toggle="tooltip" title="View Forms">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                {% for form in event.forms %}
+                                                <li>
+                                                    <a class="dropdown-item" href="{{ url_for('view_form', event_id=event.id, form_id=form.id) }}">
+                                                        <i class="bi bi-file-text me-2"></i>{{ form.title|truncate(30) }}
+                                                    </a>
+                                                </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                        {% else %}
+                                        <span class="btn btn-outline-secondary btn-sm disabled" data-bs-toggle="tooltip" title="No forms yet">
+                                            <i class="bi bi-eye"></i>
+                                        </span>
+                                        {% endif %}
+                                        <button type="button" class="btn btn-outline-danger btn-sm delete-event-btn" 
+                                                data-event-id="{{ event.id }}" 
+                                                data-event-name="{{ event.name }}"
+                                                data-bs-toggle="tooltip" title="Delete Event">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-calendar display-4 text-muted mb-3"></i>
+                    <p class="text-muted">No events created yet</p>
+                    <a href="{{ url_for('create_event') }}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-2"></i>Create Your First Event
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- User Statistics -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="card card-glass">
+                    <div class="card-body text-center">
+                        <div class="stat-icon-lg bg-primary mb-3 mx-auto">
+                            <i class="bi bi-calendar-event text-white"></i>
+                        </div>
+                        <h3 class="mb-1">{{ event_count }}</h3>
+                        <p class="text-muted mb-0">Events Created</p>
+                        <a href="{{ url_for('create_event') }}" class="btn btn-link btn-sm">Create New</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card card-glass">
+                    <div class="card-body text-center">
+                        <div class="stat-icon-lg bg-success mb-3 mx-auto">
+                            <i class="bi bi-file-text text-white"></i>
+                        </div>
+                        <h3 class="mb-1">{{ form_count }}</h3>
+                        <p class="text-muted mb-0">Registration Forms</p>
+                        <small>Across all events</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card card-glass">
+                    <div class="card-body text-center">
+                        <div class="stat-icon-lg bg-info mb-3 mx-auto">
+                            <i class="bi bi-chat-left-text text-white"></i>
+                        </div>
+                        <h3 class="mb-1">{{ stats.pending_feedback if stats else 0 }}</h3>
+                        <p class="text-muted mb-0">Your Feedback</p>
+                        <a href="{{ url_for('feedback_viewer') }}" class="btn btn-link btn-sm">View All</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity & Help -->
+        <div class="row g-4">
+            <!-- Recent Activity -->
+            <div class="col-lg-8">
+                <div class="card card-glass h-100">
+                    <div class="card-header bg-transparent">
+                        <h6 class="mb-0"><i class="bi bi-activity me-2"></i>Recent Activity</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="activity-list">
+                            {% if events %}
+                                {% for event in events[:3] %}
+                                <div class="activity-item d-flex align-items-start mb-3">
+                                    <div class="activity-icon bg-light rounded-circle p-2 me-3">
+                                        <i class="bi bi-calendar-event text-primary"></i>
+                                    </div>
+                                    <div class="activity-content flex-grow-1">
+                                        <div class="d-flex justify-content-between">
+                                            <h6 class="mb-1">{{ event.name }}</h6>
+                                            <small class="text-muted">{{ event.created_at[:10] }}</small>
+                                        </div>
+                                        <p class="text-muted small mb-0">{{ event.description[:100] }}{% if event.description|length > 100 %}...{% endif %}</p>
+                                        <small class="text-muted">{{ event.forms|length }} registration form(s)</small>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <i class="bi bi-activity display-4 text-muted mb-3"></i>
+                                    <p class="text-muted">No recent activity</p>
+                                    <a href="{{ url_for('create_event') }}" class="btn btn-outline-primary btn-sm">
+                                        Create Your First Event
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="quick-links">
+                            <h6 class="mb-3">📚 Help Resources</h6>
+                            <div class="d-grid gap-2">
+                                <a href="{{ url_for('how_it_works') }}" class="btn btn-outline-info btn-sm">
+                                    <i class="bi bi-play-circle me-2"></i>How It Works Tutorial
+                                </a>
+                                <a href="{{ url_for('feedback') }}" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-chat-text me-2"></i>Submit Feedback
+                                </a>
+                                <a href="{{ url_for('feedback_viewer') }}" class="btn btn-outline-success btn-sm">
+                                    <i class="bi bi-eye me-2"></i>View My Feedback
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Help -->
+            <div class="col-lg-4">
+                <div class="card card-glass h-100">
+                    <div class="card-header bg-transparent">
+                        <h6 class="mb-0"><i class="bi bi-question-circle me-2"></i>Quick Help</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="help-items">
+                            <div class="help-item mb-3">
+                                <h6><i class="bi bi-calendar-plus text-primary me-2"></i>Create Event</h6>
+                                <p class="small text-muted mb-2">Start by creating an event to organize your registration forms.</p>
+                                <a href="{{ url_for('create_event') }}" class="btn btn-outline-primary btn-sm">Get Started</a>
+                            </div>
+                            
+                            <div class="help-item mb-3">
+                                <h6><i class="bi bi-file-text text-success me-2"></i>Add Forms</h6>
+                                <p class="small text-muted mb-2">Create registration forms to collect information from attendees.</p>
+                                <a href="{{ url_for('create_event') }}" class="btn btn-outline-success btn-sm">Create Form</a>
+                            </div>
+                            
+                            <div class="help-item">
+                                <h6><i class="bi bi-share text-info me-2"></i>Share Forms</h6>
+                                <p class="small text-muted mb-2">Share your forms via email, QR code, or direct link.</p>
+                                <span class="badge bg-info">Available after form creation</span>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="need-help">
+                            <h6 class="mb-3">❓ Need More Help?</h6>
+                            <div class="d-grid gap-1">
+                                <a href="{{ url_for('how_it_works') }}" class="btn btn-outline-info btn-sm">
+                                    <i class="bi bi-book me-2"></i>View Tutorial
+                                </a>
+                                <a href="{{ url_for('feedback') }}" class="btn btn-outline-warning btn-sm">
+                                    <i class="bi bi-headset me-2"></i>Contact Support
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Event Modal -->
+<div class="modal fade" id="deleteEventModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>Delete Event</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-octagon me-2"></i>
+                    <strong>Warning: This action cannot be undone!</strong>
+                </div>
+                <p>You are about to delete the event: <strong id="eventNameToDelete"></strong></p>
+                
+                <div class="card bg-light mb-3">
+                    <div class="card-body">
+                        <h6 class="mb-2">What will be deleted:</h6>
+                        <ul class="mb-0">
+                            <li>Event details and settings</li>
+                            <li id="formCountInfo"></li>
+                            <li id="responseCountInfo"></li>
+                            <li>All uploaded files</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="confirmEventDelete">
+                    <label class="form-check-label fw-semibold text-danger" for="confirmEventDelete">
+                        I understand that this will permanently delete the event and all associated data
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteEventBtn" disabled>
+                    <i class="bi bi-trash"></i> Delete Permanently
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add this to your dashboard.html template -->
+{% if needs_guidelines_review %}
+<div class="modal fade" id="guidelinesModal" tabindex="-1" aria-hidden="false" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-journal-text me-2"></i>
+                    Welcome to EventFlow!
+                </h5>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <i class="bi bi-emoji-smile" style="font-size: 3rem; color: #4361ee;"></i>
+                    <h4 class="mt-3">Thank you for joining EventFlow! 🎉</h4>
+                </div>
+                
+                <p>Before you start creating events, we recommend reviewing our User Guidelines to ensure:</p>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card border-light h-100">
+                            <div class="card-body">
+                                <h6><i class="bi bi-check-circle text-success me-2"></i>Best Practices</h6>
+                                <ul class="mb-0">
+                                    <li>Responsible data collection</li>
+                                    <li>Participant privacy protection</li>
+                                    <li>Effective event management</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card border-light h-100">
+                            <div class="card-body">
+                                <h6><i class="bi bi-shield-check text-primary me-2"></i>Platform Safety</h6>
+                                <ul class="mb-0">
+                                    <li>Community guidelines</li>
+                                    <li>Reporting mechanisms</li>
+                                    <li>Data security features</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info mt-4">
+                    <i class="bi bi-info-circle me-2"></i>
+                    We've sent a comprehensive welcome email to <strong>{{ session.email }}</strong> with all the details.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="{{ url_for('user_guidelines') }}" class="btn btn-primary" target="_blank">
+                    <i class="bi bi-journal-text me-2"></i>Review Guidelines
+                </a>
+                <button type="button" class="btn btn-success" data-bs-dismiss="modal">
+                    <i class="bi bi-rocket-takeoff me-2"></i>Start Creating Events!
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Show the modal automatically
+    document.addEventListener('DOMContentLoaded', function() {
+        var guidelinesModal = new bootstrap.Modal(document.getElementById('guidelinesModal'));
+        guidelinesModal.show();
+    });
+</script>
+{% endif %}
+
+<!-- JavaScript for Dashboard -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function(tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // Event deletion
+    const deleteEventModal = new bootstrap.Modal(document.getElementById('deleteEventModal'));
+    let eventToDeleteId = null;
+
+    // Handle delete event button clicks
+    document.querySelectorAll('.delete-event-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            eventToDeleteId = this.dataset.eventId;
+            const eventName = this.dataset.eventName;
+            const formCount = this.closest('tr').querySelector('.badge.bg-info').textContent;
+            
+            // Update modal content
+            document.getElementById('eventNameToDelete').textContent = eventName;
+            document.getElementById('formCountInfo').textContent = formCount + ' registration form(s)';
+            
+            // You could add AJAX call here to get response count if needed
+            document.getElementById('responseCountInfo').textContent = 'All responses and data';
+            
+            // Reset confirmation checkbox
+            document.getElementById('confirmEventDelete').checked = false;
+            document.getElementById('confirmDeleteEventBtn').disabled = true;
+            
+            deleteEventModal.show();
+        });
+    });
+
+    // Enable/disable delete button based on confirmation
+    document.getElementById('confirmEventDelete').addEventListener('change', function() {
+        document.getElementById('confirmDeleteEventBtn').disabled = !this.checked;
+    });
+
+    // Handle event deletion
+    document.getElementById('confirmDeleteEventBtn').addEventListener('click', function() {
+        if (!eventToDeleteId) return;
+        
+        const button = this;
+        const originalText = button.innerHTML;
+        button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Deleting...';
+        button.disabled = true;
+        
+        // Send delete request
+        fetch(`/delete_event/${eventToDeleteId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert('Event deleted successfully!', 'success');
+                deleteEventModal.hide();
+                
+                // Remove the row from table
+                const row = document.querySelector(`.delete-event-btn[data-event-id="${eventToDeleteId}"]`).closest('tr');
+                row.style.transition = 'all 0.3s ease';
+                row.style.opacity = '0';
+                row.style.transform = 'translateX(-100%)';
+                
+                setTimeout(() => {
+                    row.remove();
+                    
+                    // Update event count
+                    const eventCountElement = document.querySelector('.stat-value:first-child');
+                    if (eventCountElement) {
+                        const currentCount = parseInt(eventCountElement.textContent);
+                        eventCountElement.textContent = currentCount - 1;
+                    }
+                    
+                    // Reload page after a delay if no events left
+                    const remainingRows = document.querySelectorAll('tbody tr').length;
+                    if (remainingRows === 0) {
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    }
+                }, 300);
+                
+            } else {
+                showAlert('Error: ' + data.error, 'danger');
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showAlert('Error deleting event. Please try again.', 'danger');
+            button.innerHTML = originalText;
+            button.disabled = false;
+        });
+    });
+});
+
+// Helper function to show alerts
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
+    alertDiv.style.zIndex = '9999';
+    alertDiv.style.maxWidth = '400px';
+    alertDiv.innerHTML = `
+        <strong>${type === 'success' ? '✓' : '⚠'}</strong> ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alertDiv);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+</script>
+
+<style>
+/* Dashboard styles */
+.avatar-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #4361ee 0%, #3a56d4 100%);
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    margin-right: 15px;
+}
+
+.stat-icon-lg {
+    width: 70px;
+    height: 70px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content:center;
+    color: white;
+    font-size: 2rem;
+}
+
+.stat-content {
+    flex: 1;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    line-height: 1;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-bottom: 5px;
+}
+
+.account-info .info-item {
+    padding: 5px 0;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.account-info .info-item:last-child {
+    border-bottom: none;
+}
+
+.activity-item {
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.activity-icon {
+    width: 40px;
+    height: 40px;
+}
+
+.help-item {
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.help-item:last-child {
+    margin-bottom: 0;
+}
+
+/* Card hover effects */
+.card-glass {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.card-glass:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* Table improvements */
+.table td {
+    vertical-align: middle;
+}
+
+.table .btn-group {
+    white-space: nowrap;
+}
+
+.table .btn-group .btn {
+    padding: 4px 8px;
+}
+
+.table .dropdown-menu {
+    min-width: 200px;
+}
+
+.table .dropdown-item {
+    white-space: normal;
+    word-wrap: break-word;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .stat-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .stat-icon {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+    
+    .stat-icon-lg {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+    }
+    
+    .table td:nth-child(2) {
+        max-width: 150px;
+    }
+    
+    .btn-group {
+        flex-wrap: wrap;
+        gap: 2px;
+    }
+    
+    .btn-group .btn {
+        padding: 2px 5px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 576px) {
+    .table-responsive {
+        font-size: 14px;
+    }
+    
+    .table td {
+        padding: 8px 4px;
+    }
+    
+    .btn-group {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+}
+</style>
+{% endblock %}
+[file content end]

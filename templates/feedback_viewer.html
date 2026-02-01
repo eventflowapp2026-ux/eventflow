@@ -1,0 +1,812 @@
+{% extends "base.html" %}
+{% block title %}Admin Feedback - EventFlow{% endblock %}
+
+{% block page_title %}📋 Admin Feedback Dashboard{% endblock %}
+{% block page_subtitle %}
+<p class="lead text-muted mb-0">View and respond to user feedback</p>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <form method="GET" class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Status</label>
+                                <select name="status" class="form-select">
+                                    <option value="all" {% if request.args.get('status', 'all') == 'all' %}selected{% endif %}>All Status</option>
+                                    <option value="new" {% if request.args.get('status') == 'new' %}selected{% endif %}>New</option>
+                                    <option value="read" {% if request.args.get('status') == 'read' %}selected{% endif %}>Read</option>
+                                    <option value="responded" {% if request.args.get('status') == 'responded' %}selected{% endif %}>Responded</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Type</label>
+                                <select name="type" class="form-select">
+                                    <option value="all" {% if request.args.get('type', 'all') == 'all' %}selected{% endif %}>All Types</option>
+                                    <option value="suggestion" {% if request.args.get('type') == 'suggestion' %}selected{% endif %}>Feature Idea</option>
+                                    <option value="bug" {% if request.args.get('type') == 'bug' %}selected{% endif %}>Bug Report</option>
+                                    <option value="praise" {% if request.args.get('type') == 'praise' %}selected{% endif %}>Praise</option>
+                                    <option value="followup" {% if request.args.get('type') == 'followup' %}selected{% endif %}>Follow-up</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Search</label>
+                                <input type="text" name="search" class="form-control" placeholder="Search name, email, or message..." 
+                                       value="{{ request.args.get('search', '') }}">
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="bi bi-funnel me-2"></i>Filter
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end justify-content-end">
+                        <div class="btn-group">
+                            <a href="{{ url_for('admin_feedback_receiver') }}" class="btn btn-outline-primary">
+                                <i class="bi bi-arrow-clockwise me-2"></i>Refresh
+                            </a>
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-speedometer me-2"></i>Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Feedback List -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="mb-0">User Feedback</h5>
+            </div>
+            <div class="card-body">
+                {% if feedback_list %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th width="40">ID</th>
+                                <th>User</th>
+                                <th>Type</th>
+                                <th>Rating</th>
+                                <th>Message Preview</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Follow-ups</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for feedback in feedback_list %}
+                            <tr class="{% if feedback.status == 'new' %}table-warning{% endif %}">
+                                <td>
+                                    <small class="text-muted">#{{ loop.index }}</small>
+                                </td>
+                                <td>
+                                    <div><strong>{{ feedback.name }}</strong></div>
+                                    <small class="text-muted">{{ feedback.email }}</small>
+                                    {% if feedback.can_contact %}
+                                    <span class="badge bg-info badge-sm">Can Contact</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-{% if feedback.type == 'bug' %}danger{% elif feedback.type == 'suggestion' %}info{% elif feedback.type == 'praise' %}success{% elif feedback.type == 'followup' %}warning{% else %}secondary{% endif %}">
+                                        {{ feedback.type|upper }}
+                                    </span>
+                                    {% if feedback.parent_feedback_id %}
+                                    <small class="text-muted d-block">Follow-up</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="rating-stars text-warning">
+                                            {% if feedback.rating > 0 %}
+                                                {% for i in range(feedback.rating) %}
+                                                <i class="bi bi-star-fill"></i>
+                                                {% endfor %}
+                                                {% for i in range(5 - feedback.rating) %}
+                                                <i class="bi bi-star"></i>
+                                                {% endfor %}
+                                            {% else %}
+                                            <span class="text-muted">N/A</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="text-truncate" style="max-width: 200px;" 
+                                         data-bs-toggle="tooltip" title="{{ feedback.message }}">
+                                        {{ feedback.message[:100] }}{% if feedback.message|length > 100 %}...{% endif %}
+                                    </div>
+                                    {% if feedback.reply_message %}
+                                    <small class="text-success d-block">
+                                        <i class="bi bi-reply-fill"></i> Admin replied
+                                    </small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small>{{ feedback.timestamp[:16].replace('T', ' ') }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{% if feedback.status == 'new' %}warning{% elif feedback.status == 'read' %}info{% elif feedback.status == 'responded' %}success{% else %}secondary{% endif %}">
+                                        {{ feedback.status|upper }}
+                                    </span>
+                                    {% if feedback.responded_at %}
+                                    <small class="d-block text-muted">{{ feedback.responded_at[:16].replace('T', ' ') }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if feedback.follow_up_count %}
+                                    <span class="badge bg-primary">
+                                        {{ feedback.follow_up_count }} follow-up{% if feedback.follow_up_count != 1 %}s{% endif %}
+                                    </span>
+                                    {% else %}
+                                    <span class="text-muted">None</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-info view-feedback-btn" 
+                                                data-feedback-id="{{ feedback.id }}"
+                                                data-feedback-name="{{ feedback.name }}"
+                                                data-feedback-email="{{ feedback.email }}"
+                                                data-feedback-type="{{ feedback.type }}"
+                                                data-feedback-rating="{{ feedback.rating }}"
+                                                data-feedback-message="{{ feedback.message }}"
+                                                data-feedback-status="{{ feedback.status }}"
+                                                data-feedback-timestamp="{{ feedback.timestamp }}"
+                                                data-reply-message="{{ feedback.reply_message if feedback.reply_message else '' }}"
+                                                data-reply-timestamp="{{ feedback.reply_timestamp if feedback.reply_timestamp else '' }}"
+                                                data-bs-toggle="modal" data-bs-target="#viewModal">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                        {% if feedback.email %}
+                                        <button class="btn btn-outline-primary reply-btn" 
+                                                data-feedback-id="{{ feedback.id }}"
+                                                data-feedback-email="{{ feedback.email }}"
+                                                data-feedback-name="{{ feedback.name }}"
+                                                data-bs-toggle="modal" data-bs-target="#replyModal">
+                                            <i class="bi bi-reply"></i>
+                                        </button>
+                                        {% endif %}
+                                        {% if feedback.status == 'new' %}
+                                        <button class="btn btn-outline-success mark-read-btn" 
+                                                data-feedback-id="{{ feedback.id }}">
+                                            <i class="bi bi-check2"></i>
+                                        </button>
+                                        {% endif %}
+                                        {% if feedback.parent_feedback_id %}
+                                        <button class="btn btn-outline-secondary view-original-btn"
+                                                data-parent-id="{{ feedback.parent_feedback_id }}">
+                                            <i class="bi bi-arrow-up"></i>
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if total_pages > 1 %}
+                <nav class="mt-3">
+                    <ul class="pagination pagination-sm justify-content-center">
+                        {% for p in range(1, total_pages + 1) %}
+                        <li class="page-item {% if p == page %}active{% endif %}">
+                            <a class="page-link" href="?page={{ p }}&status={{ request.args.get('status', '') }}&type={{ request.args.get('type', '') }}&search={{ request.args.get('search', '') }}">
+                                {{ p }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </nav>
+                {% endif %}
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-chat-text display-1 text-muted"></i>
+                    <h4 class="mt-3">No feedback submissions found</h4>
+                    <p class="text-muted">Try changing your filters or check back later.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Feedback Modal -->
+<div class="modal fade" id="viewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Feedback Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="feedbackDetails">
+                <!-- Content loaded by JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="openReplyFromView">
+                    <i class="bi bi-reply me-1"></i>Reply to User
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- User View Modal (for users to see admin replies) -->
+<div class="modal fade" id="userViewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Your Feedback</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="userFeedbackDetails">
+                <!-- Content loaded by JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="openUserFollowup">
+                    <i class="bi bi-reply-fill me-1"></i>Send Follow-up
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reply Modal (Admin to User) -->
+<div class="modal fade" id="replyModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Reply to User</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="replyForm">
+                    <input type="hidden" id="replyFeedbackId">
+                    <input type="hidden" id="replyUserEmail">
+                    <input type="hidden" id="replyUserName">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">To</label>
+                        <input type="text" class="form-control" id="replyToField" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Subject</label>
+                        <input type="text" class="form-control" id="replySubject" 
+                               value="Message from EventFlow Team" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Your Message</label>
+                        <textarea class="form-control" id="replyMessage" rows="5" 
+                                  placeholder="Type your response here..." required></textarea>
+                        <small class="text-muted">This message will be sent directly to the user and stored as a reply.</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Update Status</label>
+                        <select class="form-select" id="replyStatus">
+                            <option value="responded">Mark as Responded</option>
+                            <option value="read">Keep as Read</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="sendReplyBtn">
+                    <i class="bi bi-send me-2"></i>Send Reply
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Follow-up Modal (User to Admin) -->
+<div class="modal fade" id="followupModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Send Follow-up Message</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="followupForm">
+                    <input type="hidden" id="followupFeedbackId">
+                    <input type="hidden" id="followupUserEmail">
+                    <input type="hidden" id="followupUserName">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Original Feedback</label>
+                        <div class="form-control bg-light" id="originalFeedbackPreview" readonly style="height: auto; min-height: 60px; overflow-y: auto;"></div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Admin's Reply</label>
+                        <div class="form-control bg-light" id="adminReplyPreview" readonly style="height: auto; min-height: 60px; overflow-y: auto;"></div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Your Follow-up Message <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="followupMessage" rows="4" 
+                                  placeholder="Type your follow-up message here..." required></textarea>
+                        <small class="text-muted">This message will be sent to the admin team as a follow-up to your original feedback.</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="sendFollowupBtn">
+                    <i class="bi bi-send me-2"></i>Send Follow-up
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.rating-stars {
+    color: #ffc107;
+    font-size: 14px;
+}
+
+.feedback-message, .reply-message {
+    white-space: pre-wrap;
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    margin: 10px 0;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.reply-message {
+    background-color: #e8f4fd;
+    border-left: 4px solid #0d6efd;
+}
+
+.admin-reply {
+    background-color: #f0f9ff;
+    border-left: 4px solid #2563eb;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 6px;
+}
+
+.user-feedback {
+    background-color: #f9f9f9;
+    border-left: 4px solid #10b981;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 6px;
+}
+
+.conversation-timeline {
+    position: relative;
+    padding-left: 20px;
+}
+
+.conversation-timeline::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: #dee2e6;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -20px;
+    top: 10px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #2563eb;
+}
+
+.timeline-item.user::before {
+    background-color: #10b981;
+}
+
+.timeline-item.admin::before {
+    background-color: #8b5cf6;
+}
+
+.table-hover tr:hover {
+    cursor: pointer;
+}
+
+.tooltip-inner {
+    max-width: 500px !important;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+
+    // View feedback details (Admin View)
+    const viewButtons = document.querySelectorAll('.view-feedback-btn');
+    if (viewButtons.length > 0) {
+        viewButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const feedbackId = this.dataset.feedbackId;
+                const name = this.dataset.feedbackName || 'Anonymous';
+                const email = this.dataset.feedbackEmail || 'No email provided';
+                const type = this.dataset.feedbackType || 'general';
+                const rating = parseInt(this.dataset.feedbackRating) || 0;
+                const message = this.dataset.feedbackMessage || '';
+                const status = this.dataset.feedbackStatus || 'new';
+                const timestamp = this.dataset.feedbackTimestamp || '';
+                const replyMessage = this.dataset.replyMessage || '';
+                const replyTimestamp = this.dataset.replyTimestamp || '';
+                
+                // Format dates
+                let formattedDate = timestamp;
+                let formattedReplyDate = replyTimestamp;
+                try {
+                    if (timestamp) {
+                        const date = new Date(timestamp);
+                        formattedDate = date.toLocaleString();
+                    }
+                    if (replyTimestamp) {
+                        const replyDate = new Date(replyTimestamp);
+                        formattedReplyDate = replyDate.toLocaleString();
+                    }
+                } catch (e) {
+                    console.log('Error formatting date:', e);
+                }
+                
+                // Check if user is admin or regular user
+                const isAdmin = true; // This should come from your backend
+                
+                // Build modal content
+                let html = `
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6>User Information</h6>
+                            <p><strong>Name:</strong> ${name}</p>
+                            <p><strong>Email:</strong> ${email}</p>
+                            <p><strong>Feedback ID:</strong> <small class="text-muted">${feedbackId}</small></p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Feedback Details</h6>
+                            <p><strong>Type:</strong> <span class="badge bg-${type === 'bug' ? 'danger' : type === 'suggestion' ? 'info' : type === 'praise' ? 'success' : type === 'followup' ? 'warning' : 'secondary'}">${type.toUpperCase()}</span></p>
+                            <p><strong>Rating:</strong> ${rating > 0 ? '★'.repeat(rating) + '☆'.repeat(5 - rating) + ` (${rating}/5)` : 'N/A'}</p>
+                            <p><strong>Status:</strong> <span class="badge bg-${status === 'new' ? 'warning' : status === 'read' ? 'info' : status === 'responded' ? 'success' : 'secondary'}">${status.toUpperCase()}</span></p>
+                            <p><strong>Submitted:</strong> ${formattedDate}</p>
+                        </div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6>Original Feedback Message</h6>
+                            <div class="feedback-message">${message}</div>
+                        </div>
+                    </div>
+                `;
+                
+                // Add admin reply if exists
+                if (replyMessage) {
+                    html += `
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6>Your Reply</h6>
+                                <div class="reply-message">
+                                    <div><strong>Sent on:</strong> ${formattedReplyDate}</div>
+                                    <hr>
+                                    ${replyMessage}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Update modal content
+                const detailsDiv = document.getElementById('feedbackDetails');
+                detailsDiv.innerHTML = html;
+                detailsDiv.dataset.feedbackId = feedbackId;
+                detailsDiv.dataset.userEmail = email;
+                detailsDiv.dataset.userName = name;
+            });
+        });
+    }
+
+    // Open reply from view modal (Admin)
+    const openReplyFromViewBtn = document.getElementById('openReplyFromView');
+    if (openReplyFromViewBtn) {
+        openReplyFromViewBtn.addEventListener('click', function() {
+            const viewModal = bootstrap.Modal.getInstance(document.getElementById('viewModal'));
+            if (viewModal) viewModal.hide();
+            
+            const feedbackDetails = document.getElementById('feedbackDetails');
+            const feedbackId = feedbackDetails.dataset.feedbackId;
+            const userEmail = feedbackDetails.dataset.userEmail;
+            const userName = feedbackDetails.dataset.userName;
+            
+            if (feedbackId && userEmail) {
+                document.getElementById('replyFeedbackId').value = feedbackId;
+                document.getElementById('replyUserEmail').value = userEmail;
+                document.getElementById('replyUserName').value = userName;
+                document.getElementById('replyToField').value = `${userName} <${userEmail}>`;
+                
+                const replyModal = new bootstrap.Modal(document.getElementById('replyModal'));
+                replyModal.show();
+            }
+        });
+    }
+
+    // Reply buttons in table (Admin)
+    const replyButtons = document.querySelectorAll('.reply-btn');
+    if (replyButtons.length > 0) {
+        replyButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const feedbackId = this.dataset.feedbackId;
+                const userEmail = this.dataset.feedbackEmail;
+                const userName = this.dataset.feedbackName;
+                
+                document.getElementById('replyFeedbackId').value = feedbackId;
+                document.getElementById('replyUserEmail').value = userEmail;
+                document.getElementById('replyUserName').value = userName;
+                document.getElementById('replyToField').value = `${userName} <${userEmail}>`;
+            });
+        });
+    }
+
+    // Send reply (Admin)
+    const sendReplyBtn = document.getElementById('sendReplyBtn');
+    if (sendReplyBtn) {
+        sendReplyBtn.addEventListener('click', async function() {
+            const feedbackId = document.getElementById('replyFeedbackId').value;
+            const subject = document.getElementById('replySubject').value;
+            const message = document.getElementById('replyMessage').value;
+            const status = document.getElementById('replyStatus').value;
+            
+            if (!subject || !message) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Sending...';
+            
+            try {
+                const response = await fetch('/admin/send_feedback_reply', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        feedback_id: feedbackId,
+                        subject: subject,
+                        message: message,
+                        status: status
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('Reply sent successfully! The user can now view your response.');
+                    
+                    // Close modals
+                    const replyModal = bootstrap.Modal.getInstance(document.getElementById('replyModal'));
+                    if (replyModal) replyModal.hide();
+                    
+                    const viewModal = bootstrap.Modal.getInstance(document.getElementById('viewModal'));
+                    if (viewModal) viewModal.hide();
+                    
+                    // Reload page after short delay
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    alert('Failed to send reply: ' + result.error);
+                    this.disabled = false;
+                    this.innerHTML = '<i class="bi bi-send me-2"></i>Send Reply';
+                }
+            } catch (error) {
+                console.error('Error sending reply:', error);
+                alert('Error sending reply message');
+                this.disabled = false;
+                this.innerHTML = '<i class="bi bi-send me-2"></i>Send Reply';
+            }
+        });
+    }
+
+    // Mark as read buttons
+    const markReadButtons = document.querySelectorAll('.mark-read-btn');
+    if (markReadButtons.length > 0) {
+        markReadButtons.forEach(btn => {
+            btn.addEventListener('click', async function() {
+                const feedbackId = this.dataset.feedbackId;
+                
+                try {
+                    const response = await fetch(`/admin/mark_feedback_read/${feedbackId}`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token() }}'
+                        }
+                    });
+                    
+                    const result = await response.json();
+                    if (result.success) {
+                        location.reload();
+                    }
+                } catch (error) {
+                    console.error('Error marking as read:', error);
+                }
+            });
+        });
+    }
+
+    // User view functionality (simulated - you need to implement based on your auth system)
+    // This would typically be on a separate page for users, but for demo:
+    function showUserFeedbackView(feedbackId, userName, userEmail, originalMessage, replyMessage, replyDate) {
+        const isAdmin = false; // This comes from your auth system
+        
+        let html = `
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                This is your feedback submission. You can view the admin's reply here and send follow-up messages.
+            </div>
+            
+            <div class="conversation-timeline">
+                <div class="timeline-item user">
+                    <h6>Your Original Feedback</h6>
+                    <div class="user-feedback">
+                        <small class="text-muted d-block mb-2">Submitted by you</small>
+                        ${originalMessage}
+                    </div>
+                </div>
+        `;
+        
+        if (replyMessage) {
+            html += `
+                <div class="timeline-item admin">
+                    <h6>Admin's Response</h6>
+                    <div class="admin-reply">
+                        <small class="text-muted d-block mb-2">Response from EventFlow Team on ${replyDate}</small>
+                        ${replyMessage}
+                    </div>
+                </div>
+            `;
+        }
+        
+        html += `</div>`;
+        
+        document.getElementById('userFeedbackDetails').innerHTML = html;
+        document.getElementById('userFeedbackDetails').dataset.feedbackId = feedbackId;
+        document.getElementById('userFeedbackDetails').dataset.userEmail = userEmail;
+        document.getElementById('userFeedbackDetails').dataset.userName = userName;
+        
+        new bootstrap.Modal(document.getElementById('userViewModal')).show();
+    }
+
+    // Open follow-up modal from user view
+    const openUserFollowupBtn = document.getElementById('openUserFollowup');
+    if (openUserFollowupBtn) {
+        openUserFollowupBtn.addEventListener('click', function() {
+            const userModal = bootstrap.Modal.getInstance(document.getElementById('userViewModal'));
+            if (userModal) userModal.hide();
+            
+            const feedbackDetails = document.getElementById('userFeedbackDetails');
+            const feedbackId = feedbackDetails.dataset.feedbackId;
+            const userEmail = feedbackDetails.dataset.userEmail;
+            const userName = feedbackDetails.dataset.userName;
+            
+            if (feedbackId && userEmail) {
+                // Get original message and admin reply from the DOM
+                const timeline = document.querySelector('.conversation-timeline');
+                const originalMessage = timeline.querySelector('.user-feedback').innerText;
+                const adminReply = timeline.querySelector('.admin-reply') ? timeline.querySelector('.admin-reply').innerText : '';
+                
+                document.getElementById('followupFeedbackId').value = feedbackId;
+                document.getElementById('followupUserEmail').value = userEmail;
+                document.getElementById('followupUserName').value = userName;
+                document.getElementById('originalFeedbackPreview').innerText = originalMessage.substring(0, 300) + (originalMessage.length > 300 ? '...' : '');
+                document.getElementById('adminReplyPreview').innerText = adminReply.substring(0, 300) + (adminReply.length > 300 ? '...' : '');
+                
+                new bootstrap.Modal(document.getElementById('followupModal')).show();
+            }
+        });
+    }
+
+    // Send follow-up (User to Admin)
+    const sendFollowupBtn = document.getElementById('sendFollowupBtn');
+    if (sendFollowupBtn) {
+        sendFollowupBtn.addEventListener('click', async function() {
+            const feedbackId = document.getElementById('followupFeedbackId').value;
+            const message = document.getElementById('followupMessage').value;
+            
+            if (!message) {
+                alert('Please enter your follow-up message');
+                return;
+            }
+            
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Sending...';
+            
+            try {
+                const response = await fetch('/feedback/send_followup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        feedback_id: feedbackId,
+                        message: message,
+                        type: 'followup'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('Follow-up sent successfully! The admin team will review your message.');
+                    
+                    // Close modals
+                    const followupModal = bootstrap.Modal.getInstance(document.getElementById('followupModal'));
+                    if (followupModal) followupModal.hide();
+                    
+                    const userModal = bootstrap.Modal.getInstance(document.getElementById('userViewModal'));
+                    if (userModal) userModal.hide();
+                    
+                    // Redirect to user feedback page or show success
+                    setTimeout(() => {
+                        window.location.href = '/feedback/success';
+                    }, 1500);
+                } else {
+                    alert('Failed to send follow-up: ' + result.error);
+                    this.disabled = false;
+                    this.innerHTML = '<i class="bi bi-send me-2"></i>Send Follow-up';
+                }
+            } catch (error) {
+                console.error('Error sending follow-up:', error);
+                alert('Error sending follow-up message');
+                this.disabled = false;
+                this.innerHTML = '<i class="bi bi-send me-2"></i>Send Follow-up';
+            }
+        });
+    }
+
+    // View original feedback button
+    const viewOriginalButtons = document.querySelectorAll('.view-original-btn');
+    if (viewOriginalButtons.length > 0) {
+        viewOriginalButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const parentId = this.dataset.parentId;
+                // You'll need to implement fetching the original feedback
+                alert(`Viewing original feedback #${parentId}. This would typically fetch and display the original feedback.`);
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

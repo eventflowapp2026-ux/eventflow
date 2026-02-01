@@ -1,0 +1,3283 @@
+[file name]: admin_dashboard.html
+[file content begin]
+{% extends "base.html" %}
+{% block title %}Admin Dashboard - EventFlow{% endblock %}
+
+{% block page_title %}👑 Admin Dashboard{% endblock %}
+{% block page_subtitle %}
+<p class="lead text-muted mb-0">Administrator control panel for managing EventFlow</p>
+{% endblock %}
+
+{% block content %}
+<!-- Admin Dashboard Layout -->
+<div class="row g-4">
+
+<!-- Admin Quick Email Tool -->
+<div class="card card-glass mb-4">
+    <div class="card-header bg-transparent">
+        <h6 class="mb-0"><i class="bi bi-envelope-plus me-2"></i>Email Tools</h6>
+    </div>
+    <div class="card-body">
+        <div class="d-grid gap-2">
+            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#individualEmailModal">
+                <i class="bi bi-envelope me-2"></i>Send Individual Email
+            </button>
+            <button type="button" class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#emailAllUsersModal">
+                <i class="bi bi-envelope-paper me-2"></i>Email All Users
+            </button>
+            <a href="{{ url_for('test_email') }}" class="btn btn-outline-info btn-sm">
+                <i class="bi bi-envelope-check me-2"></i>Test Email System
+            </a>
+        </div>
+        <small class="text-muted d-block mt-2">Send emails to individual users or all users</small>
+    </div>
+</div>
+
+    <!-- ========== LEFT SIDEBAR - ADMIN CONTROLS ========== -->
+    <div class="col-lg-3">
+        <!-- Admin Profile Card -->
+        <div class="card card-glass mb-4">
+            <div class="card-body text-center">
+                <div class="avatar-lg mx-auto mb-3">
+                    <div class="avatar-title bg-gradient-danger rounded-circle" style="width: 80px; height: 80px; line-height: 80px;">
+                        <i class="bi bi-shield-lock display-4 text-white"></i>
+                    </div>
+                </div>
+                <h5 class="mb-1">{{ session.username }}</h5>
+                <p class="text-muted small mb-3">{{ session.email }}</p>
+                <span class="badge bg-danger mb-3">Administrator</span>
+                
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('admin_statistics') }}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-graph-up me-2"></i>System Statistics
+                    </a>
+                    <a href="{{ url_for('admin_settings') }}" class="btn btn-outline-info btn-sm">
+                        <i class="bi bi-gear me-2"></i>System Settings
+                    </a>
+                    <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm">
+                        <i class="bi bi-box-arrow-right me-2"></i>Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- Admin Quick Actions -->
+        <div class="card card-glass mb-4">
+            <div class="card-header bg-transparent">
+                <h6 class="mb-0"><i class="bi bi-lightning me-2"></i>Admin Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('admin_feedback_receiver') }}" class="btn btn-primary">
+                        <i class="bi bi-chat-text me-2"></i>Feedback Management
+                    </a>
+                    <a href="{{ url_for('create_event') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-calendar-plus me-2"></i>Create Event
+                    </a>
+                    <a href="{{ url_for('admin_statistics') }}" class="btn btn-outline-success">
+                        <i class="bi bi-bar-chart me-2"></i>View Statistics
+                    </a>
+                    <a href="{{ url_for('admin_user_management') }}" class="btn btn-outline-warning">
+                        <i class="bi bi-people me-2"></i>User Management
+                    </a>
+                    <a href="{{ url_for('admin_system_logs') }}" class="btn btn-outline-dark">
+                        <i class="bi bi-journal-text me-2"></i>System Logs
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedback Management Stats -->
+        <div class="card card-glass">
+            <div class="card-header bg-transparent">
+                <h6 class="mb-0"><i class="bi bi-chat-left-text me-2"></i>Feedback Stats</h6>
+            </div>
+            <div class="card-body">
+                <div class="stats-grid">
+                    <div class="stat-item text-center mb-3">
+                        <div class="stat-number text-primary">{{ stats.total_feedback if stats else 0 }}</div>
+                        <div class="stat-label">Total Feedback</div>
+                    </div>
+                    <div class="stat-item text-center mb-3">
+                        <div class="stat-number text-warning">{{ stats.pending_feedback if stats else 0 }}</div>
+                        <div class="stat-label">Pending</div>
+                    </div>
+                    <div class="stat-item text-center mb-3">
+                        <div class="stat-number text-danger">{{ stats.unread_feedback if stats else 0 }}</div>
+                        <div class="stat-label">Unread</div>
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <small class="text-muted d-block">Quick Actions:</small>
+                    <div class="d-grid gap-1 mt-2">
+                        <button type="button" class="btn btn-outline-warning btn-sm" onclick="markAllAsRead()">
+                            <i class="bi bi-eye me-1"></i>Mark All Read
+                        </button>
+                        <button type="button" class="btn btn-outline-success btn-sm" onclick="markAllAsResponded()">
+                            <i class="bi bi-check-circle me-1"></i>Mark All Responded
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== MAIN ADMIN CONTENT AREA ========== -->
+    <div class="col-lg-9">
+        <!-- Welcome & Quick Stats -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-8">
+                <div class="card card-glass h-100">
+                    <div class="card-body">
+                        <h4 class="mb-3">👑 Welcome, Administrator</h4>
+                        <p class="text-muted mb-4">You have full access to manage EventFlow system, users, feedback, and configurations.</p>
+                        
+                        <!-- System Health -->
+                        <div class="mb-4">
+                            <h6 class="mb-3">📊 System Health</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="health-indicator {% if stats.database_status == 'healthy' %}bg-success{% else %}bg-danger{% endif %} me-3"></div>
+                                        <div>
+                                            <strong>Database:</strong> {{ stats.database_status if stats else 'Unknown' }}
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="health-indicator {% if stats.email_service_status == 'healthy' %}bg-success{% else %}bg-danger{% endif %} me-3"></div>
+                                        <div>
+                                            <strong>Email Service:</strong> {{ stats.email_service_status if stats else 'Unknown' }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="health-indicator {% if stats.storage_status == 'healthy' %}bg-success{% else %}bg-warning{% endif %} me-3"></div>
+                                        <div>
+                                            <strong>Storage:</strong> {{ stats.storage_used if stats else '0' }}/{{ stats.storage_total if stats else '0' }} GB
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <div class="health-indicator {% if stats.system_load == 'normal' %}bg-success{% elif stats.system_load == 'high' %}bg-warning{% else %}bg-danger{% endif %} me-3"></div>
+                                        <div>
+                                            <strong>System Load:</strong> {{ stats.system_load if stats else 'Unknown' }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Admin Privileges List -->
+                        <div class="admin-privileges">
+                            <h6 class="mb-3">⚡ Your Admin Privileges:</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Full user management</li>
+                                        <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>System configuration</li>
+                                        <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Email server setup</li>
+                                        <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Database maintenance</li>
+                                        <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Backup & restore</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>View all system logs</li>
+                                        <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Performance monitoring</li>
+                                        <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Security settings</li>
+                                        <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>API management</li>
+                                        <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Debug tools access</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card card-glass h-100">
+                    <div class="card-body">
+                        <h6 class="mb-3">⚡ System Tools</h6>
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('admin_feedback_receiver') }}" class="btn btn-primary btn-sm">
+                                <i class="bi bi-chat-text me-2"></i>Manage Feedback
+                            </a>
+                            <!-- In admin_dashboard.html, add to navigation -->
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin_user_management') }}">
+        <i class="bi bi-people me-2"></i>User Management
+    </a>
+</li>
+                            <a href="{{ url_for('admin_system_logs') }}" class="btn btn-dark btn-sm">
+                                <i class="bi bi-journal-text me-2"></i>System Logs
+                            </a>
+                            <a href="{{ url_for('admin_backup_restore') }}" class="btn btn-info btn-sm">
+                                <i class="bi bi-database me-2"></i>Backup/Restore
+                            </a>
+                            <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#maintenanceModal">
+                                <i class="bi bi-tools me-2"></i>Maintenance Mode
+                            </button>
+                        </div>
+                        
+                        <hr class="my-3">
+                        
+                        <!-- In your admin navigation menu -->
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin_form_reports') }}">
+        <i class="bi bi-shield-exclamation"></i> Form Reports
+    </a>
+</li>
+<!-- Add this with the other admin menu items -->
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin_view_blocked_ips') }}">
+        <i class="bi bi-shield-lock"></i> Blocked IPs
+    </a>
+</li>
+<!-- In your admin sidebar or navigation -->
+<li class="nav-item">
+    <a class="nav-link" href="{{ url_for('admin_migrate_tools') }}">
+        <i class="bi bi-tools"></i> Migration Tools
+    </a>
+</li>
+
+
+                        
+                        <h6 class="mb-3">📊 System Stats</h6>
+                        <div class="quick-stats">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Active Users:</span>
+                                <strong>{{ stats.active_users if stats else 0 }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Total Events:</span>
+                                <strong>{{ stats.total_events if stats else 0 }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Total Forms:</span>
+                                <strong>{{ stats.total_forms if stats else 0 }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Total Submissions:</span>
+                                <strong>{{ stats.total_submissions if stats else 0 }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>System Uptime:</span>
+                                <strong>{{ stats.system_uptime if stats else '0d 0h' }}</strong>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-3">
+                        
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="clearSystemCache()">
+                                <i class="bi bi-bucket me-2"></i>Clear Cache
+                            </button>
+                            <button type="button" class="btn btn-outline-success btn-sm" onclick="runDatabaseOptimization()">
+                                <i class="bi bi-speedometer2 me-2"></i>Optimize Database
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Feedback Overview -->
+        <div class="card card-glass mb-4">
+            <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-0"><i class="bi bi-chat-dots me-2"></i>Feedback Overview</h5>
+                    <small class="text-muted">Recent user feedback requiring attention</small>
+                </div>
+                <div>
+                    <a href="{{ url_for('admin_feedback_receiver') }}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-arrow-right me-1"></i>Manage All
+                    </a>
+                    <button type="button" class="btn btn-outline-success btn-sm ms-2" onclick="exportAllFeedback()">
+                        <i class="bi bi-download me-1"></i>Export CSV
+                    </button>
+                    <button type="button" class="btn btn-outline-danger btn-sm ms-2" onclick="showBulkDeleteModal()">
+                        <i class="bi bi-trash me-1"></i>Bulk Delete
+                    </button>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                {% if recent_feedback %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="selectAllFeedback" onchange="toggleSelectAll()"></th>
+                                <th>User</th>
+                                <th>Type</th>
+                                <th>Rating</th>
+                                <th>Message</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for feedback in recent_feedback %}
+                            <tr class="{% if feedback.status == 'new' %}table-warning{% endif %}">
+                                <td><input type="checkbox" class="feedback-checkbox" value="{{ feedback.id }}"></td>
+                                <td>
+                                    <div><strong>{{ feedback.name }}</strong></div>
+                                    <small class="text-muted">{{ feedback.email }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{% if feedback.type == 'bug' %}danger{% elif feedback.type == 'suggestion' %}info{% elif feedback.type == 'praise' %}success{% else %}secondary{% endif %}">
+                                        {{ feedback.type|upper }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="rating-stars">
+                                        {% for i in range(1, 6) %}
+                                            {% if i <= feedback.rating %}
+                                                <i class="bi bi-star-fill text-warning"></i>
+                                            {% else %}
+                                                <i class="bi bi-star text-muted"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="text-truncate" style="max-width: 200px;" data-bs-toggle="tooltip" title="{{ feedback.message }}">
+                                        {{ feedback.message[:80] }}{% if feedback.message|length > 80 %}...{% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    <small>{{ feedback.timestamp[:16].replace('T', ' ') }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{% if feedback.status == 'new' %}warning{% elif feedback.status == 'read' %}info{% elif feedback.status == 'responded' %}success{% else %}secondary{% endif %}">
+                                        {{ feedback.status|upper }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="tooltip" title="View Details" onclick="showFeedbackDetails('{{ feedback.id }}')">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-success btn-sm" data-bs-toggle="tooltip" title="Reply" onclick="showReplyModal('{{ feedback.id }}', '{{ feedback.email }}', '{{ feedback.name }}')">
+                                            <i class="bi bi-reply"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-info btn-sm" data-bs-toggle="tooltip" title="Follow-up" onclick="showFollowupModal('{{ feedback.id }}', '{{ feedback.email }}', '{{ feedback.name }}')">
+                                            <i class="bi bi-envelope-check"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="tooltip" title="Delete" onclick="confirmDelete('{{ feedback.id }}', '{{ feedback.name }}')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-chat-text display-4 text-muted mb-3"></i>
+                    <p class="text-muted">No recent feedback</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- System Management Cards -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="card card-glass h-100">
+                    <div class="card-body text-center">
+                        <div class="stat-icon-lg bg-primary mb-3 mx-auto">
+                            <i class="bi bi-people text-white"></i>
+                        </div>
+                        <h3 class="mb-1">{{ stats.total_users if stats else 0 }}</h3>
+                        <p class="text-muted mb-0">Total Users</p>
+                        <a href="{{ url_for('admin_user_management') }}" class="btn btn-outline-primary btn-sm mt-2">
+                            <i class="bi bi-arrow-right"></i> Manage
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            
+            
+            <div class="col-md-3">
+                <div class="card card-glass h-100">
+                    <div class="card-body text-center">
+                        <div class="stat-icon-lg bg-success mb-3 mx-auto">
+                            <i class="bi bi-calendar-event text-white"></i>
+                        </div>
+                        <h3 class="mb-1">{{ stats.total_events if stats else 0 }}</h3>
+                        <p class="text-muted mb-0">Total Events</p>
+                        <a href="{{ url_for('create_event') }}" class="btn btn-outline-success btn-sm mt-2">
+                            <i class="bi bi-plus"></i> Create
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card card-glass h-100">
+                    <div class="card-body text-center">
+                        <div class="stat-icon-lg bg-warning mb-3 mx-auto">
+                            <i class="bi bi-chat-left-text text-white"></i>
+                        </div>
+                        <h3 class="mb-1">{{ stats.pending_feedback if stats else 0 }}</h3>
+                        <p class="text-muted mb-0">Pending Feedback</p>
+                        <button class="btn btn-outline-warning btn-sm mt-2" onclick="markAllAsRead()">
+                            <i class="bi bi-check-all"></i> Mark Read
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card card-glass h-100">
+                    <div class="card-body text-center">
+                        <div class="stat-icon-lg bg-danger mb-3 mx-auto">
+                            <i class="bi bi-exclamation-triangle text-white"></i>
+                        </div>
+                        <h3 class="mb-1">{{ stats.system_errors if stats else 0 }}</h3>
+                        <p class="text-muted mb-0">System Errors</p>
+                        <a href="{{ url_for('admin_system_logs') }}" class="btn btn-outline-danger btn-sm mt-2">
+                            <i class="bi bi-journal-text"></i> View Logs
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+<!-- Add this section to admin_dashboard.html, around line 400-500 -->
+<!-- ========== ADMIN'S EVENTS SECTION ========== -->
+<div class="card card-glass mt-4">
+    <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+        <div>
+            <h5 class="mb-0"><i class="bi bi-calendar-event me-2"></i>My Events</h5>
+            <small class="text-muted">Events created by me (Admin)</small>
+        </div>
+        <div>
+            <a href="{{ url_for('create_event') }}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-circle me-1"></i>New Event
+            </a>
+            <button type="button" class="btn btn-outline-secondary btn-sm ms-2" onclick="refreshEvents()">
+                <i class="bi bi-arrow-clockwise"></i>
+            </button>
+        </div>
+    </div>
+    
+    <div class="card-body">
+        {% if admin_events %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Event Name</th>
+                        <th>Description</th>
+                        <th>Category</th>
+                        <th>Forms</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for event in admin_events %}
+                    <tr>
+                        <td>
+                            <div><strong>{{ event.name }}</strong></div>
+                        </td>
+                        <td>
+                            <div class="text-truncate" style="max-width: 200px;" data-bs-toggle="tooltip" title="{{ event.description }}">
+                                {{ event.description[:80] }}{% if event.description|length > 80 %}...{% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">{{ event.category|title }}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-info">{{ event.forms|length }}</span>
+                            {% if event.forms %}
+                            <small class="d-block text-muted mt-1">
+                                {% for form in event.forms[:2] %}
+                                {{ form.title[:15] }}{% if form.title|length > 15 %}...{% endif %}{% if not loop.last %}, {% endif %}
+                                {% endfor %}
+                                {% if event.forms|length > 2 %}
+                                +{{ event.forms|length - 2 }} more
+                                {% endif %}
+                            </small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <small>{{ event.created_at[:10] }}</small>
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{{ url_for('create_form', event_id=event.id) }}" class="btn btn-outline-primary btn-sm" data-bs-toggle="tooltip" title="Add Form">
+                                    <i class="bi bi-file-plus"></i>
+                                </a>
+                                {% if event.forms %}
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-success btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-toggle="tooltip" title="View Forms">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        {% for form in event.forms %}
+                                        <li>
+                                            <a class="dropdown-item" href="{{ url_for('view_form', event_id=event.id, form_id=form.id) }}">
+                                                <i class="bi bi-file-text me-2"></i>{{ form.title|truncate(30) }}
+                                            </a>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                {% else %}
+                                <span class="btn btn-outline-secondary btn-sm disabled" data-bs-toggle="tooltip" title="No forms yet">
+                                    <i class="bi bi-eye"></i>
+                                </span>
+                                {% endif %}
+                                <button type="button" class="btn btn-outline-danger btn-sm delete-event-btn" 
+                                        data-event-id="{{ event.id }}" 
+                                        data-event-name="{{ event.name }}"
+                                        data-bs-toggle="tooltip" title="Delete Event">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="bi bi-calendar display-4 text-muted mb-3"></i>
+            <p class="text-muted mb-3">You haven't created any events yet as admin</p>
+            <a href="{{ url_for('create_event') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>Create Your First Event
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+        <!-- Recent Activity & Admin Tools -->
+        <div class="row g-4">
+            <!-- Recent User Activity -->
+            <div class="col-lg-6">
+                <div class="card card-glass h-100">
+                    <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0"><i class="bi bi-activity me-2"></i>Recent System Activity</h6>
+                        <a href="{{ url_for('admin_system_logs') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="activity-list">
+                            {% if recent_activity %}
+                                {% for activity in recent_activity %}
+                                <div class="activity-item d-flex align-items-start mb-3">
+                                    <div class="activity-icon bg-light rounded-circle p-2 me-3">
+                                        {% if activity.type == 'login' %}
+                                            <i class="bi bi-box-arrow-in-right text-primary"></i>
+                                        {% elif activity.type == 'signup' %}
+                                            <i class="bi bi-person-plus text-success"></i>
+                                        {% elif activity.type == 'event_created' %}
+                                            <i class="bi bi-calendar-plus text-info"></i>
+                                        {% elif activity.type == 'feedback' %}
+                                            <i class="bi bi-chat-text text-warning"></i>
+                                        {% elif activity.type == 'error' %}
+                                            <i class="bi bi-exclamation-triangle text-danger"></i>
+                                        {% elif activity.type == 'warning' %}
+                                            <i class="bi bi-exclamation-circle text-warning"></i>
+                                        {% else %}
+                                            <i class="bi bi-activity text-secondary"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="activity-content flex-grow-1">
+                                        <div class="d-flex justify-content-between">
+                                            <h6 class="mb-1">{{ activity.user }}</h6>
+                                            <small class="text-muted">{{ activity.time|relative_time }}</small>
+                                        </div>
+                                        <p class="text-muted small mb-0">{{ activity.description }}</p>
+                                        {% if activity.ip %}
+                                        <small class="text-muted">IP: {{ activity.ip }}</small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <i class="bi bi-activity display-4 text-muted mb-3"></i>
+                                    <p class="text-muted">No recent activity</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Management Tools -->
+            <div class="col-lg-6">
+                <div class="card card-glass h-100">
+                    <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0"><i class="bi bi-tools me-2"></i>Admin Management Tools</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="tools-grid">
+                            <div class="tool-item text-center p-3 mb-3 border rounded">
+                                <i class="bi bi-person-gear display-6 text-warning mb-2"></i>
+                                <h6>User Management</h6>
+                                <small class="text-muted">Manage users, roles & permissions</small>
+                                <a href="{{ url_for('admin_user_management') }}" class="btn btn-outline-warning btn-sm mt-2">
+                                    Manage Users
+                                </a>
+                            </div>
+                            
+                            <div class="tool-item text-center p-3 mb-3 border rounded">
+                                <i class="bi bi-database display-6 text-info mb-2"></i>
+                                <h6>Database Tools</h6>
+                                <small class="text-muted">Backup, restore & optimize</small>
+                                <a href="{{ url_for('admin_backup_restore') }}" class="btn btn-outline-info btn-sm mt-2">
+                                    Database
+                                </a>
+                            </div>
+                            
+                            <div class="tool-item text-center p-3 mb-3 border rounded">
+                                <i class="bi bi-gear display-6 text-primary mb-2"></i>
+                                <h6>System Settings</h6>
+                                <small class="text-muted">Configure system parameters</small>
+                                <a href="{{ url_for('admin_settings') }}" class="btn btn-outline-primary btn-sm mt-2">
+                                    Settings
+                                </a>
+                            </div>
+                            
+                            <div class="tool-item text-center p-3 mb-3 border rounded">
+                                <i class="bi bi-shield-check display-6 text-success mb-2"></i>
+                                <h6>Security Center</h6>
+                                <small class="text-muted">Security & access control</small>
+                                <a href="{{ url_for('admin_security') }}" class="btn btn-outline-success btn-sm mt-2">
+                                    Security
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="quick-links">
+                            <h6 class="mb-3">🔗 Advanced Tools</h6>
+                            <div class="d-grid gap-2">
+                                <a href="{{ url_for('admin_api_management') }}" class="btn btn-outline-dark btn-sm">
+                                    <i class="bi bi-plug me-2"></i>API Management
+                                </a>
+                                <a href="{{ url_for('admin_debug_tools') }}" class="btn btn-outline-danger btn-sm">
+                                    <i class="bi bi-bug me-2"></i>Debug Tools
+                                </a>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="showSystemDiagnostics()">
+                                    <i class="bi bi-clipboard-data me-2"></i>System Diagnostics
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Feedback Details Modal -->
+<div class="modal fade" id="feedbackDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-chat-text me-2"></i>Feedback Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="feedbackDetailsContent">
+                    <!-- Content will be loaded dynamically -->
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3">Loading feedback details...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="replyFromDetails()">
+                    <i class="bi bi-reply me-1"></i>Reply
+                </button>
+                <button type="button" class="btn btn-success" onclick="followupFromDetails()">
+                    <i class="bi bi-envelope-check me-1"></i>Follow-up
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reply Modal -->
+<div class="modal fade" id="replyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">📧 Reply to Feedback</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="replyForm">
+                    <input type="hidden" id="replyFeedbackId">
+                    <div class="mb-3">
+                        <label class="form-label">To:</label>
+                        <input type="email" class="form-control" id="replyEmail" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Recipient Name:</label>
+                        <input type="text" class="form-control" id="replyName" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Subject:</label>
+                        <input type="text" class="form-control" id="replySubject" value="Re: Your Feedback" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Your Message:</label>
+                        <textarea class="form-control" id="replyMessage" rows="8" required></textarea>
+                        <small class="text-muted">This message will be sent via email to the user.</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Status:</label>
+                        <select class="form-select" id="replyStatus">
+                            <option value="responded">Mark as Responded</option>
+                            <option value="read">Mark as Read Only</option>
+                            <option value="new">Keep as New</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitReply()">Send Reply</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Follow-up Modal -->
+<div class="modal fade" id="followupModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">📝 Send Follow-up Email</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="followupForm">
+                    <input type="hidden" id="followupFeedbackId">
+                    <div class="mb-3">
+                        <label class="form-label">To:</label>
+                        <input type="email" class="form-control" id="followupEmail" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Recipient Name:</label>
+                        <input type="text" class="form-control" id="followupName" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Subject:</label>
+                        <input type="text" class="form-control" id="followupSubject" value="Follow-up on your feedback" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Your Message:</label>
+                        <textarea class="form-control" id="followupMessage" rows="8" required placeholder="Dear [Name], I wanted to follow up on your feedback regarding..."></textarea>
+                        <small class="text-muted">Use this to request clarification, provide updates, or ask for more details.</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Priority:</label>
+                        <select class="form-select" id="followupPriority">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-success" onclick="submitFollowup()">Send Follow-up</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Actions Modal -->
+<div class="modal fade" id="bulkActionsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">📋 Bulk Feedback Actions</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-outline-primary" onclick="markAllAsRead()">
+                        <i class="bi bi-eye me-2"></i>Mark All as Read
+                    </button>
+                    <button type="button" class="btn btn-outline-success" onclick="markAllAsResponded()">
+                        <i class="bi bi-check-circle me-2"></i>Mark All as Responded
+                    </button>
+                    <button type="button" class="btn btn-outline-warning" onclick="showBulkDeleteModal()">
+                        <i class="bi bi-trash me-2"></i>Bulk Delete
+                    </button>
+                    <button type="button" class="btn btn-outline-info" onclick="exportAllFeedback()">
+                        <i class="bi bi-download me-2"></i>Export All Feedback
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Delete Modal -->
+<div class="modal fade" id="bulkDeleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>Bulk Delete Feedback</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <strong>Warning:</strong> This action cannot be undone. Selected feedback will be permanently deleted.
+                </div>
+                <p>You are about to delete <span id="selectedCount">0</span> feedback items.</p>
+                <div class="mb-3">
+                    <label class="form-label">Delete reason (optional):</label>
+                    <textarea class="form-control" id="deleteReason" rows="2" placeholder="Enter reason for deletion..."></textarea>
+                </div>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="confirmDelete">
+                    <label class="form-check-label" for="confirmDelete">
+                        I understand this action is irreversible
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" onclick="performBulkDelete()" disabled id="confirmDeleteBtn">
+                    <i class="bi bi-trash me-1"></i>Delete Selected
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Maintenance Modal -->
+<div class="modal fade" id="maintenanceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title"><i class="bi bi-tools me-2"></i>Maintenance Mode</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Maintenance Message:</label>
+                    <textarea class="form-control" id="maintenanceMessage" rows="3" placeholder="System is currently under maintenance. We'll be back shortly.">System is currently under maintenance. We'll be back shortly.</textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Estimated Downtime:</label>
+                    <select class="form-select" id="maintenanceDuration">
+                        <option value="30">30 minutes</option>
+                        <option value="60" selected>1 hour</option>
+                        <option value="120">2 hours</option>
+                        <option value="240">4 hours</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                </div>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="allowAdminAccess">
+                    <label class="form-check-label" for="allowAdminAccess">
+                        Allow admin access during maintenance
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning" onclick="enableMaintenanceMode()">
+                    <i class="bi bi-toggle-on me-1"></i>Enable Maintenance
+                </button>
+                <button type="button" class="btn btn-success" onclick="disableMaintenanceMode()">
+                    <i class="bi bi-toggle-off me-1"></i>Disable Maintenance
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- System Diagnostics Modal -->
+<div class="modal fade" id="diagnosticsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title"><i class="bi bi-clipboard-data me-2"></i>System Diagnostics</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="diagnosticsContent">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-info" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3">Running system diagnostics...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-info" onclick="runAdvancedDiagnostics()">
+                    <i class="bi bi-arrow-clockwise me-1"></i>Run Again
+                </button>
+                <button type="button" class="btn btn-success" onclick="exportDiagnostics()">
+                    <i class="bi bi-download me-1"></i>Export Report
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Email All Users Modal -->
+<div class="modal fade" id="emailAllUsersModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-envelope-paper me-2"></i>Email All Users</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Important:</strong> This will send an email to all registered users. Use this feature carefully.
+                </div>
+                
+                <form id="emailAllUsersForm">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6><i class="bi bi-bar-chart me-2"></i>Statistics</h6>
+                                    <div id="userStats">
+                                        <div class="text-center py-3">
+                                            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                            <p class="mt-2 mb-0">Loading user statistics...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6><i class="bi bi-gear me-2"></i>Settings</h6>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="includeInactiveUsers" checked>
+                                        <label class="form-check-label" for="includeInactiveUsers">
+                                            Include inactive users
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="testMode" checked>
+                                        <label class="form-check-label" for="testMode">
+                                            Send test email to myself first
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="includeAdmin">
+                                        <label class="form-check-label" for="includeAdmin">
+                                            Include admin users
+                                        </label>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label small">Batch size:</label>
+                                        <select class="form-select form-select-sm" id="batchSize">
+                                            <option value="10">10 emails per batch</option>
+                                            <option value="25" selected>25 emails per batch</option>
+                                            <option value="50">50 emails per batch</option>
+                                            <option value="100">100 emails per batch</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Email Subject:</label>
+                        <input type="text" class="form-control" id="emailSubject" 
+                               placeholder="Important Announcement from EventFlow" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Email Content:</label>
+                        <div class="border rounded p-3 bg-light mb-2">
+                            <small class="text-muted d-block mb-2">
+                                <i class="bi bi-info-circle me-1"></i>
+                                The following variables can be used in your message:
+                                <code>{username}</code>, <code>{email}</code>, <code>{join_date}</code>
+                            </small>
+                        </div>
+                        <textarea class="form-control" id="emailContent" rows="12" required 
+                                  placeholder="Dear {username},&#10;&#10;Write your message here...&#10;&#10;Best regards,&#10;The EventFlow Team"></textarea>
+                        <small class="text-muted">HTML is supported. Use &lt;br&gt; for line breaks.</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Sender Name:</label>
+                        <input type="text" class="form-control" id="senderName" 
+                               value="{{ session.username }} (EventFlow Admin)" required>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>Warning:</strong> This action will send emails to all selected users. 
+                        Please double-check your message before sending.
+                    </div>
+                </form>
+                
+                <!-- Progress Bar -->
+                <div class="progress-wrapper d-none mt-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Progress:</span>
+                        <span id="progressText">0% (0/0)</span>
+                    </div>
+                    <div class="progress" style="height: 25px;">
+                        <div id="emailProgressBar" class="progress-bar progress-bar-striped progress-bar-animated" 
+                             role="progressbar" style="width: 0%">0%</div>
+                    </div>
+                    <div class="mt-2 small text-muted" id="progressDetails">
+                        Preparing to send emails...
+                    </div>
+                </div>
+                
+                <!-- Results Display -->
+                <div id="emailResults" class="mt-3 d-none">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">Email Results</h6>
+                        </div>
+                        <div class="card-body">
+                            <div id="resultsContent">
+                                <!-- Results will be displayed here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning" onclick="testEmailToSelf()">
+                    <i class="bi bi-envelope-check me-1"></i>Test to Myself
+                </button>
+                <button type="button" class="btn btn-primary" onclick="prepareEmailSend()" id="sendEmailsBtn">
+                    <i class="bi bi-send me-1"></i>Send to All Users
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Individual Email Modal -->
+<div class="modal fade" id="individualEmailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title"><i class="bi bi-envelope me-2"></i>Send Individual Email</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="individualEmailForm">
+                    <!-- User Selection -->
+                    <div class="mb-4">
+                        <label class="form-label">Select Recipient:</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person"></i></span>
+                            <select class="form-select" id="recipientSelect" onchange="updateRecipientInfo()">
+                                <option value="" selected disabled>Search or select a user...</option>
+                                <!-- Users will be loaded dynamically -->
+                            </select>
+                            <button type="button" class="btn btn-outline-secondary" onclick="refreshUserList()">
+                                <i class="bi bi-arrow-clockwise"></i>
+                            </button>
+                        </div>
+                        <div class="mt-2" id="recipientInfo" style="display: none;">
+                            <div class="card bg-light">
+                                <div class="card-body py-2">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <small><strong>Name:</strong> <span id="selectedUserName">-</span></small>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <small><strong>Email:</strong> <span id="selectedUserEmail">-</span></small>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <small><strong>User ID:</strong> <span id="selectedUserId">-</span></small>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <small><strong>Joined:</strong> <span id="selectedUserJoinDate">-</span></small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Or Enter Custom Email -->
+                    <div class="mb-4">
+                        <label class="form-label">Or enter email address:</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-at"></i></span>
+                            <input type="email" class="form-control" id="customEmail" placeholder="user@example.com">
+                        </div>
+                        <small class="text-muted">Leave empty if selecting from user list</small>
+                    </div>
+
+                    <!-- Email Details -->
+                    <div class="mb-3">
+                        <label class="form-label">Email Subject:</label>
+                        <input type="text" class="form-control" id="individualSubject" 
+                               placeholder="Important Message from EventFlow" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Email Content:</label>
+                        <div class="border rounded p-3 bg-light mb-2">
+                            <small class="text-muted d-block mb-2">
+                                <i class="bi bi-info-circle me-1"></i>
+                                The following variables can be used:
+                                <code>{username}</code>, <code>{email}</code>, <code>{join_date}</code>
+                            </small>
+                        </div>
+                        <textarea class="form-control" id="individualContent" rows="10" required 
+                                  placeholder="Dear {username},&#10;&#10;Write your message here...&#10;&#10;Best regards,&#10;The EventFlow Team"></textarea>
+                        <small class="text-muted">HTML is supported. Use &lt;br&gt; for line breaks.</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Sender Name:</label>
+                        <input type="text" class="form-control" id="individualSenderName" 
+                               value="{{ session.username }} (EventFlow Admin)" required>
+                    </div>
+
+                    <!-- Template Selection -->
+                    <div class="mb-4">
+                        <label class="form-label">Email Templates:</label>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="loadTemplate('welcome')">
+                                <i class="bi bi-envelope-heart"></i> Welcome
+                            </button>
+                            <button type="button" class="btn btn-outline-warning btn-sm" onclick="loadTemplate('reminder')">
+                                <i class="bi bi-bell"></i> Reminder
+                            </button>
+                            <button type="button" class="btn btn-outline-success btn-sm" onclick="loadTemplate('update')">
+                                <i class="bi bi-megaphone"></i> Update
+                            </button>
+                            <button type="button" class="btn btn-outline-danger btn-sm" onclick="loadTemplate('warning')">
+                                <i class="bi bi-exclamation-triangle"></i> Warning
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearTemplate()">
+                                <i class="bi bi-x-circle"></i> Clear
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Preview Section -->
+                    <div class="mb-4">
+                        <button type="button" class="btn btn-outline-info btn-sm" onclick="previewEmail()">
+                            <i class="bi bi-eye me-1"></i> Preview Email
+                        </button>
+                        <div id="emailPreview" class="mt-3 d-none">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Email Preview</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="previewContent">
+                                        <!-- Preview will be shown here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Status Display -->
+                    <div id="individualEmailStatus" class="alert d-none"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning" onclick="testIndividualEmail()">
+                    <i class="bi bi-envelope-check me-1"></i> Send Test
+                </button>
+                <button type="button" class="btn btn-primary" onclick="sendIndividualEmail()" id="sendIndividualBtn">
+                    <i class="bi bi-send me-1"></i> Send Email
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Admin Dashboard -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function(tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    
+    // Check maintenance mode status
+    checkMaintenanceStatus();
+    
+    // Update selected count for bulk delete
+    updateSelectedCount();
+});
+
+// Bulk selection
+function toggleSelectAll() {
+    const selectAll = document.getElementById('selectAllFeedback');
+    const checkboxes = document.querySelectorAll('.feedback-checkbox');
+    checkboxes.forEach(cb => cb.checked = selectAll.checked);
+    updateSelectedCount();
+}
+
+function updateSelectedCount() {
+    const selected = document.querySelectorAll('.feedback-checkbox:checked');
+    document.getElementById('selectedCount').textContent = selected.length;
+    
+    // Update confirm button state
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    const confirmCheckbox = document.getElementById('confirmDelete');
+    
+    confirmBtn.disabled = selected.length === 0 || !confirmCheckbox.checked;
+}
+
+function showBulkDeleteModal() {
+    const selected = document.querySelectorAll('.feedback-checkbox:checked');
+    if (selected.length === 0) {
+        alert('Please select feedback items to delete');
+        return;
+    }
+    
+    const modal = new bootstrap.Modal(document.getElementById('bulkDeleteModal'));
+    modal.show();
+}
+
+// Email Broadcast Functions
+let emailSendingInProgress = false;
+let currentBatch = 0;
+let totalBatches = 0;
+let allUsers = [];
+
+// Load user statistics when modal opens
+document.getElementById('emailAllUsersModal').addEventListener('show.bs.modal', function () {
+    loadUserStats();
+    resetEmailForm();
+});
+
+function loadUserStats() {
+    fetch('/admin/get_user_stats')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayUserStats(data.stats);
+            } else {
+                document.getElementById('userStats').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Error loading user statistics: ${data.error}
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            document.getElementById('userStats').innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Network error: ${error.message}
+                </div>
+            `;
+        });
+}
+
+function displayUserStats(stats) {
+    const html = `
+        <div class="stats-grid-small">
+            <div class="stat-item text-center">
+                <div class="stat-number text-primary">${stats.total_users}</div>
+                <div class="stat-label">Total Users</div>
+            </div>
+            <div class="stat-item text-center">
+                <div class="stat-number text-success">${stats.active_users}</div>
+                <div class="stat-label">Active</div>
+            </div>
+            <div class="stat-item text-center">
+                <div class="stat-number text-warning">${stats.inactive_users}</div>
+                <div class="stat-label">Inactive</div>
+            </div>
+            <div class="stat-item text-center">
+                <div class="stat-number text-info">${stats.admin_users}</div>
+                <div class="stat-label">Admins</div>
+            </div>
+        </div>
+        <hr class="my-2">
+        <div class="text-center small">
+            <div class="mb-1">
+                <i class="bi bi-envelope me-1"></i>
+                <strong>Will send to:</strong> 
+                <span id="estimatedRecipients">${stats.active_users}</span> users
+            </div>
+            <div>
+                <i class="bi bi-clock me-1"></i>
+                <strong>Estimated time:</strong> 
+                ${Math.ceil(stats.active_users / 25) * 5} minutes
+            </div>
+        </div>
+    `;
+    document.getElementById('userStats').innerHTML = html;
+}
+
+function resetEmailForm() {
+    document.querySelector('.progress-wrapper').classList.add('d-none');
+    document.getElementById('emailResults').classList.add('d-none');
+    document.getElementById('sendEmailsBtn').disabled = false;
+    document.getElementById('sendEmailsBtn').innerHTML = '<i class="bi bi-send me-1"></i>Send to All Users';
+    emailSendingInProgress = false;
+    
+    // Reset progress bar
+    document.getElementById('emailProgressBar').style.width = '0%';
+    document.getElementById('emailProgressBar').textContent = '0%';
+    document.getElementById('progressText').textContent = '0% (0/0)';
+}
+
+// Individual Email Functions
+let allUsersList = [];
+
+// Load user list when modal opens
+document.getElementById('individualEmailModal').addEventListener('show.bs.modal', function () {
+    loadUserList();
+    resetIndividualEmailForm();
+});
+
+function loadUserList() {
+    const select = document.getElementById('recipientSelect');
+    select.innerHTML = '<option value="" selected disabled>Loading users...</option>';
+    
+    fetch('/admin/get_all_users_for_email?include_inactive=true&include_admin=true')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                allUsersList = data.users;
+                
+                // Clear and populate dropdown
+                select.innerHTML = '<option value="" selected disabled>Select a user...</option>';
+                
+                // Add search option
+                const searchOption = document.createElement('option');
+                searchOption.value = "search";
+                searchOption.textContent = "─ Search Users ─";
+                searchOption.disabled = true;
+                select.appendChild(searchOption);
+                
+                // Add users
+                data.users.forEach(user => {
+                    const option = document.createElement('option');
+                    option.value = user.user_id;
+                    option.dataset.username = user.username;
+                    option.dataset.email = user.email;
+                    option.dataset.joinDate = user.join_date;
+                    option.dataset.isAdmin = user.is_admin;
+                    option.textContent = `${user.username} (${user.email})${user.is_admin ? ' 👑' : ''}`;
+                    select.appendChild(option);
+                });
+                
+                // Add custom email option
+                const customOption = document.createElement('option');
+                customOption.value = "custom";
+                customOption.textContent = "─ Enter Custom Email ─";
+                customOption.disabled = true;
+                select.appendChild(customOption);
+                
+            } else {
+                select.innerHTML = '<option value="" selected disabled>Error loading users</option>';
+                console.error('Error loading users:', data.error);
+            }
+        })
+        .catch(error => {
+            select.innerHTML = '<option value="" selected disabled>Network error</option>';
+            console.error('Network error:', error);
+        });
+}
+
+function refreshUserList() {
+    loadUserList();
+    showAlert('User list refreshed!', 'info');
+}
+
+function updateRecipientInfo() {
+    const select = document.getElementById('recipientSelect');
+    const selectedValue = select.value;
+    const infoDiv = document.getElementById('recipientInfo');
+    
+    if (selectedValue && selectedValue !== 'search' && selectedValue !== 'custom') {
+        const selectedOption = select.options[select.selectedIndex];
+        
+        document.getElementById('selectedUserName').textContent = selectedOption.dataset.username || 'N/A';
+        document.getElementById('selectedUserEmail').textContent = selectedOption.dataset.email || 'N/A';
+        document.getElementById('selectedUserId').textContent = selectedOption.value || 'N/A';
+        document.getElementById('selectedUserJoinDate').textContent = selectedOption.dataset.joinDate || 'N/A';
+        
+        infoDiv.style.display = 'block';
+        
+        // Auto-fill subject with user's name
+        const subject = document.getElementById('individualSubject');
+        if (subject.value === '') {
+            subject.value = `Message for ${selectedOption.dataset.username}`;
+        }
+        
+        // Clear custom email field
+        document.getElementById('customEmail').value = '';
+        
+    } else if (selectedValue === 'custom') {
+        infoDiv.style.display = 'none';
+        document.getElementById('customEmail').focus();
+    } else {
+        infoDiv.style.display = 'none';
+    }
+}
+
+function resetIndividualEmailForm() {
+    document.getElementById('recipientInfo').style.display = 'none';
+    document.getElementById('emailPreview').classList.add('d-none');
+    document.getElementById('individualEmailStatus').classList.add('d-none');
+    document.getElementById('customEmail').value = '';
+    document.getElementById('individualSubject').value = '';
+    document.getElementById('individualContent').value = '';
+    document.getElementById('individualSenderName').value = '{{ session.username }} (EventFlow Admin)';
+}
+
+function loadTemplate(templateType) {
+    let subject = '';
+    let content = '';
+    
+    switch(templateType) {
+        case 'welcome':
+            subject = 'Welcome to EventFlow!';
+            content = `Dear {username},
+
+Welcome to EventFlow! We're excited to have you join our community.
+
+With EventFlow, you can:
+• Create and manage events
+• Build custom registration forms
+• Track participant responses
+• Generate detailed reports
+
+If you have any questions or need help getting started, feel free to reply to this email.
+
+Best regards,
+The EventFlow Team`;
+            break;
+            
+        case 'reminder':
+            subject = 'Reminder: Your EventFlow Account';
+            content = `Dear {username},
+
+This is a friendly reminder about your EventFlow account.
+
+We noticed you haven't logged in for a while. There are new features available that you might find useful:
+• Enhanced form scheduling
+• New template designs
+• Improved analytics
+
+Log in to explore these updates and create your next amazing event!
+
+Best regards,
+The EventFlow Team`;
+            break;
+            
+        case 'update':
+            subject = 'Important Update from EventFlow';
+            content = `Dear {username},
+
+We're writing to inform you about important updates to EventFlow:
+
+🔔 New Features:
+1. Advanced form scheduling with notifications
+2. Enhanced security features
+3. New reporting tools
+4. Improved user interface
+
+🔧 System Updates:
+• Performance improvements
+• Bug fixes and stability enhancements
+
+We're committed to making EventFlow the best event management platform for you.
+
+Best regards,
+The EventFlow Team`;
+            break;
+            
+        case 'warning':
+            subject = 'Important: Action Required for Your Account';
+            content = `Dear {username},
+
+We need to bring something important to your attention regarding your EventFlow account.
+
+Please review your account settings and ensure everything is up to date. If you need any assistance, our support team is here to help.
+
+Important: If this is regarding a specific issue, please check your account dashboard for more details.
+
+Best regards,
+The EventFlow Team`;
+            break;
+    }
+    
+    document.getElementById('individualSubject').value = subject;
+    document.getElementById('individualContent').value = content;
+    showAlert(`Loaded "${templateType}" template`, 'info');
+}
+
+function clearTemplate() {
+    document.getElementById('individualSubject').value = '';
+    document.getElementById('individualContent').value = '';
+    showAlert('Template cleared', 'info');
+}
+
+function previewEmail() {
+    const subject = document.getElementById('individualSubject').value;
+    let content = document.getElementById('individualContent').value;
+    
+    if (!subject || !content) {
+        alert('Please enter both subject and content to preview');
+        return;
+    }
+    
+    // Replace variables with sample data
+    const sampleUsername = 'John Doe';
+    const sampleEmail = 'john@example.com';
+    const sampleJoinDate = '2024-01-15';
+    
+    content = content
+        .replace(/{username}/g, sampleUsername)
+        .replace(/{email}/g, sampleEmail)
+        .replace(/{join_date}/g, sampleJoinDate);
+    
+    // Create preview HTML
+    const previewHTML = `
+        <div class="email-preview-container">
+            <div class="email-header mb-3 p-3 bg-light rounded">
+                <p><strong>To:</strong> ${sampleEmail}</p>
+                <p><strong>Subject:</strong> ${subject}</p>
+                <p><strong>From:</strong> ${document.getElementById('individualSenderName').value}</p>
+            </div>
+            <div class="email-body p-3 bg-white border rounded" style="white-space: pre-wrap; font-family: Arial, sans-serif;">
+                ${content.replace(/\n/g, '<br>')}
+            </div>
+            <div class="email-footer mt-3 p-2 bg-light rounded small">
+                <p class="mb-0"><em>Note: This is a preview. Variables will be replaced with actual user data when sent.</em></p>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('previewContent').innerHTML = previewHTML;
+    document.getElementById('emailPreview').classList.remove('d-none');
+}
+
+function testIndividualEmail() {
+    const recipientSelect = document.getElementById('recipientSelect');
+    const customEmail = document.getElementById('customEmail').value.trim();
+    const subject = document.getElementById('individualSubject').value;
+    const content = document.getElementById('individualContent').value;
+    const senderName = document.getElementById('individualSenderName').value;
+    
+    // Validate
+    if (!subject || !content) {
+        alert('Please fill in both subject and content fields');
+        return;
+    }
+    
+    let recipientEmail = '';
+    let recipientName = 'Test User';
+    
+    if (customEmail) {
+        // Use custom email
+        if (!isValidEmail(customEmail)) {
+            alert('Please enter a valid email address');
+            return;
+        }
+        recipientEmail = customEmail;
+    } else if (recipientSelect.value && recipientSelect.value !== 'search' && recipientSelect.value !== 'custom') {
+        // Use selected user
+        const selectedOption = recipientSelect.options[recipientSelect.selectedIndex];
+        recipientEmail = selectedOption.dataset.email;
+        recipientName = selectedOption.dataset.username;
+    } else {
+        // Use admin's email
+        recipientEmail = '{{ session.email }}';
+    }
+    
+    if (!recipientEmail) {
+        alert('Please select a recipient or enter an email address');
+        return;
+    }
+    
+    // Replace variables for test
+    const testContent = content
+        .replace(/{username}/g, recipientName)
+        .replace(/{email}/g, recipientEmail)
+        .replace(/{join_date}/g, '2024-01-15');
+    
+    // Send test email
+    fetch('/admin/send_test_individual_email', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            recipient_email: recipientEmail,
+            recipient_name: recipientName,
+            subject: `[TEST] ${subject}`,
+            content: testContent,
+            sender_name: senderName
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert(`✅ Test email sent to ${recipientEmail}`, 'success', 'individualEmailStatus');
+        } else {
+            showAlert(`❌ Failed to send test email: ${data.error}`, 'danger', 'individualEmailStatus');
+        }
+    })
+    .catch(error => {
+        showAlert(`❌ Network error: ${error.message}`, 'danger', 'individualEmailStatus');
+    });
+}
+
+function sendIndividualEmail() {
+    const recipientSelect = document.getElementById('recipientSelect');
+    const customEmail = document.getElementById('customEmail').value.trim();
+    const subject = document.getElementById('individualSubject').value;
+    const content = document.getElementById('individualContent').value;
+    const senderName = document.getElementById('individualSenderName').value;
+    
+    // Validate
+    if (!subject || !content) {
+        alert('Please fill in both subject and content fields');
+        return;
+    }
+    
+    let recipientEmail = '';
+    let recipientName = '';
+    let recipientId = '';
+    
+    if (customEmail) {
+        // Use custom email
+        if (!isValidEmail(customEmail)) {
+            alert('Please enter a valid email address');
+            return;
+        }
+        recipientEmail = customEmail;
+        recipientName = customEmail.split('@')[0];
+    } else if (recipientSelect.value && recipientSelect.value !== 'search' && recipientSelect.value !== 'custom') {
+        // Use selected user
+        const selectedOption = recipientSelect.options[recipientSelect.selectedIndex];
+        recipientEmail = selectedOption.dataset.email;
+        recipientName = selectedOption.dataset.username;
+        recipientId = selectedOption.value;
+    } else {
+        alert('Please select a recipient or enter an email address');
+        return;
+    }
+    
+    if (!recipientEmail) {
+        alert('Please select a recipient or enter an email address');
+        return;
+    }
+    
+    // Confirm send
+    if (!confirm(`Send this email to ${recipientName} (${recipientEmail})?`)) {
+        return;
+    }
+    
+    // Disable send button
+    const sendBtn = document.getElementById('sendIndividualBtn');
+    const originalText = sendBtn.innerHTML;
+    sendBtn.disabled = true;
+    sendBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Sending...';
+    
+    // Send email
+    fetch('/admin/send_individual_email', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            recipient_email: recipientEmail,
+            recipient_name: recipientName,
+            recipient_id: recipientId,
+            subject: subject,
+            content: content,
+            sender_name: senderName
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        sendBtn.disabled = false;
+        sendBtn.innerHTML = originalText;
+        
+        if (data.success) {
+            showAlert(`✅ Email sent successfully to ${recipientName}!`, 'success', 'individualEmailStatus');
+            
+            // Clear form after successful send
+            setTimeout(() => {
+                resetIndividualEmailForm();
+                const modal = bootstrap.Modal.getInstance(document.getElementById('individualEmailModal'));
+                modal.hide();
+            }, 2000);
+            
+        } else {
+            showAlert(`❌ Failed to send email: ${data.error}`, 'danger', 'individualEmailStatus');
+        }
+    })
+    .catch(error => {
+        sendBtn.disabled = false;
+        sendBtn.innerHTML = originalText;
+        showAlert(`❌ Network error: ${error.message}`, 'danger', 'individualEmailStatus');
+    });
+}
+
+function isValidEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+}
+
+function showAlert(message, type, elementId = null) {
+    const alertDiv = elementId ? document.getElementById(elementId) : createTemporaryAlert();
+    
+    if (alertDiv) {
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        alertDiv.classList.remove('d-none');
+        
+        // Auto-remove after 5 seconds if it's a temporary alert
+        if (!elementId) {
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+    }
+}
+
+function createTemporaryAlert() {
+    const alertDiv = document.createElement('div');
+    alertDiv.style.position = 'fixed';
+    alertDiv.style.top = '20px';
+    alertDiv.style.right = '20px';
+    alertDiv.style.zIndex = '9999';
+    alertDiv.style.minWidth = '300px';
+    document.body.appendChild(alertDiv);
+    return alertDiv;
+}
+
+function testEmailToSelf() {
+    const subject = document.getElementById('emailSubject').value;
+    const content = document.getElementById('emailContent').value;
+    const senderName = document.getElementById('senderName').value;
+    
+    if (!subject || !content) {
+        alert('Please fill in both subject and content fields');
+        return;
+    }
+    
+    // Replace variables for test
+    const testContent = content
+        .replace(/{username}/g, 'Test User')
+        .replace(/{email}/g, '{{ session.email }}')
+        .replace(/{join_date}/g, new Date().toLocaleDateString());
+    
+    const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 20px; }
+                .container { max-width: 600px; margin: auto; background: #f8fafc; padding: 30px; border-radius: 10px; }
+                .header { background: linear-gradient(135deg, #4361ee 0%, #3f37c9 100%); color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }
+                .content { padding: 30px; background: white; }
+                .footer { margin-top: 30px; color: #64748b; font-size: 12px; text-align: center; }
+                .test-note { background: #fff3cd; padding: 15px; border-radius: 6px; margin: 20px 0; color: #856404; border-left: 4px solid #ffc107; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h2>📢 EventFlow Announcement</h2>
+                </div>
+                <div class="content">
+                    <div class="test-note">
+                        <strong>⚠️ TEST EMAIL:</strong> This is a test email sent to verify the format before sending to all users.
+                    </div>
+                    ${testContent.replace(/\n/g, '<br>')}
+                    <div class="footer">
+                        <p>Sent by: <strong>${senderName}</strong></p>
+                        <p>This is an automated message from EventFlow.</p>
+                    </div>
+                </div>
+            </div>
+        </body>
+        </html>
+    `;
+    
+    fetch('/admin/send_test_broadcast_email', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            subject: `[TEST] ${subject}`,
+            html_content: htmlContent,
+            recipient_email: '{{ session.email }}'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ Test email sent to your inbox! Check your email (and spam folder).');
+        } else {
+            alert('❌ Failed to send test email: ' + data.error);
+        }
+    });
+}
+
+function prepareEmailSend() {
+    if (emailSendingInProgress) {
+        alert('Email sending is already in progress. Please wait.');
+        return;
+    }
+    
+    const subject = document.getElementById('emailSubject').value;
+    const content = document.getElementById('emailContent').value;
+    const senderName = document.getElementById('senderName').value;
+    
+    if (!subject || !content || !senderName) {
+        alert('Please fill in all required fields');
+        return;
+    }
+    
+    if (!confirm(`Are you sure you want to send this email to all users? This cannot be undone.`)) {
+        return;
+    }
+    
+    // Get user list
+    fetch('/admin/get_all_users_for_email')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                allUsers = data.users;
+                totalBatches = Math.ceil(allUsers.length / parseInt(document.getElementById('batchSize').value));
+                currentBatch = 0;
+                
+                // Show progress
+                document.querySelector('.progress-wrapper').classList.remove('d-none');
+                document.getElementById('emailResults').classList.add('d-none');
+                document.getElementById('sendEmailsBtn').disabled = true;
+                document.getElementById('sendEmailsBtn').innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Sending...';
+                
+                // Start sending
+                emailSendingInProgress = true;
+                sendNextBatch();
+            } else {
+                alert('Error loading users: ' + data.error);
+            }
+        });
+}
+
+function sendNextBatch() {
+    if (currentBatch >= totalBatches) {
+        // All batches sent
+        emailSendingInProgress = false;
+        document.getElementById('sendEmailsBtn').disabled = false;
+        document.getElementById('sendEmailsBtn').innerHTML = '<i class="bi bi-send me-1"></i>Send to All Users';
+        
+        // Show completion message
+        document.getElementById('progressDetails').innerHTML = 
+            '<span class="text-success"><i class="bi bi-check-circle me-1"></i>All emails sent successfully!</span>';
+        
+        return;
+    }
+    
+    const batchSize = parseInt(document.getElementById('batchSize').value);
+    const startIdx = currentBatch * batchSize;
+    const endIdx = Math.min(startIdx + batchSize, allUsers.length);
+    const batchUsers = allUsers.slice(startIdx, endIdx);
+    
+    // Update progress
+    const progress = Math.round((currentBatch / totalBatches) * 100);
+    document.getElementById('emailProgressBar').style.width = progress + '%';
+    document.getElementById('emailProgressBar').textContent = progress + '%';
+    document.getElementById('progressText').textContent = 
+        `${progress}% (${currentBatch + 1}/${totalBatches} batches)`;
+    document.getElementById('progressDetails').innerHTML = 
+        `Sending batch ${currentBatch + 1} of ${totalBatches} (${batchUsers.length} users)...`;
+    
+    // Prepare batch data
+    const subject = document.getElementById('emailSubject').value;
+    const content = document.getElementById('emailContent').value;
+    const senderName = document.getElementById('senderName').value;
+    
+    fetch('/admin/send_batch_emails', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            subject: subject,
+            content: content,
+            sender_name: senderName,
+            users: batchUsers,
+            batch_number: currentBatch + 1,
+            total_batches: totalBatches
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            currentBatch++;
+            
+            // Update results display
+            updateResultsDisplay(data);
+            
+            // Add delay between batches (to avoid rate limiting)
+            setTimeout(sendNextBatch, 2000);
+        } else {
+            // Error occurred
+            alert('Error sending batch ' + (currentBatch + 1) + ': ' + data.error);
+            emailSendingInProgress = false;
+            document.getElementById('sendEmailsBtn').disabled = false;
+            document.getElementById('sendEmailsBtn').innerHTML = '<i class="bi bi-send me-1"></i>Send to All Users';
+        }
+    })
+    .catch(error => {
+        alert('Network error: ' + error.message);
+        emailSendingInProgress = false;
+        document.getElementById('sendEmailsBtn').disabled = false;
+        document.getElementById('sendEmailsBtn').innerHTML = '<i class="bi bi-send me-1"></i>Send to All Users';
+    });
+}
+
+function updateResultsDisplay(data) {
+    const resultsDiv = document.getElementById('emailResults');
+    resultsDiv.classList.remove('d-none');
+    
+    let resultsContent = document.getElementById('resultsContent').innerHTML;
+    
+    if (resultsContent.includes('No results yet')) {
+        resultsContent = '';
+    }
+    
+    resultsContent += `
+        <div class="batch-result mb-3 p-3 border rounded bg-light">
+            <h6>Batch ${data.batch_number}/${data.total_batches}</h6>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <div class="display-6 text-success">${data.sent_count}</div>
+                        <small class="text-muted">Sent</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <div class="display-6 text-warning">${data.failed_count}</div>
+                        <small class="text-muted">Failed</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <div class="display-6 text-danger">${data.skipped_count}</div>
+                        <small class="text-muted">Skipped</small>
+                    </div>
+                </div>
+            </div>
+            ${data.failed_emails && data.failed_emails.length > 0 ? `
+                <div class="mt-2">
+                    <small class="text-danger">Failed emails: ${data.failed_emails.join(', ')}</small>
+                </div>
+            ` : ''}
+            <small class="text-muted d-block mt-2">Completed at: ${new Date().toLocaleTimeString()}</small>
+        </div>
+    `;
+    
+    document.getElementById('resultsContent').innerHTML = resultsContent;
+}
+
+// Add to the existing styles section
+const style = document.createElement('style');
+style.textContent = `
+.stats-grid-small {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.stats-grid-small .stat-item {
+    padding: 8px;
+    border-radius: 6px;
+    background: #f8f9fa;
+}
+
+.stats-grid-small .stat-number {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 2px;
+}
+
+.stats-grid-small .stat-label {
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
+.batch-result {
+    transition: all 0.3s ease;
+}
+
+.batch-result:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+
+.progress-wrapper {
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+`;
+document.head.appendChild(style);
+
+function performBulkDelete() {
+    const selected = Array.from(document.querySelectorAll('.feedback-checkbox:checked'))
+        .map(cb => cb.value);
+    const reason = document.getElementById('deleteReason').value;
+    
+    fetch('/admin/bulk_delete_feedback', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            feedback_ids: selected,
+            reason: reason
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`Successfully deleted ${data.deleted_count} feedback items`);
+            bootstrap.Modal.getInstance(document.getElementById('bulkDeleteModal')).hide();
+            location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    });
+}
+
+// Store current feedback details for use in reply/followup
+let currentFeedbackDetails = null;
+
+// Show feedback details in modal
+function showFeedbackDetails(feedbackId) {
+    // Clear previous content
+    document.getElementById('feedbackDetailsContent').innerHTML = `
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3">Loading feedback details...</p>
+        </div>
+    `;
+    
+    // Fetch feedback details
+    fetch(`/admin/get_feedback_detail/${feedbackId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.feedback) {
+                currentFeedbackDetails = data.feedback;
+                displayFeedbackDetails(data.feedback);
+                
+                // Show the modal
+                const detailsModal = new bootstrap.Modal(document.getElementById('feedbackDetailsModal'));
+                detailsModal.show();
+                
+                // Mark as read if it's new
+                if (data.feedback.status === 'new') {
+                    markFeedbackAsRead(feedbackId);
+                }
+            } else {
+                document.getElementById('feedbackDetailsContent').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Error loading feedback details: ${data.error || 'Unknown error'}
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            document.getElementById('feedbackDetailsContent').innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Network error: ${error.message}
+                </div>
+            `;
+        });
+}
+
+// Display feedback details in modal
+function displayFeedbackDetails(feedback) {
+    // Format date
+    const date = new Date(feedback.timestamp);
+    const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+    
+    // Create rating stars
+    let ratingStars = '';
+    for (let i = 1; i <= 5; i++) {
+        if (i <= feedback.rating) {
+            ratingStars += '<i class="bi bi-star-fill text-warning me-1"></i>';
+        } else {
+            ratingStars += '<i class="bi bi-star text-muted me-1"></i>';
+        }
+    }
+    
+    // Determine badge color based on type
+    let typeBadgeClass = 'secondary';
+    if (feedback.type === 'bug') typeBadgeClass = 'danger';
+    else if (feedback.type === 'suggestion') typeBadgeClass = 'info';
+    else if (feedback.type === 'praise') typeBadgeClass = 'success';
+    else if (feedback.type === 'feature') typeBadgeClass = 'warning';
+    
+    // Determine status badge color
+    let statusBadgeClass = 'secondary';
+    if (feedback.status === 'new') statusBadgeClass = 'warning';
+    else if (feedback.status === 'read') statusBadgeClass = 'info';
+    else if (feedback.status === 'responded') statusBadgeClass = 'success';
+    
+    // Create HTML content
+    const html = `
+        <div class="feedback-details">
+            <!-- Header with basic info -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h6><i class="bi bi-person-circle me-2"></i>User Information</h6>
+                            <div class="mb-2">
+                                <strong>Name:</strong> ${feedback.name}
+                            </div>
+                            <div class="mb-2">
+                                <strong>Email:</strong> <a href="mailto:${feedback.email}">${feedback.email}</a>
+                            </div>
+                            ${feedback.user_id ? `<div><strong>User ID:</strong> ${feedback.user_id}</div>` : ''}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h6><i class="bi bi-info-circle me-2"></i>Feedback Information</h6>
+                            <div class="mb-2">
+                                <strong>Type:</strong> 
+                                <span class="badge bg-${typeBadgeClass}">${feedback.type.toUpperCase()}</span>
+                            </div>
+                            <div class="mb-2">
+                                <strong>Rating:</strong> 
+                                ${ratingStars} (${feedback.rating}/5)
+                            </div>
+                            <div class="mb-2">
+                                <strong>Status:</strong> 
+                                <span class="badge bg-${statusBadgeClass}">${feedback.status.toUpperCase()}</span>
+                            </div>
+                            <div>
+                                <strong>Submitted:</strong> ${formattedDate}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Feedback Message -->
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="bi bi-chat-text me-2"></i>Feedback Message</h6>
+                </div>
+                <div class="card-body">
+                    <div class="message-content" style="white-space: pre-wrap; max-height: 300px; overflow-y: auto; padding: 10px; background: #f8f9fa; border-radius: 5px;">
+                        ${feedback.message}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Additional Information -->
+            <div class="row">
+                ${feedback.source ? `
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6><i class="bi bi-geo-alt me-2"></i>Source</h6>
+                            <p class="mb-0">${feedback.source}</p>
+                        </div>
+                    </div>
+                </div>
+                ` : ''}
+                
+                ${feedback.context ? `
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6><i class="bi bi-card-text me-2"></i>Context</h6>
+                            <p class="mb-0">${feedback.context}</p>
+                        </div>
+                    </div>
+                </div>
+                ` : ''}
+            </div>
+            
+            <!-- Response Information (if responded) -->
+            ${feedback.responded_at || feedback.response_message ? `
+            <div class="card mt-4 border-success">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0"><i class="bi bi-check-circle me-2"></i>Response Information</h6>
+                </div>
+                <div class="card-body">
+                    ${feedback.responded_at ? `
+                    <div class="mb-2">
+                        <strong>Responded At:</strong> ${new Date(feedback.responded_at).toLocaleString()}
+                    </div>
+                    ` : ''}
+                    ${feedback.responded_by ? `
+                    <div class="mb-2">
+                        <strong>Responded By:</strong> ${feedback.responded_by}
+                    </div>
+                    ` : ''}
+                    ${feedback.response_message ? `
+                    <div class="mt-3">
+                        <strong>Response Message:</strong>
+                        <div class="mt-2 p-3 bg-light rounded" style="white-space: pre-wrap;">
+                            ${feedback.response_message}
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
+            ` : ''}
+        </div>
+    `;
+    
+    document.getElementById('feedbackDetailsContent').innerHTML = html;
+}
+
+// System tools functions
+function clearSystemCache() {
+    if (confirm('Clear system cache? This will force reload of all cached data.')) {
+        fetch('/admin/clear_cache', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('System cache cleared successfully');
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        });
+    }
+}
+
+function runDatabaseOptimization() {
+    if (confirm('Run database optimization? This may take a few moments.')) {
+        fetch('/admin/optimize_database', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Database optimization completed successfully');
+            } else {
+                alert('Error: ' + data.error);
+            }
+        });
+    }
+}
+
+function showSystemDiagnostics() {
+    document.getElementById('diagnosticsContent').innerHTML = `
+        <div class="text-center py-5">
+            <div class="spinner-border text-info" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3">Running system diagnostics...</p>
+        </div>
+    `;
+    
+    const modal = new bootstrap.Modal(document.getElementById('diagnosticsModal'));
+    modal.show();
+    
+    runAdvancedDiagnostics();
+}
+
+function updateFeedbackStatsDisplay(stats) {
+    // Update stats display if you have one
+    const statsElement = document.getElementById('feedbackStats');
+    if (statsElement) {
+        statsElement.innerHTML = `
+            <div class="row text-center">
+                <div class="col-md-3 mb-3">
+                    <div class="card border-primary">
+                        <div class="card-body">
+                            <h3 class="text-primary">${stats.total}</h3>
+                            <p class="text-muted mb-0">Total</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card border-warning">
+                        <div class="card-body">
+                            <h3 class="text-warning">${stats.new}</h3>
+                            <p class="text-muted mb-0">New</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card border-success">
+                        <div class="card-body">
+                            <h3 class="text-success">${stats.resolved}</h3>
+                            <p class="text-muted mb-0">Resolved</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card border-info">
+                        <div class="card-body">
+                            <h3 class="text-info">${stats.today}</h3>
+                            <p class="text-muted mb-0">Today</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+}
+
+function runAdvancedDiagnostics() {
+    fetch('/admin/system_diagnostics')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayDiagnostics(data.diagnostics);
+            } else {
+                document.getElementById('diagnosticsContent').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Error running diagnostics: ${data.error}
+                    </div>
+                `;
+            }
+        });
+}
+
+function displayDiagnostics(diagnostics) {
+    let html = '<div class="diagnostics-report">';
+    
+    // System Health
+    html += `
+        <div class="card mb-3">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0"><i class="bi bi-heart-pulse me-2"></i>System Health</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Server Time:</strong> ${diagnostics.server_time}<br>
+                        <strong>Uptime:</strong> ${diagnostics.uptime}<br>
+                        <strong>Memory Usage:</strong> ${diagnostics.memory_usage}<br>
+                        <strong>CPU Load:</strong> ${diagnostics.cpu_load}<br>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Database:</strong> <span class="badge bg-${diagnostics.database_status === 'connected' ? 'success' : 'danger'}">${diagnostics.database_status}</span><br>
+                        <strong>Email Service:</strong> <span class="badge bg-${diagnostics.email_service === 'running' ? 'success' : 'danger'}">${diagnostics.email_service}</span><br>
+                        <strong>Storage:</strong> ${diagnostics.storage_usage}<br>
+                        <strong>Active Connections:</strong> ${diagnostics.active_connections}<br>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Recent Errors
+    if (diagnostics.recent_errors && diagnostics.recent_errors.length > 0) {
+        html += `
+            <div class="card mb-3 border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h6 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Recent Errors (${diagnostics.recent_errors.length})</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Error</th>
+                                    <th>Source</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+        `;
+        
+        diagnostics.recent_errors.slice(0, 5).forEach(error => {
+            html += `
+                <tr>
+                    <td><small>${error.timestamp}</small></td>
+                    <td><code class="text-danger">${error.message.substring(0, 100)}...</code></td>
+                    <td>${error.source}</td>
+                </tr>
+            `;
+        });
+        
+        html += `
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Recommendations
+    if (diagnostics.recommendations && diagnostics.recommendations.length > 0) {
+        html += `
+            <div class="card mb-3 border-warning">
+                <div class="card-header bg-warning">
+                    <h6 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Recommendations</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="mb-0">
+        `;
+        
+        diagnostics.recommendations.forEach(rec => {
+            html += `<li>${rec}</li>`;
+        });
+        
+        html += `
+                    </ul>
+                </div>
+            </div>
+        `;
+    }
+    
+    html += '</div>';
+    document.getElementById('diagnosticsContent').innerHTML = html;
+}
+
+function exportDiagnostics() {
+    alert('Diagnostics report export functionality would be implemented here');
+    // This would typically generate and download a PDF/CSV report
+}
+
+// Maintenance mode functions
+function checkMaintenanceStatus() {
+    fetch('/admin/check_maintenance')
+        .then(response => response.json())
+        .then(data => {
+            if (data.maintenance_mode) {
+                showMaintenanceWarning(data.message);
+            }
+        });
+}
+
+function showMaintenanceWarning(message) {
+    const warning = document.createElement('div');
+    warning.className = 'alert alert-warning alert-dismissible fade show';
+    warning.innerHTML = `
+        <i class="bi bi-tools me-2"></i>
+        <strong>Maintenance Mode Active:</strong> ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.querySelector('.container-fluid').prepend(warning);
+}
+
+function enableMaintenanceMode() {
+    const message = document.getElementById('maintenanceMessage').value;
+    const duration = document.getElementById('maintenanceDuration').value;
+    const allowAdmin = document.getElementById('allowAdminAccess').checked;
+    
+    fetch('/admin/enable_maintenance', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            message: message,
+            duration: duration,
+            allow_admin: allowAdmin
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Maintenance mode enabled');
+            bootstrap.Modal.getInstance(document.getElementById('maintenanceModal')).hide();
+            location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    });
+}
+
+function disableMaintenanceMode() {
+    if (confirm('Disable maintenance mode?')) {
+        fetch('/admin/disable_maintenance', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Maintenance mode disabled');
+                bootstrap.Modal.getInstance(document.getElementById('maintenanceModal')).hide();
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        });
+    }
+}
+
+// Show reply modal
+function showReplyModal(feedbackId, email, name) {
+    document.getElementById('replyFeedbackId').value = feedbackId;
+    document.getElementById('replyEmail').value = email;
+    document.getElementById('replyName').value = name;
+    
+    // Show the modal
+    const replyModal = new bootstrap.Modal(document.getElementById('replyModal'));
+    replyModal.show();
+}
+
+// Submit reply function
+function submitReply() {
+    const feedbackId = document.getElementById('replyFeedbackId').value;
+    const subject = document.getElementById('replySubject').value;
+    const message = document.getElementById('replyMessage').value;
+    const status = document.getElementById('replyStatus').value;
+    
+    if (!message.trim()) {
+        alert('Please enter a message');
+        return;
+    }
+    
+    // Send the reply
+    fetch('/admin/send_feedback_reply', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            feedback_id: feedbackId,
+            subject: subject,
+            message: message,
+            status: status
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Reply sent successfully!');
+            bootstrap.Modal.getInstance(document.getElementById('replyModal')).hide();
+            
+            // Refresh the feedback list
+            location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('Network error: ' + error.message);
+    });
+}
+
+// Mark feedback as read
+function markFeedbackAsRead(feedbackId) {
+    fetch('/admin/mark_feedback_read/' + feedbackId, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token() }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update UI if needed
+            console.log('Marked as read: ' + feedbackId);
+        }
+    });
+}
+
+// Mark all as read
+function markAllAsRead() {
+    if (confirm('Mark all feedback as read?')) {
+        fetch('/admin/mark_all_feedback_read', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        });
+    }
+}
+
+// Mark all as responded
+function markAllAsResponded() {
+    if (confirm('Mark all feedback as responded?')) {
+        // This would need a new endpoint or reuse existing logic
+        alert('This feature would mark all feedback as responded');
+    }
+}
+
+// Reply from details modal
+function replyFromDetails() {
+    if (currentFeedbackDetails) {
+        showReplyModal(
+            currentFeedbackDetails.id,
+            currentFeedbackDetails.email,
+            currentFeedbackDetails.name
+        );
+        bootstrap.Modal.getInstance(document.getElementById('feedbackDetailsModal')).hide();
+    }
+}
+
+// Follow-up from details modal  
+function followupFromDetails() {
+    if (currentFeedbackDetails) {
+        showFollowupModal(
+            currentFeedbackDetails.id,
+            currentFeedbackDetails.email,
+            currentFeedbackDetails.name
+        );
+        bootstrap.Modal.getInstance(document.getElementById('feedbackDetailsModal')).hide();
+    }
+}
+
+// Event deletion functionality for admin
+function setupEventDeletion() {
+    // Handle delete event button clicks
+    document.querySelectorAll('.delete-event-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const eventId = this.dataset.eventId;
+            const eventName = this.dataset.eventName;
+            
+            if (confirm(`Are you sure you want to delete "${eventName}"? This will also delete all forms and responses.`)) {
+                deleteEvent(eventId, eventName);
+            }
+        });
+    });
+}
+
+function deleteEvent(eventId, eventName) {
+    fetch(`/delete_event/${eventId}`, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token() }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert(`✅ Event "${eventName}" deleted successfully!`, 'success');
+            
+            // Remove the row from table
+            const row = document.querySelector(`.delete-event-btn[data-event-id="${eventId}"]`).closest('tr');
+            if (row) {
+                row.style.transition = 'all 0.3s ease';
+                row.style.opacity = '0';
+                row.style.transform = 'translateX(-100%)';
+                
+                setTimeout(() => {
+                    row.remove();
+                    
+                    // Update counts
+                    updateEventCounts();
+                    
+                    // Reload if no events left
+                    const remainingRows = document.querySelectorAll('#admin-events-table tbody tr').length;
+                    if (remainingRows === 0) {
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    }
+                }, 300);
+            }
+        } else {
+            showAlert(`❌ Error deleting event: ${data.error}`, 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('❌ Error deleting event. Please try again.', 'danger');
+    });
+}
+
+function updateEventCounts() {
+    // Update event count in UI if needed
+    const eventCountElement = document.querySelector('.stat-value[data-type="events"]');
+    if (eventCountElement) {
+        const currentCount = parseInt(eventCountElement.textContent);
+        eventCountElement.textContent = Math.max(0, currentCount - 1);
+    }
+}
+
+function refreshEvents() {
+    // Simple refresh - reload the page
+    window.location.reload();
+}
+
+// Helper function to show alerts
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
+    alertDiv.style.zIndex = '9999';
+    alertDiv.style.maxWidth = '400px';
+    alertDiv.innerHTML = `
+        <strong>${message}</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alertDiv);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    setupEventDeletion();
+});
+
+// Show follow-up modal
+function showFollowupModal(feedbackId, email, name) {
+    document.getElementById('followupFeedbackId').value = feedbackId;
+    document.getElementById('followupEmail').value = email;
+    document.getElementById('followupName').value = name;
+    
+    const followupModal = new bootstrap.Modal(document.getElementById('followupModal'));
+    followupModal.show();
+}
+
+// Submit follow-up
+function submitFollowup() {
+    const feedbackId = document.getElementById('followupFeedbackId').value;
+    const subject = document.getElementById('followupSubject').value;
+    const message = document.getElementById('followupMessage').value;
+    const priority = document.getElementById('followupPriority').value;
+    
+    if (!message.trim()) {
+        alert('Please enter a follow-up message');
+        return;
+    }
+    
+    fetch('/admin/send_feedback_followup', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            feedback_id: feedbackId,
+            subject: subject,
+            message: message,
+            priority: priority
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Follow-up sent successfully!');
+            bootstrap.Modal.getInstance(document.getElementById('followupModal')).hide();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    });
+}
+
+// Export all feedback
+function exportAllFeedback() {
+    window.location.href = "{{ url_for('admin_export_feedback') }}";
+}
+
+// Confirm delete single feedback
+function confirmDelete(feedbackId, name) {
+    if (confirm(`Delete feedback from ${name}? This cannot be undone.`)) {
+        fetch('/admin/delete_feedback/' + feedbackId, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Feedback deleted successfully');
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        });
+    }
+}
+
+</script>
+
+<style>
+/* Admin-specific styles */
+.avatar-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bg-gradient-danger {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+}
+
+.health-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.health-indicator.bg-success {
+    background-color: #28a745;
+    box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.2);
+}
+
+.health-indicator.bg-danger {
+    background-color: #dc3545;
+    box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2);
+}
+
+.health-indicator.bg-warning {
+    background-color: #ffc107;
+    box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.2);
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    margin-right: 15px;
+}
+
+.stat-icon-lg {
+    width: 70px;
+    height: 70px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2rem;
+}
+
+.stat-content {
+    flex: 1;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    line-height: 1;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-bottom: 5px;
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.stat-item {
+    padding: 10px;
+}
+
+.stat-number {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+/* Tools Grid */
+.tools-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.tool-item {
+    transition: all 0.3s ease;
+}
+
+.tool-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* Rating stars */
+.rating-stars {
+    color: #ffc107;
+    font-size: 14px;
+}
+
+/* Admin privileges list */
+.admin-privileges ul {
+    margin-left: 15px;
+}
+
+.admin-privileges li {
+    position: relative;
+    padding-left: 5px;
+}
+
+/* Quick stats */
+.quick-stats {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+/* Event list */
+.event-list .event-item {
+    transition: all 0.3s ease;
+}
+
+.event-list .event-item:hover {
+    background: #f8f9fa;
+    transform: translateX(5px);
+}
+
+/* Feedback Details Modal Styles */
+#feedbackDetailsModal .modal-dialog {
+    max-width: 800px;
+}
+
+#feedbackDetailsModal .message-content {
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+#feedbackDetailsModal .card {
+    margin-bottom: 1rem;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+#feedbackDetailsModal .card-header {
+    font-weight: 600;
+}
+
+/* System Diagnostics */
+.diagnostics-report .card {
+    margin-bottom: 1rem;
+}
+
+.diagnostics-report code {
+    font-size: 0.85rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .stat-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .stat-icon {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+    
+    .stat-icon-lg {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+    }
+    
+    .tools-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    #feedbackDetailsModal .modal-dialog {
+        margin: 10px;
+    }
+}
+
+/* Card hover effects */
+.card-glass {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.card-glass:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* Table actions */
+.btn-group .btn {
+    padding: 4px 8px;
+}
+
+/* Activity items */
+.activity-item {
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.activity-icon {
+    width: 40px;
+    height: 40px;
+}
+
+/* Modal close button */
+.btn-close-white {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* Checkbox styling */
+.feedback-checkbox {
+    cursor: pointer;
+}
+
+#selectAllFeedback {
+    cursor: pointer;
+}
+/* Email Broadcast Styles */
+.batch-result {
+    border-left: 4px solid #4361ee;
+}
+
+.progress-bar-striped {
+    background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+    background-size: 1rem 1rem;
+}
+
+@keyframes progress-bar-stripes {
+    0% { background-position: 1rem 0; }
+    100% { background-position: 0 0; }
+}
+
+.progress-bar-animated {
+    animation: progress-bar-stripes 1s linear infinite;
+}
+
+/* Stats grid for small cards */
+.stats-grid-small .stat-item:nth-child(1) { border-left: 3px solid #4361ee; }
+.stats-grid-small .stat-item:nth-child(2) { border-left: 3px solid #28a745; }
+.stats-grid-small .stat-item:nth-child(3) { border-left: 3px solid #ffc107; }
+.stats-grid-small .stat-item:nth-child(4) { border-left: 3px solid #17a2b8; }
+
+/* Form controls in modal */
+#emailAllUsersModal .form-control:focus,
+#emailAllUsersModal .form-select:focus {
+    border-color: #4361ee;
+    box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+}
+
+/* Code styling for variables */
+code {
+    background: #f1f5f9;
+    color: #4361ee;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    font-family: 'Courier New', monospace;
+}
+
+/* Individual Email Modal Styles */
+#individualEmailModal .modal-dialog {
+    max-width: 800px;
+}
+
+#individualEmailModal .input-group-text {
+    min-width: 45px;
+    justify-content: center;
+}
+
+#individualEmailModal .form-control:focus,
+#individualEmailModal .form-select:focus {
+    border-color: #17a2b8;
+    box-shadow: 0 0 0 0.25rem rgba(23, 162, 184, 0.25);
+}
+
+#individualEmailModal .btn-outline-info:hover {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+}
+
+#individualEmailModal .btn-outline-warning:hover {
+    background-color: #ffc107;
+    border-color: #ffc107;
+}
+
+#individualEmailModal .btn-outline-success:hover {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+#individualEmailModal .btn-outline-danger:hover {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+#individualEmailModal .btn-outline-secondary:hover {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+#individualEmailModal .email-preview-container {
+    font-family: Arial, sans-serif;
+}
+
+#individualEmailModal .email-header {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-left: 4px solid #17a2b8;
+}
+
+#individualEmailModal .email-body {
+    min-height: 200px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+#individualEmailModal .email-footer {
+    background: #fff3cd;
+    border-left: 4px solid #ffc107;
+}
+
+#individualEmailModal .card.bg-light {
+    border: 1px solid #dee2e6;
+}
+
+#individualEmailModal .alert {
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    #individualEmailModal .modal-dialog {
+        margin: 10px;
+    }
+    
+    #individualEmailModal .d-flex.gap-2 {
+        flex-wrap: wrap;
+    }
+    
+    #individualEmailModal .btn-sm {
+        margin-bottom: 5px;
+    }
+}
+
+</style>
+{% endblock %}
+[file content end]

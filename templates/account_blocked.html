@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Blocked - EventFlow</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .blocked-card {
+            max-width: 600px;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .blocked-header {
+            background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px 15px 0 0;
+            text-align: center;
+        }
+        
+        .info-box {
+            background: #fee2e2;
+            border-left: 4px solid #dc3545;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .support-box {
+            background: #e8f4fd;
+            border-left: 4px solid #4361ee;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .contact-btn {
+            background: #4361ee;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px 5px;
+        }
+        
+        .logout-btn {
+            background: #6c757d;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card blocked-card">
+        <div class="blocked-header">
+            <i class="bi bi-person-x" style="font-size: 4rem; margin-bottom: 20px;"></i>
+            <h1 class="h2">Account Access Restricted</h1>
+            <p class="mb-0">Your EventFlow account has been temporarily suspended</p>
+        </div>
+        
+        <div class="card-body p-4">
+            <div class="info-box">
+                <h4><i class="bi bi-exclamation-triangle-fill me-2"></i>Account Status: BLOCKED</h4>
+                <p class="mb-2"><strong>Reason:</strong> {{ reason }}</p>
+                {% if blocked_at %}
+                <p class="mb-2"><strong>Blocked Since:</strong> {{ blocked_at }}</p>
+                {% endif %}
+                {% if block_until and block_until != 'permanent' %}
+                <p class="mb-0"><strong>Block Expires:</strong> {{ block_until }}</p>
+                {% elif block_until == 'permanent' %}
+                <p class="mb-0"><strong>Duration:</strong> Permanent</p>
+                {% endif %}
+            </div>
+            
+            <div class="support-box">
+                <h5><i class="bi bi-info-circle-fill me-2"></i>What This Means</h5>
+                <ul class="mb-3">
+                    <li>You cannot create new events or forms</li>
+                    <li>You cannot access existing form responses</li>
+                    <li>You cannot send form invitations</li>
+                    <li>Your account is in read-only mode</li>
+                </ul>
+                
+                <h5><i class="bi bi-question-circle-fill me-2"></i>Next Steps</h5>
+                <ol>
+                    <li>Review the reason for blocking above</li>
+                    <li>Contact support if you believe this is a mistake</li>
+                    <li>Provide any relevant information for your appeal</li>
+                    <li>Wait for the support team to review your case</li>
+                </ol>
+            </div>
+            
+            <div class="text-center mt-4">
+                <a href="mailto:eventflow.app2026@gmail.com?subject=Account Block Appeal" class="contact-btn">
+                    <i class="bi bi-envelope me-2"></i>Contact Support
+                </a>
+                <a href="{{ url_for('logout') }}" class="logout-btn">
+                    <i class="bi bi-box-arrow-right me-2"></i>Logout
+                </a>
+            </div>
+            
+            <div class="text-center mt-4">
+                <small class="text-muted">
+                    <i class="bi bi-shield-check me-1"></i>
+                    This action was taken to ensure platform safety and compliance with our guidelines.
+                </small>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

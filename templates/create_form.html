@@ -1,0 +1,1610 @@
+{% extends "base.html" %}
+
+{% if is_edit_mode %}
+    {% set form_title_value = form.title %}
+    {% set form_action = url_for('edit_form_page', event_id=event.id, form_id=form.id) %}
+    {% set page_title = 'Edit Form' %}
+    {% set submit_button_text = 'Update Form' %}
+{% else %}
+    {% set form_title_value = 'Registration Form for ' + event.name %}
+    {% set form_action = url_for('create_form', event_id=event.id) %}
+    {% set page_title = 'Create Registration Form' %}
+    {% set submit_button_text = 'Create Form' %}
+{% endif %}
+{% block title %}{{ page_title }} - {{ event.name }}{% endblock %}
+
+{% block page_title %}{{ page_title }}{% endblock %}
+{% block page_subtitle %}
+<p class="text-muted mb-0">Event: {{ event.name }}</p>
+{% if is_edit_mode %}
+<p class="text-muted mb-0"><small>Editing existing form</small></p>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<style>
+.file-type-grid .file-type-card {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 8px;
+    transition: all 0.2s;
+    background: white;
+}
+
+.file-type-grid .file-type-card:hover {
+    border-color: #4361ee;
+    background: #f8f9fa;
+}
+
+.file-type-grid .file-type-card .form-check-label {
+    cursor: pointer;
+    width: 100%;
+}
+
+.file-type-grid .file-type-card .bi {
+    color: #4361ee;
+}
+
+.file-type-grid .file-type-card input:checked + label {
+    font-weight: 600;
+}
+
+.file-type-grid .file-type-card input:checked + label .bi {
+    color: #4cc9f0;
+}
+
+/* For the preview section */
+#preview-container .file-upload-preview {
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    background: #f8f9fa;
+}
+
+#preview-container .file-upload-preview:hover {
+    border-color: #4361ee;
+}
+
+#preview-container .file-upload-preview .bi {
+    font-size: 2rem;
+    color: #6c757d;
+    margin-bottom: 10px;
+}
+
+#preview-container .file-upload-preview small {
+    color: #6c757d;
+}
+
+#preview-container .file-upload-preview button {
+    pointer-events: none;
+}
+</style>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card-modern">
+            <div class="card-header-modern">
+                <h4 class="mb-0"><i class="bi bi-file-text me-2"></i>{{ page_title }}</h4>
+            </div>
+            <div class="card-body-modern">
+                <form method="POST" action="{{ form_action }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <!-- Form Title -->
+<div class="mb-4">
+    <label class="form-label fw-semibold">Form Title <span class="text-danger">*</span></label>
+    <input type="text" class="form-control form-control-modern" name="form_title" required 
+           value="{{ form_title_value }}">
+    <div class="form-text">Give your form a descriptive title</div>
+</div>
+
+<!-- NEW: Form Description Field -->
+<div class="mb-4">
+    <label class="form-label fw-semibold">Form Description <span class="text-muted">(Optional)</span></label>
+    <textarea class="form-control form-control-modern" name="form_description" 
+              rows="3" placeholder="Add a description for your form (what it's for, what information you're collecting, etc.)"
+              id="form_description">{% if is_edit_mode and form.description %}{{ form.description }}{% endif %}</textarea>
+    <div class="form-text">This description will be shown to users filling out the form</div>
+</div>
+                   
+                    <!-- Form Scheduling Section -->
+                    <div class="card-modern mb-4">
+                        <div class="card-header-modern">
+                            <h5 class="mb-0"><i class="bi bi-calendar-check me-2"></i>Form Schedule (Optional)</h5>
+                        </div>
+                        <div class="card-body-modern">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" name="enable_schedule" id="enable_schedule" 
+                                               onchange="toggleScheduleFields()" {% if is_edit_mode and form.schedule and form.schedule.enabled %}checked{% endif %}>
+                                        <label class="form-check-label fw-semibold" for="enable_schedule">
+                                            Enable Form Schedule
+                                        </label>
+                                    </div>
+                                    <div class="form-text">Control when your form is available for responses</div>
+                                </div>
+                            </div>
+                            
+                            <div class="row g-3 mt-2" id="schedule_fields" style="display: {% if is_edit_mode and form.schedule and form.schedule.enabled %}block{% else %}none{% endif %};">
+                                <div class="col-md-6">
+                                    <label class="form-label">Start Date & Time</label>
+                                    <input type="datetime-local" class="form-control form-control-modern" name="start_datetime" 
+       id="start_datetime"
+       value="{% if is_edit_mode and form.schedule and form.schedule.start_datetime %}{{ form.schedule.start_datetime|replace(' ', 'T') }}{% endif %}">
+
+                                    <div class="form-text">When the form becomes active (optional)</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">End Date & Time</label>
+                                    <input type="datetime-local" class="form-control form-control-modern" name="end_datetime" 
+       id="end_datetime"
+       value="{% if is_edit_mode and form.schedule and form.schedule.end_datetime %}{{ form.schedule.end_datetime|replace(' ', 'T') }}{% endif %}">
+                                    <div class="form-text">When the form becomes inactive (optional)</div>
+                                </div>
+                                
+                                <!-- Notification Option -->
+                                <div class="col-12 mt-3" id="notification_field" style="display: {% if is_edit_mode and form.schedule and form.schedule.enabled %}block{% else %}none{% endif %};">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="notify_on_end" id="notify_on_end"
+                                               {% if is_edit_mode and form.schedule and form.schedule.notify_on_end %}checked{% endif %}>
+                                        <label class="form-check-label fw-semibold" for="notify_on_end">
+                                            <i class="bi bi-bell me-2"></i>Notify me when form ends
+                                        </label>
+                                        <div class="form-text">
+                                            You'll receive an email when the form closes with a summary of responses and link to view data
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <div class="alert alert-info p-2">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        <small>
+                                            <strong>How it works:</strong><br>
+                                            • Form is active only during the scheduled period (if set)<br>
+                                            • Before start time: "Coming Soon" message<br>
+                                            • After end time: "Form Closed" message<br>
+                                            • If no schedule set: Form is always active<br>
+                                            • Optional: Get email notification when form ends with response summary
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h5 class="mb-3"><i class="bi bi-question-circle me-2"></i>Form Questions</h5>
+                    
+                    <div id="questions-container">
+                        {% if is_edit_mode %}
+                            {% for question in form.questions %}
+                            <div class="card-modern mb-3 question-item">
+                                <div class="card-body-modern">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h6 class="mb-0">Question {{ loop.index }}</h6>
+                                        <span class="badge {% if question.required %}bg-primary{% else %}bg-secondary{% endif %}">
+                                            {% if question.required %}Required{% else %}Optional{% endif %}
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="row g-3">
+                                        <div class="col-md-8">
+                                            <label class="form-label">Question Text</label>
+                                            <input type="text" class="form-control form-control-modern" name="question_{{ loop.index0 }}" 
+                                                   placeholder="Enter question text" required value="{{ question.text }}">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Question Type</label>
+                                            <select class="form-select form-control-modern" name="type_{{ loop.index0 }}" onchange="toggleOptions(this, {{ loop.index0 }})">
+                                                <option value="text" {% if question.type == 'text' %}selected{% endif %}>Text</option>
+                                                <option value="number" {% if question.type == 'number' %}selected{% endif %}>Number</option>
+                                                <option value="email" {% if question.type == 'email' %}selected{% endif %}>Email</option>
+                                                <option value="date" {% if question.type == 'date' %}selected{% endif %}>Date</option>
+                                                <option value="textarea" {% if question.type == 'textarea' %}selected{% endif %}>Long Text</option>
+                                                <option value="radio" {% if question.type == 'radio' %}selected{% endif %}>Multiple Choice</option>
+                                                <option value="checkbox" {% if question.type == 'checkbox' %}selected{% endif %}>Checkboxes</option>
+                                                <option value="dropdown" {% if question.type == 'dropdown' %}selected{% endif %}>Dropdown</option>
+                                                <option value="file" {% if question.type == 'file' %}selected{% endif %}>File Upload</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mt-3">
+                                        <div class="col-md-6">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="required_{{ loop.index0 }}" 
+                                                       id="required_{{ loop.index0 }}" {% if question.required %}checked{% endif %}>
+                                                <label class="form-check-label" for="required_{{ loop.index0 }}">
+                                                    Required field
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mt-3" id="options_{{ loop.index0 }}" 
+                                         style="display: {% if question.type in ['radio', 'checkbox', 'dropdown'] %}block{% else %}none{% endif %};">
+                                        <div class="col-12">
+                                            <label class="form-label">Options (comma separated)</label>
+                                            <input type="text" class="form-control form-control-modern" name="options_{{ loop.index0 }}" 
+                                                   placeholder="Option 1, Option 2, Option 3" 
+                                                   value="{% if question.options %}{{ question.options|join(', ') }}{% endif %}">
+                                            <div class="form-text">Separate options with commas</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mt-3" id="file_info_{{ loop.index0 }}" 
+                                         style="display: {% if question.type == 'file' %}block{% else %}none{% endif %};">
+                                        <div class="col-12">
+                                            <div class="card-modern mb-3">
+                                                <div class="card-header-modern">
+                                                    <h6 class="mb-0"><i class="bi bi-gear me-2"></i>File Upload Settings</h6>
+                                                </div>
+                                                <div class="card-body-modern">
+                                                    <!-- File Type Selection -->
+                                                    <div class="mb-3">
+                                                        <label class="form-label fw-semibold">Allowed File Types</label>
+                                                        <div class="file-type-grid">
+                                                            {% set file_categories = {
+                                                                'images': {'name': 'Images', 'icon': 'bi-image', 'ext': 'PNG, JPG, GIF, WEBP'},
+                                                                'pdf': {'name': 'PDF', 'icon': 'bi-file-pdf', 'ext': 'PDF'},
+                                                                'documents': {'name': 'Documents', 'icon': 'bi-file-text', 'ext': 'DOC, DOCX, TXT'},
+                                                                'spreadsheets': {'name': 'Spreadsheets', 'icon': 'bi-file-spreadsheet', 'ext': 'XLS, XLSX, CSV'},
+                                                                'presentations': {'name': 'Presentations', 'icon': 'bi-file-slides', 'ext': 'PPT, PPTX'},
+                                                                'archives': {'name': 'Archives', 'icon': 'bi-file-zip', 'ext': 'ZIP, RAR, 7Z'},
+                                                                'audio': {'name': 'Audio', 'icon': 'bi-file-music', 'ext': 'MP3, WAV, OGG'},
+                                                                'video': {'name': 'Video', 'icon': 'bi-file-play', 'ext': 'MP4, MOV, AVI'},
+                                                                'code': {'name': 'Code Files', 'icon': 'bi-file-code', 'ext': 'PY, JS, HTML, JSON'}
+                                                            } %}
+                                                            
+                                                            <div class="row row-cols-2 row-cols-md-3 g-2">
+                                                                {% for category_id, category in file_categories.items() %}
+<div class="col">
+    <div class="file-type-card">
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" 
+                   name="file_types_{{ question.id }}[]" 
+                   value="{{ category_id }}"
+                   id="file_type_{{ question.id }}_{{ category_id }}"
+                   {% if question.get('file_settings') and question.file_settings.get('allowed_types') and category_id in question.file_settings.allowed_types %}checked{% endif %}>
+            <label class="form-check-label d-flex align-items-center" 
+                   for="file_type_{{ question.id }}_{{ category_id }}">
+                <i class="bi {{ category.icon }} me-2 fs-5"></i>
+                <div>
+                    <div class="fw-semibold">{{ category.name }}</div>
+                    <small class="text-muted">{{ category.ext }}</small>
+                </div>
+            </label>
+        </div>
+    </div>
+</div>
+{% endfor %}
+                                                            </div>
+                                                            
+                                                            <div class="mt-2">
+                                                                <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                                        onclick="selectAllFileTypes({{ loop.index0 }})">
+                                                                    <i class="bi bi-check-all"></i> Select All
+                                                                </button>
+                                                                <button type="button" class="btn btn-sm btn-outline-secondary ms-2" 
+                                                                        onclick="deselectAllFileTypes({{ loop.index0 }})">
+                                                                    <i class="bi bi-x-circle"></i> Deselect All
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-text">Select which types of files are allowed</div>
+                                                    </div>
+                                                    
+                                                    <div class="row g-3">
+                                                        <!-- File Size Limit -->
+                                                        <!-- File Size Limit -->
+<div class="col-md-6">
+    <label class="form-label">Maximum File Size (MB)</label>
+    <input type="number" class="form-control form-control-modern" 
+           name="file_max_size_{{ loop.index0 }}" 
+           min="1" max="100" 
+           value="{% if is_edit_mode and question.get('file_settings', {}) %}{{ question.file_settings.max_size_mb|default('16') }}{% else %}16{% endif %}">
+    <div class="form-text">Maximum file size allowed (1-100 MB)</div>
+</div>
+                                                        
+                                                        <!-- Multiple Files -->
+<div class="col-md-6">
+    <div class="form-check mt-4">
+        <input class="form-check-input" type="checkbox" 
+               name="file_multiple_{{ loop.index0 }}" 
+               id="file_multiple_{{ loop.index0 }}"
+               {% if is_edit_mode and question.get('file_settings', {}).get('multiple', false) %}checked{% endif %}>
+        <label class="form-check-label fw-semibold" for="file_multiple_{{ loop.index0 }}">
+            Allow Multiple Files
+        </label>
+        <div class="form-text">Users can upload multiple files for this question</div>
+    </div>
+</div>
+                                                    
+                                                    <!-- File Requirements Summary -->
+                                                    <div class="alert alert-info p-3 mt-3">
+                                                        <i class="bi bi-info-circle me-2"></i>
+                                                        <small>
+                                                            <strong>Summary:</strong><br>
+                                                            <span id="file_summary_{{ loop.index0 }}">
+                                                                {% if is_edit_mode and question.get('file_settings', {}).get('allowed_types', []) %}
+                                                                    {% set type_count = question.file_settings.allowed_types|length %}
+                                                                    {% if type_count == 0 %}
+                                                                        No file types selected
+                                                                    {% elif type_count == 1 %}
+                                                                        {% for type_id in question.file_settings.allowed_types %}
+                                                                            {% if type_id == 'images' %}Images{% endif %}
+                                                                            {% if type_id == 'pdf' %}PDF{% endif %}
+                                                                            {% if type_id == 'documents' %}Documents{% endif %}
+                                                                            {% if type_id == 'spreadsheets' %}Spreadsheets{% endif %}
+                                                                            {% if type_id == 'presentations' %}Presentations{% endif %}
+                                                                            {% if type_id == 'archives' %}Archives{% endif %}
+                                                                            {% if type_id == 'audio' %}Audio{% endif %}
+                                                                            {% if type_id == 'video' %}Video{% endif %}
+                                                                            {% if type_id == 'code' %}Code Files{% endif %}
+                                                                        {% endfor %}
+                                                                    {% elif type_count <= 3 %}
+                                                                        {% for type_id in question.file_settings.allowed_types %}
+                                                                            {% if type_id == 'images' %}Images{% endif %}
+                                                                            {% if type_id == 'pdf' %}PDF{% endif %}
+                                                                            {% if type_id == 'documents' %}Documents{% endif %}
+                                                                            {% if type_id == 'spreadsheets' %}Spreadsheets{% endif %}
+                                                                            {% if type_id == 'presentations' %}Presentations{% endif %}
+                                                                            {% if type_id == 'archives' %}Archives{% endif %}
+                                                                            {% if type_id == 'audio' %}Audio{% endif %}
+                                                                            {% if type_id == 'video' %}Video{% endif %}
+                                                                            {% if type_id == 'code' %}Code Files{% endif %}
+                                                                            {% if not loop.last %}, {% endif %}
+                                                                        {% endfor %}
+                                                                    {% else %}
+                                                                        {{ type_count }} file types
+                                                                    {% endif %}
+                                                                {% else %}
+                                                                    No file types selected
+                                                                {% endif %}
+                                                            </span>
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <!-- Default first question for new forms -->
+                            <div class="card-modern mb-3 question-item">
+                                <div class="card-body-modern">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h6 class="mb-0">Question 1</h6>
+                                        <span class="badge bg-primary">Required</span>
+                                    </div>
+                                    
+                                    <div class="row g-3">
+                                        <div class="col-md-8">
+                                            <label class="form-label">Question Text</label>
+                                            <input type="text" class="form-control form-control-modern" name="question_0" 
+                                                   placeholder="Enter question text" required>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Question Type</label>
+                                            <select class="form-select form-control-modern" name="type_0" onchange="toggleOptions(this, 0)">
+                                                <option value="text">Text</option>
+                                                <option value="number">Number</option>
+                                                <option value="email">Email</option>
+                                                <option value="date">Date</option>
+                                                <option value="textarea">Long Text</option>
+                                                <option value="radio">Multiple Choice</option>
+                                                <option value="checkbox">Checkboxes</option>
+                                                <option value="dropdown">Dropdown</option>
+                                                <option value="file">File Upload</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mt-3">
+                                        <div class="col-md-6">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="required_0" id="required_0" checked>
+                                                <label class="form-check-label" for="required_0">
+                                                    Required field
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mt-3" id="options_0" style="display: none;">
+                                        <div class="col-12">
+                                            <label class="form-label">Options (comma separated)</label>
+                                            <input type="text" class="form-control form-control-modern" name="options_0" 
+                                                   placeholder="Option 1, Option 2, Option 3">
+                                            <div class="form-text">Separate options with commas</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mt-3" id="file_info_0" style="display: none;">
+                                        <div class="col-12">
+                                            <div class="card-modern mb-3">
+                                                <div class="card-header-modern">
+                                                    <h6 class="mb-0"><i class="bi bi-gear me-2"></i>File Upload Settings</h6>
+                                                </div>
+                                                <div class="card-body-modern">
+                                                    <!-- File Type Selection -->
+                                                    <div class="mb-3">
+                                                        <label class="form-label fw-semibold">Allowed File Types</label>
+                                                        <div class="file-type-grid">
+                                                            <div class="row row-cols-2 row-cols-md-3 g-2">
+                                                                <div class="col">
+                                                                    <div class="file-type-card">
+                                                                        <div class="form-check">
+                                                                            <input class="form-check-input" type="checkbox" 
+                                                                                   name="file_types_0[]" 
+                                                                                   value="images"
+                                                                                   id="file_type_0_images">
+                                                                            <label class="form-check-label d-flex align-items-center" 
+                                                                                   for="file_type_0_images">
+                                                                                <i class="bi bi-image me-2 fs-5"></i>
+                                                                                <div>
+                                                                                    <div class="fw-semibold">Images</div>
+                                                                                    <small class="text-muted">PNG, JPG, GIF, WEBP</small>
+                                                                                </div>
+                                                                            </label>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col">
+                                                                    <div class="file-type-card">
+                                                                        <div class="form-check">
+                                                                            <input class="form-check-input" type="checkbox" 
+                                                                                   name="file_types_0[]" 
+                                                                                   value="pdf"
+                                                                                   id="file_type_0_pdf">
+                                                                            <label class="form-check-label d-flex align-items-center" 
+                                                                                   for="file_type_0_pdf">
+                                                                                <i class="bi bi-file-pdf me-2 fs-5"></i>
+                                                                                <div>
+                                                                                    <div class="fw-semibold">PDF</div>
+                                                                                    <small class="text-muted">PDF</small>
+                                                                                </div>
+                                                                            </label>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col">
+                                                                    <div class="file-type-card">
+                                                                        <div class="form-check">
+                                                                            <input class="form-check-input" type="checkbox" 
+                                                                                   name="file_types_0[]" 
+                                                                                   value="documents"
+                                                                                   id="file_type_0_documents">
+                                                                            <label class="form-check-label d-flex align-items-center" 
+                                                                                   for="file_type_0_documents">
+                                                                                <i class="bi bi-file-text me-2 fs-5"></i>
+                                                                                <div>
+                                                                                    <div class="fw-semibold">Documents</div>
+                                                                                    <small class="text-muted">DOC, DOCX, TXT</small>
+                                                                                </div>
+                                                                            </label>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col">
+                                                                    <div class="file-type-card">
+                                                                        <div class="form-check">
+                                                                            <input class="form-check-input" type="checkbox" 
+                                                                                   name="file_types_0[]" 
+                                                                                   value="spreadsheets"
+                                                                                   id="file_type_0_spreadsheets">
+                                                                            <label class="form-check-label d-flex align-items-center" 
+                                                                                   for="file_type_0_spreadsheets">
+                                                                                <i class="bi bi-file-spreadsheet me-2 fs-5"></i>
+                                                                                <div>
+                                                                                    <div class="fw-semibold">Spreadsheets</div>
+                                                                                    <small class="text-muted">XLS, XLSX, CSV</small>
+                                                                                </div>
+                                                                            </label>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col">
+                                                                    <div class="file-type-card">
+                                                                        <div class="form-check">
+                                                                            <input class="form-check-input" type="checkbox" 
+                                                                                   name="file_types_0[]" 
+                                                                                   value="presentations"
+                                                                                   id="file_type_0_presentations">
+                                                                            <label class="form-check-label d-flex align-items-center" 
+                                                                                   for="file_type_0_presentations">
+                                                                                <i class="bi bi-file-slides me-2 fs-5"></i>
+                                                                                <div>
+                                                                                    <div class="fw-semibold">Presentations</div>
+                                                                                    <small class="text-muted">PPT, PPTX</small>
+                                                                                </div>
+                                                                            </label>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col">
+                                                                    <div class="file-type-card">
+                                                                        <div class="form-check">
+                                                                            <input class="form-check-input" type="checkbox" 
+                                                                                   name="file_types_0[]" 
+                                                                                   value="archives"
+                                                                                   id="file_type_0_archives">
+                                                                            <label class="form-check-label d-flex align-items-center" 
+                                                                                   for="file_type_0_archives">
+                                                                                <i class="bi bi-file-zip me-2 fs-5"></i>
+                                                                                <div>
+                                                                                    <div class="fw-semibold">Archives</div>
+                                                                                    <small class="text-muted">ZIP, RAR, 7Z</small>
+                                                                                </div>
+                                                                            </label>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col">
+                                                                    <div class="file-type-card">
+                                                                        <div class="form-check">
+                                                                            <input class="form-check-input" type="checkbox" 
+                                                                                   name="file_types_0[]" 
+                                                                                   value="audio"
+                                                                                   id="file_type_0_audio">
+                                                                            <label class="form-check-label d-flex align-items-center" 
+                                                                                   for="file_type_0_audio">
+                                                                                <i class="bi bi-file-music me-2 fs-5"></i>
+                                                                                <div>
+                                                                                    <div class="fw-semibold">Audio</div>
+                                                                                    <small class="text-muted">MP3, WAV, OGG</small>
+                                                                                </div>
+                                                                            </label>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col">
+                                                                    <div class="file-type-card">
+                                                                        <div class="form-check">
+                                                                            <input class="form-check-input" type="checkbox" 
+                                                                                   name="file_types_0[]" 
+                                                                                   value="video"
+                                                                                   id="file_type_0_video">
+                                                                            <label class="form-check-label d-flex align-items-center" 
+                                                                                   for="file_type_0_video">
+                                                                                <i class="bi bi-file-play me-2 fs-5"></i>
+                                                                                <div>
+                                                                                    <div class="fw-semibold">Video</div>
+                                                                                    <small class="text-muted">MP4, MOV, AVI</small>
+                                                                                </div>
+                                                                            </label>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col">
+                                                                    <div class="file-type-card">
+                                                                        <div class="form-check">
+                                                                            <input class="form-check-input" type="checkbox" 
+                                                                                   name="file_types_0[]" 
+                                                                                   value="code"
+                                                                                   id="file_type_0_code">
+                                                                            <label class="form-check-label d-flex align-items-center" 
+                                                                                   for="file_type_0_code">
+                                                                                <i class="bi bi-file-code me-2 fs-5"></i>
+                                                                                <div>
+                                                                                    <div class="fw-semibold">Code Files</div>
+                                                                                    <small class="text-muted">PY, JS, HTML, JSON</small>
+                                                                                </div>
+                                                                            </label>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <div class="mt-2">
+                                                                <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                                        onclick="selectAllFileTypes(0)">
+                                                                    <i class="bi bi-check-all"></i> Select All
+                                                                </button>
+                                                                <button type="button" class="btn btn-sm btn-outline-secondary ms-2" 
+                                                                        onclick="deselectAllFileTypes(0)">
+                                                                    <i class="bi bi-x-circle"></i> Deselect All
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-text">Select which types of files are allowed</div>
+                                                    </div>
+                                                    
+                                                    <div class="row g-3">
+                                                        <!-- File Size Limit -->
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">Maximum File Size (MB)</label>
+                                                            <input type="number" class="form-control form-control-modern" 
+                                                                   name="file_max_size_0" 
+                                                                   min="1" max="100" value="16">
+                                                            <div class="form-text">Maximum file size allowed (1-100 MB)</div>
+                                                        </div>
+                                                        
+                                                        <!-- Multiple Files -->
+                                                        <div class="col-md-6">
+                                                            <div class="form-check mt-4">
+                                                                <input class="form-check-input" type="checkbox" 
+                                                                       name="file_multiple_0" 
+                                                                       id="file_multiple_0">
+                                                                <label class="form-check-label fw-semibold" for="file_multiple_0">
+                                                                    Allow Multiple Files
+                                                                </label>
+                                                                <div class="form-text">Users can upload multiple files for this question</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- File Requirements Summary -->
+                                                    <div class="alert alert-info p-3 mt-3">
+                                                        <i class="bi bi-info-circle me-2"></i>
+                                                        <small>
+                                                            <strong>Summary:</strong><br>
+                                                            <span id="file_summary_0">No file types selected</span>
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-4">
+                        <button type="button" class="btn btn-outline-primary btn-modern me-2" onclick="addQuestion()">
+                            <i class="bi bi-plus-circle"></i> Add Question
+                        </button>
+                        <button type="button" class="btn btn-outline-danger btn-modern" onclick="removeQuestion()">
+                            <i class="bi bi-trash"></i> Remove Last Question
+                        </button>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% if is_edit_mode %}{{ url_for('view_form', event_id=event.id, form_id=form.id) }}{% else %}{{ url_for('dashboard') }}{% endif %}" 
+                           class="btn btn-outline-secondary btn-modern">
+                            <i class="bi bi-arrow-left"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary-modern btn-modern">
+                            <i class="bi bi-check-circle"></i> {{ submit_button_text }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card-modern mt-4">
+            <div class="card-header-modern">
+                <h5 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Tips for Great Forms</h5>
+            </div>
+            <div class="card-body-modern">
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-2">✓ <strong>Keep it simple</strong> - Ask only what you need</li>
+                            <li class="mb-2">✓ <strong>Logical order</strong> - Start with basic info</li>
+                            <li class="mb-2">✓ <strong>Clear questions</strong> - Avoid ambiguity</li>
+                            <li class="mb-2">✓ <strong>Use scheduling</strong> - Control form availability</li>
+                            <li class="mb-2">✓ <strong>Enable notifications</strong> - Get alerts when form ends</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-2">✓ <strong>Use required fields</strong> - For essential info</li>
+                            <li class="mb-2">✓ <strong>Test your form</strong> - Before sharing</li>
+                            <li class="mb-2">✓ <strong>Mobile friendly</strong> - Most users are on mobile</li>
+                            <li class="mb-2">✓ <strong>Set end dates</strong> - Automatically close forms</li>
+                            <li class="mb-2">✓ <strong>Review responses</strong> - Use email notifications</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card-modern mb-4">
+            <div class="card-header-modern">
+                <h5 class="mb-0"><i class="bi bi-eye me-2"></i>Live Preview</h5>
+            </div>
+            <div class="card-body-modern">
+                <h6 class="border-bottom pb-2 mb-3" id="preview_title">{{ form_title_value }}</h6>
+                
+                <div class="alert alert-info p-3 mb-3" id="preview_description" 
+             style="display: {% if is_edit_mode and form.description %}block{% else %}none{% endif %};">
+            <i class="bi bi-info-circle me-2"></i>
+            <span id="preview_description_text">
+                {% if is_edit_mode and form.description %}
+                    {{ form.description }}
+                {% endif %}
+            </span>
+        </div>
+                
+                <div id="schedule_preview" class="mb-3" style="display: {% if is_edit_mode and form.schedule and form.schedule.enabled %}block{% else %}none{% endif %};">
+                    <div class="alert alert-warning p-2 mb-2">
+                        <i class="bi bi-clock me-2"></i>
+                        <small><strong>Scheduled Form</strong> - Will activate according to schedule</small>
+                    </div>
+                    <div id="notification_preview" class="alert alert-info p-2 mb-2" 
+                         style="display: {% if is_edit_mode and form.schedule and form.schedule.notify_on_end %}block{% else %}none{% endif %};">
+                        <i class="bi bi-bell me-2"></i>
+                        <small><strong>Notifications Enabled</strong> - You'll receive an email when form ends</small>
+                    </div>
+                </div>
+                
+                <div id="preview-container">
+                    {% if is_edit_mode %}
+                        {% for question in form.questions %}
+                        <div class="mb-3">
+                            <label class="form-label">{{ question.text }} {% if question.required %}<span class="text-danger">*</span>{% endif %}</label>
+                            {% if question.type == 'text' %}
+                                <input type="text" class="form-control form-control-modern" placeholder="Text answer" disabled>
+                            {% elif question.type == 'number' %}
+                                <input type="number" class="form-control form-control-modern" placeholder="Number" disabled>
+                            {% elif question.type == 'email' %}
+                                <input type="email" class="form-control form-control-modern" placeholder="Email address" disabled>
+                            {% elif question.type == 'date' %}
+                                <input type="date" class="form-control form-control-modern" disabled>
+                            {% elif question.type == 'textarea' %}
+                                <textarea class="form-control form-control-modern" rows="2" placeholder="Long text answer" disabled></textarea>
+                            {% elif question.type == 'radio' and question.options %}
+                                {% for option in question.options %}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" disabled>
+                                    <label class="form-check-label">{{ option }}</label>
+                                </div>
+                                {% endfor %}
+                            {% elif question.type == 'checkbox' and question.options %}
+                                {% for option in question.options %}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" disabled>
+                                    <label class="form-check-label">{{ option }}</label>
+                                </div>
+                                {% endfor %}
+                            {% elif question.type == 'dropdown' and question.options %}
+                                <select class="form-select form-control-modern" disabled>
+                                    <option selected disabled>Select option</option>
+                                    {% for option in question.options %}
+                                    <option>{{ option }}</option>
+                                    {% endfor %}
+                                </select>
+                            {% elif question.type == 'file' %}
+                                {% set file_settings = question.get('file_settings', {}) %}
+                                {% set allowed_types = file_settings.get('allowed_types', []) %}
+                                {% set max_size = file_settings.get('max_size_mb', 16) %}
+                                {% set multiple = file_settings.get('multiple', false) %}
+                                
+                                <div class="file-upload-preview">
+                                    <i class="bi bi-cloud-upload"></i>
+                                    <div><strong>File Upload</strong></div>
+                                    <small>
+                                        {% if allowed_types %}
+                                            {% set type_count = allowed_types|length %}
+                                            {% if type_count <= 3 %}
+                                                {% for type_id in allowed_types %}
+                                                    {% if type_id == 'images' %}Images{% endif %}
+                                                    {% if type_id == 'pdf' %}PDF{% endif %}
+                                                    {% if type_id == 'documents' %}Documents{% endif %}
+                                                    {% if type_id == 'spreadsheets' %}Spreadsheets{% endif %}
+                                                    {% if type_id == 'presentations' %}Presentations{% endif %}
+                                                    {% if type_id == 'archives' %}Archives{% endif %}
+                                                    {% if type_id == 'audio' %}Audio{% endif %}
+                                                    {% if type_id == 'video' %}Video{% endif %}
+                                                    {% if type_id == 'code' %}Code Files{% endif %}
+                                                    {% if not loop.last %}, {% endif %}
+                                                {% endfor %}
+                                            {% else %}
+                                                {{ type_count }} file types
+                                            {% endif %}
+                                        {% else %}
+                                            Any file
+                                        {% endif %}
+                                        • {{ 'Multiple files' if multiple else 'Single file' }} • Max {{ max_size }}MB
+                                    </small>
+                                    <div class="mt-2">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" disabled>
+                                            Choose File{{ 's' if multiple else '' }}
+                                        </button>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <input type="text" class="form-control form-control-modern" placeholder="Answer" disabled>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <!-- Default preview for new forms -->
+                        <div class="mb-3">
+                            <label class="form-label">Question 1 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-modern" placeholder="Text answer" disabled>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="text-center mt-4">
+                    <button class="btn btn-outline-secondary btn-sm" disabled>{{ submit_button_text }}</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-modern">
+            <div class="card-header-modern">
+                <h5 class="mb-0"><i class="bi bi-question-diamond me-2"></i>Question Types</h5>
+            </div>
+            <div class="card-body-modern">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item border-0 px-0 py-2">
+                        <strong>Text</strong>
+                        <small class="text-muted d-block">Short text answers</small>
+                    </div>
+                    <div class="list-group-item border-0 px-0 py-2">
+                        <strong>Number</strong>
+                        <small class="text-muted d-block">Numeric values only</small>
+                    </div>
+                    <div class="list-group-item border-0 px-0 py-2">
+                        <strong>Email</strong>
+                        <small class="text-muted d-block">Email address validation</small>
+                    </div>
+                    <div class="list-group-item border-0 px-0 py-2">
+                        <strong>Date</strong>
+                        <small class="text-muted d-block">Date picker</small>
+                    </div>
+                    <div class="list-group-item border-0 px-0 py-2">
+                        <strong>Long Text</strong>
+                        <small class="text-muted d-block">Multi-line text area</small>
+                    </div>
+                    <div class="list-group-item border-0 px-0 py-2">
+                        <strong>Multiple Choice</strong>
+                        <small class="text-muted d-block">Radio buttons (single select)</small>
+                    </div>
+                    <div class="list-group-item border-0 px-0 py-2">
+                        <strong>Checkboxes</strong>
+                        <small class="text-muted d-block">Multiple selections</small>
+                    </div>
+                    <div class="list-group-item border-0 px-0 py-2">
+                        <strong>Dropdown</strong>
+                        <small class="text-muted d-block">Select from list</small>
+                    </div>
+                    <div class="list-group-item border-0 px-0 py-2">
+                        <strong>File Upload</strong>
+                        <small class="text-muted d-block">Upload documents/images with custom settings</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-modern mt-4">
+            <div class="card-header-modern">
+                <h5 class="mb-0"><i class="bi bi-calendar-event me-2"></i>Schedule Benefits</h5>
+            </div>
+            <div class="card-body-modern">
+                <ul class="list-unstyled">
+                    <li class="mb-2">✓ <strong>Auto-open</strong> - Form activates automatically</li>
+                    <li class="mb-2">✓ <strong>Auto-close</strong> - No need to manually disable</li>
+                    <li class="mb-2">✓ <strong>Time-limited</strong> - Create urgency</li>
+                    <li class="mb-2">✓ <strong>Plan ahead</strong> - Set up forms in advance</li>
+                    <li class="mb-2">✓ <strong>Reduce spam</strong> - Limit submission window</li>
+                    <li class="mb-2">✓ <strong>Get notified</strong> - Email alerts when form ends</li>
+                    <li class="mb-2">✓ <strong>Review data</strong> - Direct link to response summary</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card-modern mt-4">
+            <div class="card-header-modern">
+                <h5 class="mb-0"><i class="bi bi-file-earmark me-2"></i>File Upload Features</h5>
+            </div>
+            <div class="card-body-modern">
+                <ul class="list-unstyled">
+                    <li class="mb-2">✓ <strong>Custom file types</strong> - Choose specific file categories</li>
+                    <li class="mb-2">✓ <strong>Size limits</strong> - Set maximum file size (1-100MB)</li>
+                    <li class="mb-2">✓ <strong>Multiple files</strong> - Allow multiple uploads per question</li>
+                    <li class="mb-2">✓ <strong>Image support</strong> - PNG, JPG, GIF, WEBP</li>
+                    <li class="mb-2">✓ <strong>Document support</strong> - PDF, DOC, DOCX, TXT</li>
+                    <li class="mb-2">✓ <strong>Media support</strong> - Audio, Video files</li>
+                    <li class="mb-2">✓ <strong>Archive support</strong> - ZIP, RAR, 7Z</li>
+                    <li class="mb-2">✓ <strong>Code files</strong> - Source code files</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card-modern mt-4">
+            <div class="card-header-modern">
+                <h5 class="mb-0"><i class="bi bi-bell me-2"></i>Email Notification</h5>
+            </div>
+            <div class="card-body-modern">
+                <p class="small mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    When enabled, you'll receive an email when the form closes containing:
+                </p>
+                <ul class="small mt-2 mb-0">
+                    <li>Form title and event name</li>
+                    <li>Total number of responses</li>
+                    <li>Direct link to view all responses</li>
+                    <li>Option to download data as CSV/PDF</li>
+                    <li>Quick action buttons</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let questionCount = {% if is_edit_mode %}{{ form.questions|length }}{% else %}1{% endif %};
+
+function toggleScheduleFields() {
+    const scheduleFields = document.getElementById('schedule_fields');
+    const schedulePreview = document.getElementById('schedule_preview');
+    const notificationField = document.getElementById('notification_field');
+    const notificationPreview = document.getElementById('notification_preview');
+    const enableSchedule = document.getElementById('enable_schedule');
+    
+    if (!enableSchedule) return;
+    
+    scheduleFields.style.display = enableSchedule.checked ? 'block' : 'none';
+    schedulePreview.style.display = enableSchedule.checked ? 'block' : 'none';
+    notificationField.style.display = enableSchedule.checked ? 'block' : 'none';
+    
+    // Update notification preview if notify checkbox exists
+    const notifyCheckbox = document.getElementById('notify_on_end');
+    if (notifyCheckbox && notificationPreview) {
+        notificationPreview.style.display = (enableSchedule.checked && notifyCheckbox.checked) ? 'block' : 'none';
+    }
+    
+    // Set min datetime for end field based on start field
+    const startDatetime = document.getElementById('start_datetime');
+    const endDatetime = document.getElementById('end_datetime');
+    
+    if (startDatetime && startDatetime.value) {
+        endDatetime.min = startDatetime.value;
+    }
+}
+
+function addQuestion() {
+    const container = document.getElementById('questions-container');
+    const newQuestion = document.createElement('div');
+    newQuestion.className = 'card-modern mb-3 question-item';
+    newQuestion.innerHTML = `
+        <div class="card-body-modern">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="mb-0">Question ${questionCount + 1}</h6>
+                <span class="badge bg-primary">Required</span>
+            </div>
+            
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <label class="form-label">Question Text</label>
+                    <input type="text" class="form-control form-control-modern" name="question_${questionCount}" 
+                           placeholder="Enter question text" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Question Type</label>
+                    <select class="form-select form-control-modern" name="type_${questionCount}" onchange="toggleOptions(this, ${questionCount})">
+                        <option value="text">Text</option>
+                        <option value="number">Number</option>
+                        <option value="email">Email</option>
+                        <option value="date">Date</option>
+                        <option value="textarea">Long Text</option>
+                        <option value="radio">Multiple Choice</option>
+                        <option value="checkbox">Checkboxes</option>
+                        <option value="dropdown">Dropdown</option>
+                        <option value="file">File Upload</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="required_${questionCount}" id="required_${questionCount}" checked>
+                        <label class="form-check-label" for="required_${questionCount}">
+                            Required field
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-3" id="options_${questionCount}" style="display: none;">
+                <div class="col-12">
+                    <label class="form-label">Options (comma separated)</label>
+                    <input type="text" class="form-control form-control-modern" name="options_${questionCount}" 
+                           placeholder="Option 1, Option 2, Option 3">
+                    <div class="form-text">Separate options with commas</div>
+                </div>
+            </div>
+            
+            <div class="row mt-3" id="file_info_${questionCount}" style="display: none;">
+                <div class="col-12">
+                    <div class="card-modern mb-3">
+                        <div class="card-header-modern">
+                            <h6 class="mb-0"><i class="bi bi-gear me-2"></i>File Upload Settings</h6>
+                        </div>
+                        <div class="card-body-modern">
+                            <!-- File Type Selection -->
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Allowed File Types</label>
+                                <div class="file-type-grid">
+                                    <div class="row row-cols-2 row-cols-md-3 g-2">
+                                        <div class="col">
+                                            <div class="file-type-card">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" 
+                                                           name="file_types_${questionCount}[]" 
+                                                           value="images"
+                                                           id="file_type_${questionCount}_images">
+                                                    <label class="form-check-label d-flex align-items-center" 
+                                                           for="file_type_${questionCount}_images">
+                                                        <i class="bi bi-image me-2 fs-5"></i>
+                                                        <div>
+                                                            <div class="fw-semibold">Images</div>
+                                                            <small class="text-muted">PNG, JPG, GIF, WEBP</small>
+                                                        </div>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="file-type-card">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" 
+                                                           name="file_types_${questionCount}[]" 
+                                                           value="pdf"
+                                                           id="file_type_${questionCount}_pdf">
+                                                    <label class="form-check-label d-flex align-items-center" 
+                                                           for="file_type_${questionCount}_pdf">
+                                                        <i class="bi bi-file-pdf me-2 fs-5"></i>
+                                                        <div>
+                                                            <div class="fw-semibold">PDF</div>
+                                                            <small class="text-muted">PDF</small>
+                                                        </div>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="file-type-card">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" 
+                                                           name="file_types_${questionCount}[]" 
+                                                           value="documents"
+                                                           id="file_type_${questionCount}_documents">
+                                                    <label class="form-check-label d-flex align-items-center" 
+                                                           for="file_type_${questionCount}_documents">
+                                                        <i class="bi bi-file-text me-2 fs-5"></i>
+                                                        <div>
+                                                            <div class="fw-semibold">Documents</div>
+                                                            <small class="text-muted">DOC, DOCX, TXT</small>
+                                                        </div>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="file-type-card">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" 
+                                                           name="file_types_${questionCount}[]" 
+                                                           value="spreadsheets"
+                                                           id="file_type_${questionCount}_spreadsheets">
+                                                    <label class="form-check-label d-flex align-items-center" 
+                                                           for="file_type_${questionCount}_spreadsheets">
+                                                        <i class="bi bi-file-spreadsheet me-2 fs-5"></i>
+                                                        <div>
+                                                            <div class="fw-semibold">Spreadsheets</div>
+                                                            <small class="text-muted">XLS, XLSX, CSV</small>
+                                                        </div>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="file-type-card">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" 
+                                                           name="file_types_${questionCount}[]" 
+                                                           value="presentations"
+                                                           id="file_type_${questionCount}_presentations">
+                                                    <label class="form-check-label d-flex align-items-center" 
+                                                           for="file_type_${questionCount}_presentations">
+                                                        <i class="bi bi-file-slides me-2 fs-5"></i>
+                                                        <div>
+                                                            <div class="fw-semibold">Presentations</div>
+                                                            <small class="text-muted">PPT, PPTX</small>
+                                                        </div>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="file-type-card">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" 
+                                                           name="file_types_${questionCount}[]" 
+                                                           value="archives"
+                                                           id="file_type_${questionCount}_archives">
+                                                    <label class="form-check-label d-flex align-items-center" 
+                                                           for="file_type_${questionCount}_archives">
+                                                        <i class="bi bi-file-zip me-2 fs-5"></i>
+                                                        <div>
+                                                            <div class="fw-semibold">Archives</div>
+                                                            <small class="text-muted">ZIP, RAR, 7Z</small>
+                                                        </div>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="file-type-card">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" 
+                                                           name="file_types_${questionCount}[]" 
+                                                           value="audio"
+                                                           id="file_type_${questionCount}_audio">
+                                                    <label class="form-check-label d-flex align-items-center" 
+                                                           for="file_type_${questionCount}_audio">
+                                                        <i class="bi bi-file-music me-2 fs-5"></i>
+                                                        <div>
+                                                            <div class="fw-semibold">Audio</div>
+                                                            <small class="text-muted">MP3, WAV, OGG</small>
+                                                        </div>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="file-type-card">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" 
+                                                           name="file_types_${questionCount}[]" 
+                                                           value="video"
+                                                           id="file_type_${questionCount}_video">
+                                                    <label class="form-check-label d-flex align-items-center" 
+                                                           for="file_type_${questionCount}_video">
+                                                        <i class="bi bi-file-play me-2 fs-5"></i>
+                                                        <div>
+                                                            <div class="fw-semibold">Video</div>
+                                                            <small class="text-muted">MP4, MOV, AVI</small>
+                                                        </div>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="file-type-card">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" 
+                                                           name="file_types_${questionCount}[]" 
+                                                           value="code"
+                                                           id="file_type_${questionCount}_code">
+                                                    <label class="form-check-label d-flex align-items-center" 
+                                                           for="file_type_${questionCount}_code">
+                                                        <i class="bi bi-file-code me-2 fs-5"></i>
+                                                        <div>
+                                                            <div class="fw-semibold">Code Files</div>
+                                                            <small class="text-muted">PY, JS, HTML, JSON</small>
+                                                        </div>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-2">
+                                        <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                onclick="selectAllFileTypes(${questionCount})">
+                                            <i class="bi bi-check-all"></i> Select All
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary ms-2" 
+                                                onclick="deselectAllFileTypes(${questionCount})">
+                                            <i class="bi bi-x-circle"></i> Deselect All
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="form-text">Select which types of files are allowed</div>
+                            </div>
+                            
+                            <div class="row g-3">
+                                <!-- File Size Limit -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Maximum File Size (MB)</label>
+                                    <input type="number" class="form-control form-control-modern" 
+                                           name="file_max_size_${questionCount}" 
+                                           min="1" max="100" value="16">
+                                    <div class="form-text">Maximum file size allowed (1-100 MB)</div>
+                                </div>
+                                
+                                <!-- Multiple Files -->
+                                <div class="col-md-6">
+                                    <div class="form-check mt-4">
+                                        <input class="form-check-input" type="checkbox" 
+                                               name="file_multiple_${questionCount}" 
+                                               id="file_multiple_${questionCount}">
+                                        <label class="form-check-label fw-semibold" for="file_multiple_${questionCount}">
+                                            Allow Multiple Files
+                                        </label>
+                                        <div class="form-text">Users can upload multiple files for this question</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- File Requirements Summary -->
+                            <div class="alert alert-info p-3 mt-3">
+                                <i class="bi bi-info-circle me-2"></i>
+                                <small>
+                                    <strong>Summary:</strong><br>
+                                    <span id="file_summary_${questionCount}">No file types selected</span>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    container.appendChild(newQuestion);
+    updatePreview();
+    questionCount++;
+}
+
+function removeQuestion() {
+    if (questionCount > 1) {
+        const container = document.getElementById('questions-container');
+        container.removeChild(container.lastChild);
+        questionCount--;
+        updatePreview();
+    }
+}
+
+function toggleOptions(selectElement, index) {
+    const optionsDiv = document.getElementById(`options_${index}`);
+    const fileInfoDiv = document.getElementById(`file_info_${index}`);
+    const showFor = ['radio', 'checkbox', 'dropdown'];
+    
+    optionsDiv.style.display = showFor.includes(selectElement.value) ? 'block' : 'none';
+    fileInfoDiv.style.display = selectElement.value === 'file' ? 'block' : 'none';
+    
+    // Initialize file type checkboxes if showing file info
+    if (selectElement.value === 'file' && fileInfoDiv.style.display === 'block') {
+        // Add event listeners to file type checkboxes
+        const checkboxes = fileInfoDiv.querySelectorAll(`input[name="file_types_${index}[]"]`);
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', () => updateFileSummary(index));
+        });
+        
+        // Add event listeners to other file settings
+        const maxSizeInput = fileInfoDiv.querySelector(`[name="file_max_size_${index}"]`);
+        const multipleCheckbox = fileInfoDiv.querySelector(`[name="file_multiple_${index}"]`);
+        
+        if (maxSizeInput) {
+            maxSizeInput.addEventListener('input', () => updatePreview());
+        }
+        
+        if (multipleCheckbox) {
+            multipleCheckbox.addEventListener('change', () => updatePreview());
+        }
+        
+        // Initialize summary
+        updateFileSummary(index);
+    }
+    
+    updatePreview();
+}
+
+function selectAllFileTypes(questionIndex) {
+    const checkboxes = document.querySelectorAll(`input[name="file_types_${questionIndex}[]"]`);
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = true;
+    });
+    updateFileSummary(questionIndex);
+    updatePreview();
+}
+
+function deselectAllFileTypes(questionIndex) {
+    const checkboxes = document.querySelectorAll(`input[name="file_types_${questionIndex}[]"]`);
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    updateFileSummary(questionIndex);
+    updatePreview();
+}
+
+function updateFileSummary(questionIndex) {
+    const checkboxes = document.querySelectorAll(`input[name="file_types_${questionIndex}[]"]:checked`);
+    const summaryElement = document.getElementById(`file_summary_${questionIndex}`);
+    
+    if (!summaryElement) return;
+    
+    const fileTypes = {
+        'images': 'Images',
+        'pdf': 'PDF',
+        'documents': 'Documents',
+        'spreadsheets': 'Spreadsheets',
+        'presentations': 'Presentations',
+        'archives': 'Archives',
+        'audio': 'Audio',
+        'video': 'Video',
+        'code': 'Code Files'
+    };
+    
+    const selectedTypes = Array.from(checkboxes).map(cb => fileTypes[cb.value]);
+    
+    if (selectedTypes.length === 0) {
+        summaryElement.textContent = "No file types selected";
+    } else if (selectedTypes.length === 1) {
+        summaryElement.textContent = `Allowed: ${selectedTypes[0]}`;
+    } else if (selectedTypes.length <= 3) {
+        summaryElement.textContent = `Allowed: ${selectedTypes.join(', ')}`;
+    } else {
+        summaryElement.textContent = `Allowed: ${selectedTypes.length} file types`;
+    }
+    
+    updatePreview();
+}
+
+function updatePreview() {
+    const previewContainer = document.getElementById('preview-container');
+    const questions = document.querySelectorAll('.question-item');
+    
+    previewContainer.innerHTML = '';
+    
+    // Update form title preview
+    const formTitleInput = document.querySelector('[name="form_title"]');
+    const previewTitle = document.getElementById('preview_title');
+    if (formTitleInput && previewTitle) {
+        previewTitle.textContent = formTitleInput.value || 'Form Preview';
+    }
+    
+    // Update form description preview
+    const formDescriptionInput = document.querySelector('[name="form_description"]');
+    const previewDescription = document.getElementById('preview_description');
+    const previewDescriptionText = document.getElementById('preview_description_text');
+    
+    if (formDescriptionInput && previewDescription && previewDescriptionText) {
+        const description = formDescriptionInput.value.trim();
+        if (description) {
+            previewDescriptionText.textContent = description;
+            previewDescription.style.display = 'block';
+        } else {
+            previewDescription.style.display = 'none';
+        }
+    }
+    
+    questions.forEach((question, index) => {
+        const questionInput = question.querySelector(`[name="question_${index}"]`);
+        const typeSelect = question.querySelector(`[name="type_${index}"]`);
+        const requiredCheckbox = question.querySelector(`[name="required_${index}"]`);
+        
+        if (!questionInput || !typeSelect || !requiredCheckbox) return;
+        
+        const questionText = questionInput.value || 'Untitled Question';
+        const questionType = typeSelect.value;
+        const isRequired = requiredCheckbox.checked;
+        
+        let options = '';
+        const optionsInput = question.querySelector(`[name="options_${index}"]`);
+        if (optionsInput) {
+            options = optionsInput.value || '';
+        }
+        
+        // Get file settings for preview
+        let fileSettings = {};
+        if (questionType === 'file') {
+            const maxSizeInput = question.querySelector(`[name="file_max_size_${index}"]`);
+            const multipleCheckbox = question.querySelector(`[name="file_multiple_${index}"]`);
+            const fileTypeCheckboxes = question.querySelectorAll(`input[name="file_types_${index}[]"]:checked`);
+            
+            const fileTypes = {
+                'images': 'Images',
+                'pdf': 'PDF',
+                'documents': 'Documents',
+                'spreadsheets': 'Spreadsheets',
+                'presentations': 'Presentations',
+                'archives': 'Archives',
+                'audio': 'Audio',
+                'video': 'Video',
+                'code': 'Code Files'
+            };
+            
+            fileSettings = {
+                maxSize: maxSizeInput ? maxSizeInput.value : '16',
+                multiple: multipleCheckbox ? multipleCheckbox.checked : false,
+                allowedTypes: Array.from(fileTypeCheckboxes).map(cb => fileTypes[cb.value])
+            };
+        }
+        
+        const previewItem = document.createElement('div');
+        previewItem.className = 'mb-3';
+        
+        let inputHtml = '';
+        
+        switch(questionType) {
+            case 'text':
+                inputHtml = `<input type="text" class="form-control form-control-modern" placeholder="Text answer" disabled>`;
+                break;
+            case 'number':
+                inputHtml = `<input type="number" class="form-control form-control-modern" placeholder="Number" disabled>`;
+                break;
+            case 'email':
+                inputHtml = `<input type="email" class="form-control form-control-modern" placeholder="Email address" disabled>`;
+                break;
+            case 'date':
+                inputHtml = `<input type="date" class="form-control form-control-modern" disabled>`;
+                break;
+            case 'textarea':
+                inputHtml = `<textarea class="form-control form-control-modern" rows="2" placeholder="Long text answer" disabled></textarea>`;
+                break;
+            case 'radio':
+                inputHtml = options.split(',').map(opt => opt.trim()).filter(opt => opt).map(opt => 
+                    `<div class="form-check"><input class="form-check-input" type="radio" disabled><label class="form-check-label">${opt}</label></div>`
+                ).join('');
+                break;
+            case 'checkbox':
+                inputHtml = options.split(',').map(opt => opt.trim()).filter(opt => opt).map(opt => 
+                    `<div class="form-check"><input class="form-check-input" type="checkbox" disabled><label class="form-check-label">${opt}</label></div>`
+                ).join('');
+                break;
+            case 'dropdown':
+                inputHtml = `<select class="form-select form-control-modern" disabled><option selected disabled>Select option</option>` +
+                    options.split(',').map(opt => opt.trim()).filter(opt => opt).map(opt => 
+                        `<option>${opt}</option>`
+                    ).join('') + `</select>`;
+                break;
+            case 'file':
+                let fileTypesText = 'Any file';
+                if (fileSettings.allowedTypes && fileSettings.allowedTypes.length > 0) {
+                    if (fileSettings.allowedTypes.length <= 3) {
+                        fileTypesText = fileSettings.allowedTypes.join(', ');
+                    } else {
+                        fileTypesText = `${fileSettings.allowedTypes.length} file types`;
+                    }
+                }
+                
+                const multipleText = fileSettings.multiple ? 'multiple files' : 'single file';
+                const sizeText = `Max ${fileSettings.maxSize}MB`;
+                
+                inputHtml = `
+                    <div class="file-upload-preview">
+                        <i class="bi bi-cloud-upload"></i>
+                        <div><strong>File Upload</strong></div>
+                        <small>${fileTypesText} • ${multipleText} • ${sizeText}</small>
+                        <div class="mt-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" disabled>
+                                Choose File${fileSettings.multiple ? 's' : ''}
+                            </button>
+                        </div>
+                    </div>
+                `;
+                break;
+            default:
+                inputHtml = `<input type="text" class="form-control form-control-modern" placeholder="Answer" disabled>`;
+        }
+        
+        previewItem.innerHTML = `
+            <label class="form-label">${questionText} ${isRequired ? '<span class="text-danger">*</span>' : ''}</label>
+            ${inputHtml}
+        `;
+        
+        previewContainer.appendChild(previewItem);
+    });
+}
+
+// Initialize preview and schedule fields
+document.addEventListener('DOMContentLoaded', function() {
+    // Update preview title when form title changes
+    const formTitleInput = document.querySelector('[name="form_title"]');
+    const previewTitle = document.getElementById('preview_title');
+    
+    if (formTitleInput && previewTitle) {
+        formTitleInput.addEventListener('input', function() {
+            previewTitle.textContent = this.value || 'Form Preview';
+        });
+    }
+    
+    // Update preview description when form description changes
+    const formDescriptionInput = document.querySelector('[name="form_description"]');
+    const previewDescription = document.getElementById('preview_description');
+    const previewDescriptionText = document.getElementById('preview_description_text');
+    
+    if (formDescriptionInput && previewDescription && previewDescriptionText) {
+        formDescriptionInput.addEventListener('input', function() {
+            const description = this.value.trim();
+            if (description) {
+                previewDescriptionText.textContent = description;
+                previewDescription.style.display = 'block';
+            } else {
+                previewDescription.style.display = 'none';
+            }
+        });
+        
+        // Initialize description preview on page load
+        const initialDescription = formDescriptionInput.value.trim();
+        if (initialDescription) {
+            previewDescriptionText.textContent = initialDescription;
+            previewDescription.style.display = 'block';
+        }
+    }
+    
+    // Add event listeners to existing questions
+    document.querySelectorAll('[name^="type_"]').forEach((select, index) => {
+        select.addEventListener('change', function() {
+            toggleOptions(this, index);
+        });
+    });
+    
+    // Update preview when inputs change
+    document.querySelectorAll('[name^="question_"], [name^="type_"], [name^="required_"], [name^="options_"]').forEach(input => {
+        input.addEventListener('input', updatePreview);
+        input.addEventListener('change', updatePreview);
+    });
+    
+    // Schedule field listeners
+    const enableSchedule = document.getElementById('enable_schedule');
+    const startDatetime = document.getElementById('start_datetime');
+    const endDatetime = document.getElementById('end_datetime');
+    const notifyCheckbox = document.getElementById('notify_on_end');
+    const notificationPreview = document.getElementById('notification_preview');
+    
+    if (enableSchedule) {
+        enableSchedule.addEventListener('change', toggleScheduleFields);
+    }
+    
+    if (notifyCheckbox) {
+        notifyCheckbox.addEventListener('change', function() {
+            if (notificationPreview) {
+                notificationPreview.style.display = this.checked ? 'block' : 'none';
+            }
+        });
+    }
+    
+    if (startDatetime) {
+        startDatetime.addEventListener('change', function() {
+            if (endDatetime && this.value) {
+                endDatetime.min = this.value;
+            }
+        });
+    }
+    
+    // Initialize file type checkboxes for existing file questions
+    document.querySelectorAll('[name^="file_types_"]').forEach((checkbox, index) => {
+        const parentQuestion = checkbox.closest('.question-item');
+        if (parentQuestion) {
+            const typeSelect = parentQuestion.querySelector('[name^="type_"]');
+            if (typeSelect && typeSelect.value === 'file') {
+                checkbox.addEventListener('change', () => {
+                    const questionIndex = typeSelect.name.split('_')[1];
+                    updateFileSummary(questionIndex);
+                });
+            }
+        }
+    });
+    
+    // Initialize file settings inputs for existing file questions
+    document.querySelectorAll('[name^="file_max_size_"], [name^="file_multiple_"]').forEach(input => {
+        input.addEventListener('input', updatePreview);
+        input.addEventListener('change', updatePreview);
+    });
+    
+    // Initialize schedule fields visibility
+    toggleScheduleFields();
+    
+    // Initialize options visibility for all questions
+    document.querySelectorAll('[name^="type_"]').forEach((select, index) => {
+        toggleOptions(select, index);
+    });
+    
+    // Initialize file summaries for existing file questions
+    document.querySelectorAll('[id^="file_summary_"]').forEach(summaryElement => {
+        const id = summaryElement.id;
+        const questionIndex = id.split('_')[2];
+        updateFileSummary(questionIndex);
+    });
+    
+    updatePreview();
+});
+</script>
+{% endblock %}

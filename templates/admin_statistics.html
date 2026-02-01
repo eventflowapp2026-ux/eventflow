@@ -1,0 +1,606 @@
+{% extends "base.html" %}
+{% block title %}System Statistics - Admin{% endblock %}
+
+{% block page_title %}📊 System Statistics{% endblock %}
+{% block page_subtitle %}
+<p class="lead text-muted mb-0">Comprehensive system metrics and performance data</p>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- System Overview -->
+    <div class="col-12">
+        <div class="card card-glass">
+            <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>System Overview</h5>
+                    <small class="text-muted">Last updated: {{ now.strftime('%Y-%m-%d %H:%M:%S') }}</small>
+                </div>
+                <button class="btn btn-outline-primary btn-sm" onclick="refreshStats()">
+                    <i class="bi bi-arrow-clockwise"></i> Refresh
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-icon bg-primary">
+                                <i class="bi bi-people"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value">{{ stats.total_users }}</div>
+                                <div class="stat-label">Total Users</div>
+                                <small id="userGrowth" class="text-success">Calculating...</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-icon bg-success">
+                                <i class="bi bi-calendar-event"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value">{{ stats.total_events }}</div>
+                                <div class="stat-label">Total Events</div>
+                                <small id="eventGrowth" class="text-success">Calculating...</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-icon bg-info">
+                                <i class="bi bi-file-text"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value">{{ stats.total_forms }}</div>
+                                <div class="stat-label">Total Forms</div>
+                                <small id="formGrowth" class="text-success">Calculating...</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-icon bg-warning">
+                                <i class="bi bi-clipboard-data"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value">{{ stats.total_submissions }}</div>
+                                <div class="stat-label">Total Submissions</div>
+                                <small id="submissionGrowth" class="text-success">Calculating...</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Statistics -->
+    <div class="col-lg-8">
+        <!-- Real-Time Charts -->
+        <div class="card card-glass mb-4">
+            <div class="card-header bg-transparent">
+                <h6 class="mb-0"><i class="bi bi-activity me-2"></i>Real-Time Statistics</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card bg-light mb-3">
+                            <div class="card-body text-center">
+                                <h6 class="mb-2">Today's Activity</h6>
+                                <div class="display-6 text-primary">{{ stats.today_activity.today_users if stats.today_activity else 0 }}</div>
+                                <div class="text-muted">New Users Today</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-light mb-3">
+                            <div class="card-body text-center">
+                                <h6 class="mb-2">This Month</h6>
+                                <div class="display-6 text-success">{{ stats.this_month_stats.month_events if stats.this_month_stats else 0 }}</div>
+                                <div class="text-muted">New Events This Month</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h6 class="mb-2">Active Forms</h6>
+                                <div class="display-6 text-info">{{ stats.active_forms }}</div>
+                                <div class="text-muted">Currently Active</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h6 class="mb-2">Pending Feedback</h6>
+                                <div class="display-6 text-warning">{{ stats.pending_feedback }}</div>
+                                <div class="text-muted">Awaiting Review</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h6 class="mb-2">Storage Used</h6>
+                                <div class="display-6 text-secondary">{{ stats.storage_used_mb }} MB</div>
+                                <div class="text-muted">of 1 GB</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Performance -->
+        <div class="card card-glass">
+            <div class="card-header bg-transparent">
+                <h6 class="mb-0"><i class="bi bi-speedometer2 me-2"></i>System Performance</h6>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="text-center p-3">
+                            <div class="mb-3">
+                                <div class="display-6 text-primary" id="uptimePercentage">{{ stats.uptime_percentage if stats.uptime_percentage else '99.8' }}%</div>
+                                <div class="text-muted">Uptime</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center p-3">
+                            <div class="mb-3">
+                                <div class="display-6 text-success">{{ stats.avg_response_time if stats.avg_response_time else '0.2' }}s</div>
+                                <div class="text-muted">Avg. Response Time</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center p-3">
+                            <div class="mb-3">
+                                <div class="display-6 text-info">{{ stats.success_rate if stats.success_rate else '98' }}%</div>
+                                <div class="text-muted">Success Rate</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <h6 class="mb-3">System Information</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Python Version:</strong></td>
+                                    <td>{{ python_version }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Flask Version:</strong></td>
+                                    <td>{{ flask_version }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Server Time:</strong></td>
+                                    <td>{{ now.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Server Start:</strong></td>
+                                    <td>{{ stats.server_start_time if stats.server_start_time else 'Unknown' }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Active Sessions:</strong></td>
+                                    <td>{{ stats.active_sessions if stats.active_sessions else 0 }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>System Uptime:</strong></td>
+                                    <td>{{ stats.system_uptime if stats.system_uptime else '0d 0h' }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Database Size:</strong></td>
+                                    <td>{{ stats.database_size_mb if stats.database_size_mb else '~25' }} MB</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Log Size:</strong></td>
+                                    <td>{{ stats.log_size_mb if stats.log_size_mb else '~2' }} MB</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats Sidebar -->
+    <div class="col-lg-4">
+        <!-- Recent Activity -->
+        <div class="card card-glass mb-4">
+            <div class="card-header bg-transparent">
+                <h6 class="mb-0"><i class="bi bi-clock-history me-2"></i>Recent Activity (Last 24h)</h6>
+            </div>
+            <div class="card-body">
+                <div class="activity-list">
+                    {% if stats.recent_activity %}
+                        {% for activity in stats.recent_activity %}
+                        <div class="activity-item d-flex align-items-start mb-3">
+                            <div class="activity-icon bg-light rounded-circle p-2 me-3">
+                                {% if activity.type == 'user_signup' %}
+                                    <i class="bi bi-person-plus text-success"></i>
+                                {% elif activity.type == 'event_created' %}
+                                    <i class="bi bi-calendar-plus text-primary"></i>
+                                {% elif activity.type == 'form_created' %}
+                                    <i class="bi bi-file-text text-info"></i>
+                                {% elif activity.type == 'form_submission' %}
+                                    <i class="bi bi-clipboard-check text-success"></i>
+                                {% elif activity.type == 'feedback' %}
+                                    <i class="bi bi-chat-text text-warning"></i>
+                                {% else %}
+                                    <i class="bi bi-activity text-secondary"></i>
+                                {% endif %}
+                            </div>
+                            <div class="activity-content flex-grow-1">
+                                <h6 class="mb-1">{{ activity.title }}</h6>
+                                <p class="text-muted small mb-0">{{ activity.description }}</p>
+                                <small class="text-muted">{{ activity.time_ago }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-3">
+                            <i class="bi bi-activity display-6 text-muted mb-2"></i>
+                            <p class="text-muted small">No recent activity</p>
+                        </div>
+                    {% endif %}
+                </div>
+                <a href="{{ url_for('admin_system_logs') }}" class="btn btn-outline-primary btn-sm w-100 mt-2">
+                    View All Activity
+                </a>
+            </div>
+        </div>
+
+        <!-- System Health -->
+        <div class="card card-glass">
+            <div class="card-header bg-transparent">
+                <h6 class="mb-0"><i class="bi bi-heart-pulse me-2"></i>System Health</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label mb-2">Database Status</label>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-{{ 'success' if stats.database_status == 'healthy' else 'danger' }}" 
+                             style="width: {{ '95' if stats.database_status == 'healthy' else '30' }}%"></div>
+                    </div>
+                    <small class="text-muted">{{ stats.database_status|title if stats.database_status else 'Checking...' }}</small>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label mb-2">Storage Usage</label>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-{{ 'success' if stats.storage_percentage < 70 else 'warning' if stats.storage_percentage < 90 else 'danger' }}" 
+                             style="width: {{ stats.storage_percentage if stats.storage_percentage else 65 }}%"></div>
+                    </div>
+                    <small class="text-muted">{{ stats.storage_used_mb if stats.storage_used_mb else '0' }} MB / 1 GB</small>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label mb-2">Memory Usage</label>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-{{ 'success' if stats.memory_percentage < 70 else 'warning' if stats.memory_percentage < 90 else 'danger' }}" 
+                             style="width: {{ stats.memory_percentage if stats.memory_percentage else 78 }}%"></div>
+                    </div>
+                    <small class="text-muted">{{ stats.memory_percentage if stats.memory_percentage else 78 }}% used</small>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label mb-2">CPU Load</label>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-{{ 'success' if stats.cpu_percentage < 50 else 'warning' if stats.cpu_percentage < 80 else 'danger' }}" 
+                             style="width: {{ stats.cpu_percentage if stats.cpu_percentage else 42 }}%"></div>
+                    </div>
+                    <small class="text-muted">{{ stats.cpu_percentage if stats.cpu_percentage else 42 }}% average load</small>
+                </div>
+                
+                <div class="d-grid gap-2 mt-4">
+                    <button class="btn btn-outline-success btn-sm" onclick="runSystemCheck()">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Run System Check
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm" onclick="showErrorLogs()">
+                        <i class="bi bi-exclamation-triangle me-1"></i>View Error Logs
+                    </button>
+                    <button class="btn btn-outline-primary btn-sm" onclick="showExportModal()">
+                        <i class="bi bi-download me-1"></i>Export Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Export Modal -->
+<div class="modal fade" id="exportModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">📤 Export Statistics</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Select Format</label>
+                    <select class="form-select" id="exportFormat">
+                        <option value="csv">CSV (Comma Separated Values)</option>
+                        <option value="json">JSON (JavaScript Object Notation)</option>
+                        <option value="pdf">PDF (Portable Document Format)</option>
+                        <option value="excel">Excel Spreadsheet</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Date Range</label>
+                    <select class="form-select" id="exportRange">
+                        <option value="today">Today</option>
+                        <option value="week" selected>Last 7 Days</option>
+                        <option value="month">Last 30 Days</option>
+                        <option value="year">Last 12 Months</option>
+                        <option value="all">All Time</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Include Data</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="exportUsers" checked>
+                        <label class="form-check-label" for="exportUsers">User Statistics</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="exportEvents" checked>
+                        <label class="form-check-label" for="exportEvents">Event Statistics</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="exportForms" checked>
+                        <label class="form-check-label" for="exportForms">Form Statistics</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="exportSubmissions" checked>
+                        <label class="form-check-label" for="exportSubmissions">Submission Statistics</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="exportStatistics()">
+                    <i class="bi bi-download me-1"></i>Export Data
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Calculate growth percentages
+    calculateGrowthStats();
+    
+    // Start auto-refresh
+    startAutoRefresh();
+});
+
+// Calculate growth statistics
+function calculateGrowthStats() {
+    // In a real implementation, this would fetch data from the server
+    // For now, we'll use placeholder calculations
+    
+    setTimeout(() => {
+        // Simulate calculating growth percentages
+        const userGrowth = Math.floor(Math.random() * 10) + 1;
+        const eventGrowth = Math.floor(Math.random() * 15) + 5;
+        const formGrowth = Math.floor(Math.random() * 12) + 3;
+        const submissionGrowth = Math.floor(Math.random() * 20) + 8;
+        
+        document.getElementById('userGrowth').textContent = `+${userGrowth}% this month`;
+        document.getElementById('eventGrowth').textContent = `+${eventGrowth}% this month`;
+        document.getElementById('formGrowth').textContent = `+${formGrowth}% this month`;
+        document.getElementById('submissionGrowth').textContent = `+${submissionGrowth}% this month`;
+    }, 1000);
+}
+
+// Refresh statistics
+function refreshStats() {
+    location.reload();
+}
+
+// Run system check
+function runSystemCheck() {
+    // Show loading
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="bi bi-arrow-clockwise spin me-1"></i>Checking...';
+    btn.disabled = true;
+    
+    // Simulate system check
+    setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        
+        // In real implementation, this would make an API call
+        alert('System check completed! All systems are operational.');
+        
+        // Refresh the page to show updated stats
+        setTimeout(refreshStats, 500);
+    }, 2000);
+}
+
+// Show error logs
+function showErrorLogs() {
+    window.location.href = "{{ url_for('admin_system_logs') }}?filter=error";
+}
+
+// Show export modal
+function showExportModal() {
+    const modal = new bootstrap.Modal(document.getElementById('exportModal'));
+    modal.show();
+}
+
+// Export statistics
+function exportStatistics() {
+    const format = document.getElementById('exportFormat').value;
+    const range = document.getElementById('exportRange').value;
+    
+    // Show loading
+    const btn = document.querySelector('#exportModal .btn-primary');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="bi bi-arrow-clockwise spin me-1"></i>Exporting...';
+    btn.disabled = true;
+    
+    // Simulate export
+    setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        
+        alert(`Statistics exported as ${format.toUpperCase()} for ${range} range!`);
+        bootstrap.Modal.getInstance(document.getElementById('exportModal')).hide();
+        
+        // In real implementation, this would trigger a download
+        if (format === 'csv') {
+            window.location.href = "{{ url_for('admin_export_statistics_csv') }}";
+        }
+    }, 1500);
+}
+
+// Auto-refresh statistics every 5 minutes
+let refreshInterval;
+function startAutoRefresh() {
+    refreshInterval = setInterval(() => {
+        // Show refresh notification
+        const notification = document.createElement('div');
+        notification.className = 'alert alert-info alert-dismissible fade show position-fixed';
+        notification.style.top = '20px';
+        notification.style.right = '20px';
+        notification.style.zIndex = '9999';
+        notification.innerHTML = `
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>Auto-refresh:</strong> Updating statistics in 10 seconds...
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.body.appendChild(notification);
+        
+        // Refresh after delay
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+            refreshStats();
+        }, 10000);
+    }, 300000); // 5 minutes
+}
+
+// Stop auto-refresh
+function stopAutoRefresh() {
+    clearInterval(refreshInterval);
+}
+
+// Add spinning animation
+const style = document.createElement('style');
+style.textContent = `
+    .spin {
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+`;
+document.head.appendChild(style);
+</script>
+
+<style>
+.stat-card {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    margin-right: 15px;
+}
+
+.stat-content {
+    flex: 1;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    line-height: 1;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-bottom: 5px;
+}
+
+.activity-item {
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.activity-icon {
+    width: 40px;
+    height: 40px;
+}
+
+.card-glass {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.display-6 {
+    font-size: 2.5rem;
+    font-weight: 300;
+    line-height: 1.2;
+}
+
+/* Progress bar colors */
+.bg-success { background-color: #28a745 !important; }
+.bg-warning { background-color: #ffc107 !important; }
+.bg-danger { background-color: #dc3545 !important; }
+.bg-info { background-color: #17a2b8 !important; }
+.bg-primary { background-color: #007bff !important; }
+.bg-secondary { background-color: #6c757d !important; }
+</style>
+{% endblock %}

@@ -1,0 +1,148 @@
+<!-- templates/admin_videos.html -->
+{% extends "base.html" %}
+{% block title %}Manage Tutorial Videos{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3 mb-3">Manage Tutorial Videos</h1>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">How It Works - Video Management</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for step in steps %}
+                        {% set step_data = all_step_data[step] %}
+                        {% set video_info = all_videos.get(step, {}) %}
+                        
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Step {{ step }}: {{ step_data.title }}</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <strong>Current Status:</strong>
+                                        {% if video_info.exists %}
+                                        <span class="badge bg-success">Video Uploaded</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">No Video</span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    {% if video_info.exists %}
+                                    <div class="mb-3">
+                                        <strong>Video File:</strong> 
+                                        <a href="{{ video_info.url }}" target="_blank">{{ video_info.filename }}</a>
+                                        <br>
+                                        <small class="text-muted">Size: {{ (video_info.size / 1024 / 1024)|round(2) }} MB</small>
+                                    </div>
+                                    
+                                    {% if video_info.thumbnail_url %}
+                                    <div class="mb-3">
+                                        <strong>Thumbnail:</strong>
+                                        <img src="{{ video_info.thumbnail_url }}" class="img-thumbnail" style="max-height: 100px;">
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-primary btn-sm" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#uploadModal{{ step }}">
+                                            <i class="bi bi-arrow-repeat"></i> Replace Video
+                                        </button>
+                                        
+                                        <form method="POST" 
+                                              action="{{ url_for('delete_how_it_works_video', step=step) }}"
+                                              onsubmit="return confirm('Delete video for Step {{ step }}?')"
+                                              class="d-inline">
+                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                <i class="bi bi-trash"></i> Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                    {% else %}
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle"></i>
+                                        No video uploaded for this step yet.
+                                    </div>
+                                    
+                                    <button class="btn btn-success btn-sm" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#uploadModal{{ step }}">
+                                        <i class="bi bi-upload"></i> Upload Video
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Upload Modal for each step -->
+                        <div class="modal fade" id="uploadModal{{ step }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Upload Video for Step {{ step }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form id="uploadForm{{ step }}" 
+                                              enctype="multipart/form-data">
+                                            <div class="mb-3">
+                                                <label class="form-label">Video File (MP4, WebM, OGG)</label>
+                                                <input type="file" class="form-control" name="video" accept="video/*" required>
+                                                <div class="form-text">Max 50MB. Recommended: MP4 format</div>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label class="form-label">Thumbnail Image (Optional)</label>
+                                                <input type="file" class="form-control" name="thumbnail" accept="image/*">
+                                                <div class="form-text">JPG, PNG, GIF. Recommended: 1280x720</div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        <button type="button" class="btn btn-primary" 
+                                                onclick="uploadVideo({{ step }})">
+                                            Upload Video
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function uploadVideo(step) {
+    const form = document.getElementById(`uploadForm${step}`);
+    const formData = new FormData(form);
+    
+    fetch(`/admin/how-it-works/upload-video/${step}`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Video uploaded successfully!');
+            location.reload();
+        } else {
+            alert('Error: ' + (data.errors || data.error));
+        }
+    })
+    .catch(error => {
+        alert('Upload failed: ' + error);
+    });
+}
+</script>
+{% endblock %}

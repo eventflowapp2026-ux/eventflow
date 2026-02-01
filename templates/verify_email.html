@@ -1,0 +1,303 @@
+<!-- verify_email.html -->
+{% extends "base.html" %}
+{% block title %}Verify Your Email{% endblock %}
+
+{% block page_title %}Verify Your Email{% endblock %}
+{% block page_subtitle %}
+<p class="text-muted mb-0">Enter the 6-digit code sent to your email</p>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card-modern">
+            <div class="card-header-modern text-center">
+                <div class="verify-icon mb-3">
+                    <div class="icon-circle bg-primary-soft">
+                        <i class="bi bi-shield-lock text-primary" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+                <h4 class="mb-2">Email Verification Required</h4>
+                <p class="text-muted mb-0">We've sent a code to:</p>
+                <div class="email-display mt-2 p-3 bg-light rounded">
+                    <strong><i class="bi bi-envelope me-2"></i>{{ email }}</strong>
+                </div>
+            </div>
+            <div class="card-body-modern">
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-modern">
+                                <i class="bi {% if category == 'success' %}bi-check-circle{% elif category == 'error' %}bi-exclamation-triangle{% else %}bi-info-circle{% endif %} me-2"></i>
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <!-- OTP Form -->
+                <form method="POST" action="{{ url_for('verify_email') }}" id="otpForm">
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Enter 6-digit Verification Code</label>
+                        <div class="otp-input-group">
+                            <input type="text" 
+                                   class="form-control form-control-modern text-center otp-input" 
+                                   name="otp" 
+                                   id="otp"
+                                   placeholder="123456" 
+                                   maxlength="6"
+                                   pattern="\d{6}"
+                                   inputmode="numeric"
+                                   required
+                                   autofocus
+                                   autocomplete="one-time-code"
+                                   style="font-size: 1.5rem; letter-spacing: 0.5rem; font-weight: bold;">
+                        </div>
+                        <div class="form-text text-center mt-2">
+                            <i class="bi bi-clock me-1"></i> Code expires in 5 minutes
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary-modern btn-modern w-100 mb-3" id="submitBtn">
+                        <i class="bi bi-arrow-clockwise me-2"></i> Verify & Create Account
+                    </button>
+
+                    <div class="text-center mb-3">
+                        <a href="{{ url_for('resend_otp') }}" class="btn btn-outline-primary btn-modern">
+                            <i class="bi bi-shield-check me-2"></i> Resend Code
+                        </a>
+                    </div>
+                </form>
+
+                <!-- Instructions -->
+                <div class="card info-card mt-4">
+                    <div class="card-body">
+                        <h6 class="card-title mb-3">
+                            <i class="bi bi-info-circle me-2"></i> Instructions
+                        </h6>
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                Check your email inbox (and spam folder)
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                Enter the 6-digit code exactly as shown
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                Code will expire in 5 minutes
+                            </li>
+                            <li>
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                Need help? <a href="mailto:support@example.com">Contact support</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <a href="{{ url_for('signup') }}" class="text-decoration-none">
+                        <i class="bi bi-arrow-left me-2"></i> Use different email
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Countdown Timer -->
+<div class="row justify-content-center mt-3">
+    <div class="col-md-6 col-lg-5">
+        <div class="card border-0 bg-light">
+            <div class="card-body text-center py-3">
+                <div class="d-flex justify-content-center align-items-center">
+                    <i class="bi bi-clock-history me-2 text-primary"></i>
+                    <div>
+                        <small class="text-muted">Time remaining: </small>
+                        <strong id="countdown" class="text-primary">05:00</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .otp-input-group {
+        position: relative;
+    }
+    
+    .otp-input {
+        padding: 1rem 1.5rem;
+        border: 2px solid var(--bs-border-color);
+        transition: all 0.3s;
+    }
+    
+    .otp-input:focus {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+    }
+    
+    .verify-icon .icon-circle {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        background: rgba(var(--bs-primary-rgb), 0.1);
+    }
+    
+    .email-display {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-left: 4px solid var(--bs-primary);
+    }
+    
+    .info-card {
+        border: 1px solid rgba(var(--bs-primary-rgb), 0.2);
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    }
+</style>
+
+<script>
+    // OTP Input Formatting
+    const otpInput = document.getElementById('otp');
+    const submitBtn = document.getElementById('submitBtn');
+    const countdownElement = document.getElementById('countdown');
+    
+    // Auto-advance and format OTP input
+    otpInput.addEventListener('input', function(e) {
+        // Remove non-numeric characters
+        this.value = this.value.replace(/\D/g, '');
+        
+        // Limit to 6 digits
+        if (this.value.length > 6) {
+            this.value = this.value.slice(0, 6);
+        }
+        
+        // Enable/disable submit button
+        submitBtn.disabled = this.value.length !== 6;
+    });
+    
+    // Auto-submit when 6 digits entered
+    otpInput.addEventListener('keyup', function(e) {
+        if (this.value.length === 6 && e.key !== 'Backspace' && e.key !== 'Delete') {
+            document.getElementById('otpForm').submit();
+        }
+    });
+    
+    // Countdown Timer (5 minutes = 300 seconds)
+    let timeLeft = 300; // 5 minutes in seconds
+    
+    function updateCountdown() {
+        if (timeLeft <= 0) {
+            countdownElement.textContent = "00:00";
+            countdownElement.className = "text-danger";
+            
+            // Show expired message
+            const flashContainer = document.querySelector('.card-body-modern');
+            const expiredAlert = document.createElement('div');
+            expiredAlert.className = 'alert alert-warning alert-modern';
+            expiredAlert.innerHTML = `
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                Verification code has expired. Please request a new one.
+            `;
+            
+            // Check if warning already exists
+            if (!document.querySelector('.alert-warning[data-type="expired"]')) {
+                expiredAlert.setAttribute('data-type', 'expired');
+                flashContainer.insertBefore(expiredAlert, flashContainer.firstChild);
+                
+                // Disable submit button
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="bi bi-x-circle me-2"></i> Code Expired';
+                submitBtn.className = 'btn btn-secondary btn-modern w-100 mb-3';
+            }
+            
+            return;
+        }
+        
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        
+        countdownElement.textContent = 
+            minutes.toString().padStart(2, '0') + ':' + 
+            seconds.toString().padStart(2, '0');
+        
+        // Change color when less than 1 minute
+        if (timeLeft < 60) {
+            countdownElement.className = "text-danger";
+        } else if (timeLeft < 120) {
+            countdownElement.className = "text-warning";
+        } else {
+            countdownElement.className = "text-primary";
+        }
+        
+        timeLeft--;
+    }
+    
+    // Update countdown every second
+    setInterval(updateCountdown, 1000);
+    updateCountdown(); // Initial call
+    
+    // Form validation
+    document.getElementById('otpForm').addEventListener('submit', function(e) {
+        const otpValue = otpInput.value.trim();
+        
+        if (otpValue.length !== 6) {
+            e.preventDefault();
+            showAlert('Please enter a valid 6-digit code.', 'danger');
+            otpInput.focus();
+            return false;
+        }
+        
+        if (!/^\d{6}$/.test(otpValue)) {
+            e.preventDefault();
+            showAlert('Please enter numbers only (0-9).', 'danger');
+            otpInput.focus();
+            return false;
+        }
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Verifying...';
+        
+        return true;
+    });
+    
+    function showAlert(message, type) {
+        // Remove existing alerts
+        const existingAlerts = document.querySelectorAll('.alert-modern');
+        existingAlerts.forEach(alert => alert.remove());
+        
+        // Create new alert
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-modern fade show`;
+        alertDiv.innerHTML = `
+            <i class="bi ${type === 'danger' ? 'bi-exclamation-triangle' : 'bi-info-circle'} me-2"></i>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        // Insert after the form
+        const form = document.getElementById('otpForm');
+        form.parentNode.insertBefore(alertDiv, form);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.classList.remove('show');
+                setTimeout(() => alertDiv.remove(), 300);
+            }
+        }, 5000);
+    }
+    
+    // Auto-focus on OTP input
+    window.onload = function() {
+        otpInput.focus();
+    };
+</script>
+{% endblock %}

@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}Feedback Settings - Admin{% endblock %}
+
+{% block page_title %}⚙️ Feedback Settings{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Feedback Configuration</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="notify_admin" 
+                                   id="notifyAdmin" {% if settings.notify_admin_on_feedback %}checked{% endif %}>
+                            <label class="form-check-label" for="notifyAdmin">
+                                Notify admins when new feedback is submitted
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="adminEmail" class="form-label">Admin Notification Email</label>
+                        <input type="email" class="form-control" id="adminEmail" name="admin_email" 
+                               value="{{ settings.admin_email }}" placeholder="admin@example.com">
+                        <small class="text-muted">Email address to receive feedback notifications</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="auto_respond" 
+                                   id="autoRespond" {% if settings.auto_respond_feedback %}checked{% endif %}>
+                            <label class="form-check-label" for="autoRespond">
+                                Automatically send thank you email to users who submit feedback
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="responseEmail" class="form-label">Auto-response Email Address</label>
+                        <input type="email" class="form-control" id="responseEmail" name="response_email" 
+                               value="{{ settings.feedback_response_email }}" placeholder="noreply@example.com">
+                        <small class="text-muted">Email address used for auto-responses</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="require_email" 
+                                   id="requireEmail" {% if settings.require_email_for_feedback %}checked{% endif %}>
+                            <label class="form-check-label" for="requireEmail">
+                                Require email address for feedback submissions
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="allow_anonymous" 
+                                   id="allowAnonymous" {% if settings.allow_anonymous_feedback %}checked{% endif %}>
+                            <label class="form-check-label" for="allowAnonymous">
+                                Allow anonymous feedback (without email)
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="maxLength" class="form-label">Maximum Feedback Length</label>
+                        <input type="number" class="form-control" id="maxLength" name="max_length" 
+                               value="{{ settings.max_feedback_length }}" min="100" max="5000">
+                        <small class="text-muted">Maximum characters allowed in feedback messages</small>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Save Settings</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('admin_feedback_receiver') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-chat-text me-2"></i>View Feedback
+                    </a>
+                    <a href="{{ url_for('admin_export_feedback') }}" class="btn btn-outline-success">
+                        <i class="bi bi-download me-2"></i>Export Feedback
+                    </a>
+                    <button class="btn btn-outline-warning" onclick="testFeedbackEmail()">
+                        <i class="bi bi-envelope me-2"></i>Test Email Notifications
+                    </button>
+                    <button class="btn btn-outline-danger" onclick="clearAllFeedback()">
+                        <i class="bi bi-trash me-2"></i>Clear All Feedback
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function testFeedbackEmail() {
+    alert('Test feedback email would be sent. In production, this would trigger test notifications.');
+}
+
+function clearAllFeedback() {
+    if (confirm('⚠️ Clear ALL feedback? This action cannot be undone!')) {
+        fetch('/admin/clear_all_feedback', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('All feedback cleared successfully');
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

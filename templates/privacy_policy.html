@@ -1,0 +1,356 @@
+<!-- privacy_policy.html -->
+{% extends "base.html" %}
+{% block title %}Privacy Policy{% endblock %}
+
+{% block page_title %}Privacy Policy{% endblock %}
+{% block page_subtitle %}
+<p class="text-muted mb-0">Last Updated: {{ now.strftime('%B %d, %Y') }}</p>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card-modern">
+            <div class="card-header-modern">
+                <h4 class="mb-0">
+                    <i class="bi bi-shield-check me-2"></i>Privacy Policy
+                </h4>
+            </div>
+
+            <div class="card-body-modern" style="max-height: 600px; overflow-y: auto;">
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">1. Introduction</h5>
+                    <p>
+                        EventFlow ("we," "our," or "us") is committed to protecting your privacy.
+                        This Privacy Policy explains how we collect, use, disclose, and safeguard
+                        your information when you use our event registration platform.
+                    </p>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">2. Information We Collect</h5>
+
+                    <h6 class="text-secondary mb-2">A. Account Information</h6>
+                    <ul>
+                        <li><strong>Registration Data:</strong> Username, email address, mobile number, password</li>
+                        <li><strong>Verification Data:</strong> OTP (One-Time Password) for email verification</li>
+                        <li><strong>Session Data:</strong> User ID, login status, and session preferences</li>
+                    </ul>
+
+                    <h6 class="text-secondary mb-2 mt-3">B. Event and Form Data</h6>
+                    <ul>
+                        <li><strong>Event Information:</strong> Event names, descriptions, categories, types, and notes</li>
+                        <li><strong>Form Content:</strong> Form titles, descriptions, questions, and configurations</li>
+                        <li><strong>Question Types:</strong> Text, radio, checkbox, dropdown, and file upload questions</li>
+                        <li><strong>Form Settings:</strong> Schedule settings (start/end dates), notification preferences</li>
+                    </ul>
+
+                    <h6 class="text-secondary mb-2 mt-3">C. Form Response Data</h6>
+                    <ul>
+                        <li><strong>Submission Data:</strong> Responses to form questions with timestamps</li>
+                        <li><strong>Uploaded Files:</strong> Documents, images, spreadsheets, presentations, archives (up to 100MB)</li>
+                        <li><strong>File Metadata:</strong> Filenames, file sizes, upload timestamps</li>
+                        <li><strong>Response IDs:</strong> Unique identifiers for each submission with QR codes</li>
+                    </ul>
+
+                    <h6 class="text-secondary mb-2 mt-3">D. Communication Data</h6>
+                    <ul>
+                        <li><strong>Email Lists:</strong> Recipient email addresses used for form invitations</li>
+                        <li><strong>Email Content:</strong> Custom messages sent with form invitations</li>
+                        <li><strong>Email Status:</strong> Delivery status, sent timestamps, and failure logs</li>
+                        <li><strong>Feedback:</strong> User feedback, ratings, and suggestions</li>
+                    </ul>
+
+                    <h6 class="text-secondary mb-2 mt-3">E. Technical and Usage Data</h6>
+                    <ul>
+                        <li><strong>IP Addresses:</strong> Real IP addresses with X-Forwarded-For header support</li>
+                        <li><strong>Device Information:</strong> Browser type, user agent strings</li>
+                        <li><strong>Usage Logs:</strong> Access times, page views, form submissions</li>
+                        <li><strong>Error Logs:</strong> System errors, email failures, and debug information</li>
+                    </ul>
+
+                    <h6 class="text-secondary mb-2 mt-3">F. Moderation and Reporting Data</h6>
+                    <ul>
+                        <li><strong>Form Reports:</strong> User reports of inappropriate forms with reasons and details</li>
+                        <li><strong>Block Data:</strong> Information about blocked forms, reasons, and durations</li>
+                        <li><strong>Moderation Logs:</strong> Admin actions on forms and user accounts</li>
+                    </ul>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">3. How We Use Your Information</h5>
+                    <ul>
+                        <li><strong>Service Operation:</strong> Provide, operate, and maintain the EventFlow platform</li>
+                        <li><strong>User Accounts:</strong> Create and manage user accounts with email verification</li>
+                        <li><strong>Event Management:</strong> Create, edit, and manage events and registration forms</li>
+                        <li><strong>Form Processing:</strong> Collect, store, and display form responses</li>
+                        <li><strong>Email Communications:</strong> Send form invitations, notifications, and OTP codes</li>
+                        <li><strong>Scheduled Notifications:</strong> Send form end notifications based on schedule settings</li>
+                        <li><strong>QR Code Generation:</strong> Create QR codes for form sharing and response verification</li>
+                        <li><strong>File Management:</strong> Store and serve uploaded files with type and size validation</li>
+                        <li><strong>Content Moderation:</strong> Review reported forms and enforce community guidelines</li>
+                        <li><strong>System Monitoring:</strong> Monitor performance, track errors, and debug issues</li>
+                        <li><strong>Analytics:</strong> Generate statistics about users, events, forms, and submissions</li>
+                        <li><strong>Security:</strong> Prevent unauthorized access and protect against malicious activity</li>
+                        <li><strong>Compliance:</strong> Meet legal obligations and respond to lawful requests</li>
+                    </ul>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">4. Data Processing Roles</h5>
+                    <p>
+                        <strong>For Form Creators:</strong> EventFlow acts as a data processor for the data you collect
+                        through your forms. You are responsible for:
+                    </p>
+                    <ul>
+                        <li>Complying with applicable data protection laws</li>
+                        <li>Obtaining necessary consents from form respondents</li>
+                        <li>Responding to data subject requests regarding collected data</li>
+                        <li>Defining appropriate data retention periods</li>
+                    </ul>
+                    
+                    <p class="mt-3">
+                        <strong>For Form Respondents:</strong> Your data is processed on behalf of the form creator.
+                        Questions regarding the use of your data should be directed to the form creator.
+                    </p>
+                    
+                    <p class="mt-3">
+                        <strong>For All Users:</strong> EventFlow acts as a data controller for:
+                    </p>
+                    <ul>
+                        <li>Account registration information</li>
+                        <li>Usage and technical data</li>
+                        <li>System logs and error reports</li>
+                        <li>Communication preferences</li>
+                    </ul>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">5. Data Security Measures</h5>
+                    <ul>
+                        <li><strong>Encryption:</strong> Data in transit protected with SSL/TLS encryption</li>
+                        <li><strong>Secure Authentication:</strong> Password hashing and session management</li>
+                        <li><strong>Access Controls:</strong> Role-based access for users, form creators, and admins</li>
+                        <li><strong>File Validation:</strong> Strict file type and size validation for uploads</li>
+                        <li><strong>Input Sanitization:</strong> Protection against SQL injection and XSS attacks</li>
+                        <li><strong>Rate Limiting:</strong> Protection against brute force attacks</li>
+                        <li><strong>Regular Backups:</strong> Automated backup system for data recovery</li>
+                        <li><strong>Security Monitoring:</strong> Logging and monitoring of security events</li>
+                    </ul>
+                    <p class="mt-2">
+                        <strong>Note:</strong> While we implement industry-standard security measures,
+                        no method of transmission over the internet is 100% secure. Users should
+                        avoid submitting highly sensitive information through the platform.
+                    </p>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">6. Data Sharing and Disclosure</h5>
+                    <p>We may share information in the following circumstances:</p>
+                    
+                    <h6 class="text-secondary mb-2 mt-3">A. With Form Creators</h6>
+                    <ul>
+                        <li>Form responses submitted to their forms</li>
+                        <li>Uploaded files from respondents</li>
+                        <li>Response metadata and timestamps</li>
+                    </ul>
+                    
+                    <h6 class="text-secondary mb-2 mt-3">B. With Service Providers</h6>
+                    <ul>
+                        <li><strong>Email Services:</strong> SMTP providers for sending emails (Gmail)</li>
+                        <li><strong>Hosting Services:</strong> Cloud infrastructure providers</li>
+                        <li><strong>Analytics Services:</strong> Usage statistics and performance monitoring</li>
+                    </ul>
+                    
+                    <h6 class="text-secondary mb-2 mt-3">C. Legal Requirements</h6>
+                    <ul>
+                        <li>To comply with applicable laws and regulations</li>
+                        <li>To respond to valid legal process (subpoenas, court orders)</li>
+                        <li>To protect our rights, privacy, safety, or property</li>
+                        <li>To investigate potential violations of our Terms of Service</li>
+                    </ul>
+                    
+                    <h6 class="text-secondary mb-2 mt-3">D. Business Transfers</h6>
+                    <ul>
+                        <li>In connection with mergers, acquisitions, or asset sales</li>
+                        <li>During due diligence processes</li>
+                    </ul>
+                    
+                    <p class="mt-3">
+                        <strong>EventFlow does not sell personal information to third parties.</strong>
+                    </p>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">7. Data Retention</h5>
+                    
+                    <h6 class="text-secondary mb-2">A. Account Data</h6>
+                    <ul>
+                        <li>Retained until account deletion or 2 years of inactivity</li>
+                        <li>Users can request deletion via email</li>
+                    </ul>
+                    
+                    <h6 class="text-secondary mb-2 mt-3">B. Event and Form Data</h6>
+                    <ul>
+                        <li>Retained until deleted by the creator</li>
+                        <li>Automatic cleanup of orphaned data</li>
+                    </ul>
+                    
+                    <h6 class="text-secondary mb-2 mt-3">C. Form Responses</h6>
+                    <ul>
+                        <li>Retained according to form creator's settings</li>
+                        <li>Deleted when form or event is deleted</li>
+                    </ul>
+                    
+                    <h6 class="text-secondary mb-2 mt-3">D. Uploaded Files</h6>
+                    <ul>
+                        <li>Stored in secure directories with access controls</li>
+                        <li>Deleted when associated form or response is deleted</li>
+                    </ul>
+                    
+                    <h6 class="text-secondary mb-2 mt-3">E. System Logs</h6>
+                    <ul>
+                        <li>Email logs: 90 days retention</li>
+                        <li>Error logs: 30 days retention</li>
+                        <li>Access logs: 60 days retention</li>
+                    </ul>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">8. User Rights and Choices</h5>
+                    <p>You have the following rights regarding your personal data:</p>
+                    
+                    <h6 class="text-secondary mb-2 mt-3">A. Access and Portability</h6>
+                    <ul>
+                        <li>Request access to your personal data</li>
+                        <li>Export your data in CSV format</li>
+                        <li>View all data we hold about you</li>
+                    </ul>
+                    
+                    <h6 class="text-secondary mb-2 mt-3">B. Correction and Deletion</h6>
+                    <ul>
+                        <li>Request correction of inaccurate data</li>
+                        <li>Request deletion of your account and associated data</li>
+                        <li>Delete individual form responses</li>
+                    </ul>
+                    
+                    <h6 class="text-secondary mb-2 mt-3">C. Communication Preferences</h6>
+                    <ul>
+                        <li>Opt-out of non-essential emails</li>
+                        <li>Manage notification preferences</li>
+                        <li>Control email invitation settings</li>
+                    </ul>
+                    
+                    <h6 class="text-secondary mb-2 mt-3">D. Account Controls</h6>
+                    <ul>
+                        <li>Close your account at any time</li>
+                        <li>Download your data before deletion</li>
+                        <li>Manage form access and sharing</li>
+                    </ul>
+                    
+                    <p class="mt-3">
+                        <strong>To exercise these rights:</strong> Contact us at eventflow.app2026@gmail.com
+                    </p>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">9. Cookies and Tracking Technologies</h5>
+                    <p>We use cookies and similar technologies for:</p>
+                    <ul>
+                        <li><strong>Authentication:</strong> Session management and user login</li>
+                        <li><strong>Security:</strong> CSRF protection and form validation</li>
+                        <li><strong>Preferences:</strong> User interface preferences and settings</li>
+                        <li><strong>Analytics:</strong> Usage statistics and performance monitoring</li>
+                    </ul>
+                    <p class="mt-2">
+                        You can control cookies through your browser settings. Note that disabling
+                        cookies may affect certain features of the platform.
+                    </p>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">10. Children's Privacy</h5>
+                    <p>
+                        EventFlow is not intended for children under the age of 16.
+                        We do not knowingly collect personal data from minors. If you believe
+                        a child has provided us with personal data, please contact us immediately.
+                    </p>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">11. International Data Transfers</h5>
+                    <p>
+                        Your data may be transferred to and processed in countries other than
+                        your country of residence. We ensure appropriate safeguards are in place
+                        for such transfers in accordance with applicable data protection laws.
+                    </p>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">12. Changes to This Policy</h5>
+                    <p>
+                        We may update this Privacy Policy periodically. We will notify you of
+                        significant changes by:
+                    </p>
+                    <ul>
+                        <li>Posting the new policy on our website</li>
+                        <li>Sending email notifications to registered users</li>
+                        <li>Updating the "Last Updated" date</li>
+                    </ul>
+                    <p class="mt-2">
+                        Continued use of the Service after changes constitutes acceptance of
+                        the updated Privacy Policy.
+                    </p>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">13. Contact Us</h5>
+                    <p>
+                        <strong>EventFlow Privacy Team</strong><br>
+                        Email: eventflow.app2026@gmail.com<br>
+                        Response Time: Within 7 business days
+                    </p>
+                    <p class="mt-2">
+                        For data protection officer inquiries or to exercise your rights,
+                        please include "Privacy Request" in your email subject line.
+                    </p>
+                </div>
+
+                <div class="alert alert-info mt-4">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Compliance Notice:</strong>
+                    EventFlow is designed to support compliance with:
+                    <ul class="mb-0 mt-2">
+                        <li>Information Technology Act, 2000 (India)</li>
+                        <li>Digital Personal Data Protection Act, 2023 (India)</li>
+                        <li>General Data Protection Regulation (GDPR) principles</li>
+                    </ul>
+                </div>
+
+                <div class="alert alert-warning mt-4">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>Important Security Notice:</strong>
+                    While we implement security measures, please avoid submitting:
+                    <ul class="mb-0 mt-2">
+                        <li>Passwords or authentication credentials</li>
+                        <li>Financial information (bank details, card numbers)</li>
+                        <li>Government-issued IDs (Aadhaar, PAN, passport)</li>
+                        <li>Highly sensitive personal or medical information</li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="{{ url_for('signup') }}" class="btn btn-outline-primary btn-modern me-2">
+                <i class="bi bi-arrow-left"></i> Back to Sign Up
+            </a>
+            <a href="{{ url_for('terms') }}" class="btn btn-primary-modern btn-modern">
+                <i class="bi bi-file-text"></i> View Terms of Service
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

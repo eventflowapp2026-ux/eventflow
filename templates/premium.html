@@ -1,0 +1,1415 @@
+{% extends "base.html" %}
+{% block title %}Premium Features - EventFlow{% endblock %}
+
+{% block page_title %}🎯 Premium Features & Pricing{% endblock %}
+{% block page_subtitle %}
+<p class="text-muted mb-0">Unlock powerful tools for successful event management</p>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary: #6C63FF;
+        --primary-dark: #554fd8;
+        --primary-light: #f0efff;
+        --secondary: #FF6584;
+        --accent: #36D9B6;
+        --dark: #121826;
+        --light: #ffffff;
+        --gray: #8C8CA1;
+        --gray-light: #F4F5F7;
+        --success: #4cc9f0;
+        --border-radius: 16px;
+        --shadow: 0 8px 30px rgba(108, 99, 255, 0.08);
+        --shadow-lg: 0 20px 60px rgba(108, 99, 255, 0.15);
+        --gradient: linear-gradient(135deg, #6C63FF 0%, #554fd8 100%);
+        --gradient-accent: linear-gradient(135deg, #FF6584 0%, #FF3366 100%);
+    }
+
+    /* Animation Classes */
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(108, 99, 255, 0.4); }
+        70% { box-shadow: 0 0 0 15px rgba(108, 99, 255, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(108, 99, 255, 0); }
+    }
+
+    @keyframes shimmer {
+        0% { background-position: -200% center; }
+        100% { background-position: 200% center; }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Premium Styles */
+    .plan-card {
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        border: 2px solid rgba(108, 99, 255, 0.1);
+        position: relative;
+        background: white;
+        box-shadow: var(--shadow);
+        height: 100%;
+    }
+
+    .plan-card:hover {
+        transform: translateY(-10px);
+        box-shadow: var(--shadow-lg);
+        border-color: rgba(108, 99, 255, 0.2);
+    }
+
+    .plan-card.popular {
+        border: 3px solid var(--primary);
+        transform: scale(1.02);
+        box-shadow: 0 20px 60px rgba(108, 99, 255, 0.2);
+    }
+
+    .plan-card.popular:hover {
+        transform: scale(1.02) translateY(-10px);
+    }
+
+    .popular-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: var(--gradient);
+        color: white;
+        padding: 8px 20px;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        z-index: 2;
+        box-shadow: 0 5px 15px rgba(108, 99, 255, 0.3);
+    }
+
+    .plan-header {
+        padding: 40px 30px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(135deg, #f9f9ff 0%, #ffffff 100%);
+    }
+
+    .plan-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--gradient);
+    }
+
+    .plan-header.premium {
+        background: var(--gradient);
+        color: white;
+    }
+
+    .plan-header.premium p {
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .plan-price {
+        font-size: 3.5rem;
+        font-weight: 800;
+        line-height: 1;
+        margin: 20px 0;
+        color: var(--dark);
+    }
+
+    .plan-header.premium .plan-price {
+        color: white;
+    }
+
+    .plan-price .currency {
+        font-size: 1.5rem;
+        vertical-align: super;
+        color: var(--gray);
+    }
+
+    .plan-header.premium .plan-price .currency {
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .plan-price .period {
+        font-size: 1rem;
+        color: var(--gray);
+        font-weight: 500;
+    }
+
+    .plan-header.premium .plan-price .period {
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .feature-list {
+        padding: 0;
+        margin: 0;
+        list-style: none;
+    }
+
+    .feature-list li {
+        padding: 15px 30px;
+        border-bottom: 1px solid var(--gray-light);
+        display: flex;
+        align-items: center;
+        transition: all 0.3s ease;
+    }
+
+    .feature-list li:hover {
+        background: var(--primary-light);
+    }
+
+    .feature-list li:last-child {
+        border-bottom: none;
+    }
+
+    .feature-icon {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        flex-shrink: 0;
+        font-size: 0.9rem;
+    }
+
+    .feature-icon.included {
+        background: #d1fae5;
+        color: #059669;
+    }
+
+    .feature-icon.not-included {
+        background: #f3f4f6;
+        color: #9ca3af;
+    }
+
+    .btn-premium {
+        background: var(--gradient);
+        background-size: 200% auto;
+        color: white;
+        border: none;
+        padding: 15px 40px;
+        border-radius: 50px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 8px 20px rgba(108, 99, 255, 0.2);
+    }
+
+    .btn-premium:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(108, 99, 255, 0.3);
+        color: white;
+        animation: shimmer 2s infinite linear;
+    }
+
+    .btn-premium::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+    }
+
+    .btn-premium:hover::after {
+        left: 100%;
+    }
+
+    .feature-category {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-radius: var(--border-radius);
+        padding: 30px;
+        margin-bottom: 30px;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+    .feature-category:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow);
+        border-color: var(--primary-light);
+    }
+
+    .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+    }
+
+    .feature-item {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 25px;
+        border: 2px solid var(--primary-light);
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+    .feature-item:hover {
+        border-color: var(--primary);
+        transform: translateY(-5px);
+        box-shadow: var(--shadow);
+    }
+
+    .feature-badge {
+        display: inline-block;
+        padding: 8px 20px;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+        border: 1px solid transparent;
+    }
+
+    .badge-new {
+        background: rgba(108, 99, 255, 0.1);
+        color: var(--primary);
+        border-color: rgba(108, 99, 255, 0.2);
+    }
+
+    .badge-popular {
+        background: rgba(255, 101, 132, 0.1);
+        color: var(--secondary);
+        border-color: rgba(255, 101, 132, 0.2);
+    }
+
+    .badge-essential {
+        background: rgba(54, 217, 182, 0.1);
+        color: var(--accent);
+        border-color: rgba(54, 217, 182, 0.2);
+    }
+
+    .testimonial-card {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 30px;
+        border: 2px solid var(--primary-light);
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+    .testimonial-card:hover {
+        border-color: var(--primary);
+        transform: translateY(-5px);
+        box-shadow: var(--shadow);
+    }
+
+    .testimonial-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid var(--primary-light);
+    }
+
+    .comparison-table {
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--primary-light);
+    }
+
+    .comparison-table th {
+        background: var(--gradient);
+        color: white;
+        font-weight: 600;
+        padding: 20px;
+        text-align: center;
+        border: none;
+    }
+
+    .comparison-table td {
+        padding: 15px 20px;
+        vertical-align: middle;
+        border-color: var(--primary-light);
+    }
+
+    .comparison-table tr:nth-child(even) {
+        background: var(--gray-light);
+    }
+
+    .check-mark {
+        color: var(--accent);
+        font-size: 1.2rem;
+    }
+
+    .cross-mark {
+        color: var(--secondary);
+        font-size: 1.2rem;
+    }
+
+    .limited-mark {
+        color: #ffc107;
+        font-size: 1.2rem;
+    }
+
+    .floating-action {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        z-index: 1000;
+        animation: float 3s infinite ease-in-out;
+    }
+
+    .fab-premium {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background: var(--gradient);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        box-shadow: 0 15px 35px rgba(108, 99, 255, 0.4);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: none;
+    }
+
+    .fab-premium:hover {
+        transform: scale(1.1) rotate(5deg);
+        box-shadow: 0 20px 40px rgba(108, 99, 255, 0.5);
+    }
+
+    .animate-fade-in-up {
+        animation: fadeInUp 0.6s ease-out forwards;
+        opacity: 0;
+    }
+
+    .kerala-special {
+        background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+        color: white;
+        border-radius: var(--border-radius);
+        padding: 40px 30px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(255, 107, 107, 0.2);
+    }
+
+    .kerala-special::before {
+        content: '🎪';
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        font-size: 3rem;
+        opacity: 0.2;
+        animation: float 3s infinite ease-in-out;
+    }
+
+    .revenue-calculator {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-radius: var(--border-radius);
+        padding: 40px;
+        margin-top: 30px;
+        border: 2px solid var(--primary-light);
+    }
+
+    .calculator-input {
+        background: white;
+        border: 2px solid var(--primary-light);
+        border-radius: 12px;
+        padding: 15px;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+
+    .calculator-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.1);
+        outline: none;
+    }
+
+    .revenue-result {
+        background: var(--gradient);
+        color: white;
+        border-radius: var(--border-radius);
+        padding: 30px 20px;
+        text-align: center;
+        font-size: 2rem;
+        font-weight: 800;
+        margin-top: 20px;
+        box-shadow: 0 10px 30px rgba(108, 99, 255, 0.2);
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 30px 20px;
+        text-align: center;
+        border: 2px solid var(--primary-light);
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow);
+        border-color: var(--primary);
+    }
+
+    .stat-card i {
+        font-size: 2.5rem;
+        margin-bottom: 15px;
+        background: var(--gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .stat-card h3 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 10px;
+        color: var(--dark);
+    }
+
+    .accordion-item {
+        border: 2px solid var(--primary-light);
+        border-radius: 12px !important;
+        margin-bottom: 15px;
+        overflow: hidden;
+    }
+
+    .accordion-button {
+        background: white;
+        font-weight: 600;
+        color: var(--dark);
+        border: none;
+        box-shadow: none;
+    }
+
+    .accordion-button:not(.collapsed) {
+        background: var(--primary-light);
+        color: var(--primary);
+    }
+
+    .accordion-button:focus {
+        box-shadow: none;
+        border-color: var(--primary);
+    }
+
+    .btn-outline-premium {
+        border: 2px solid var(--primary);
+        color: var(--primary);
+        background: transparent;
+        padding: 12px 30px;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-premium:hover {
+        background: var(--primary);
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: var(--shadow);
+    }
+
+    /* Custom form elements */
+    .form-range::-webkit-slider-thumb {
+        background: var(--gradient);
+        border: 3px solid white;
+        box-shadow: 0 4px 10px rgba(108, 99, 255, 0.3);
+    }
+
+    .form-range::-moz-range-thumb {
+        background: var(--gradient);
+        border: 3px solid white;
+        box-shadow: 0 4px 10px rgba(108, 99, 255, 0.3);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .plan-price {
+            font-size: 2.5rem;
+        }
+        
+        .feature-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .comparison-table {
+            font-size: 0.9rem;
+        }
+        
+        .revenue-calculator {
+            padding: 25px;
+        }
+        
+        .fab-premium {
+            width: 60px;
+            height: 60px;
+            font-size: 1.2rem;
+            bottom: 20px;
+            right: 20px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .plan-card {
+            margin-bottom: 30px;
+        }
+        
+        .plan-card.popular {
+            transform: none;
+        }
+        
+        .plan-card.popular:hover {
+            transform: translateY(-10px);
+        }
+        
+        .feature-list li {
+            padding: 12px 20px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Floating Action Button -->
+<div class="floating-action">
+    <div class="fab-premium" onclick="scrollToPricing()" title="View Pricing">
+        <i class="bi bi-lightning-charge"></i>
+    </div>
+</div>
+
+<!-- Hero Section -->
+<div class="row mb-5">
+    <div class="col-lg-8 mx-auto text-center animate-fade-in-up">
+        <div class="display-1 mb-4" style="font-size: 4rem;">🚀</div>
+        <h1 class="display-5 fw-bold mb-3" style="color: var(--dark);">Ready to Scale Your Events?</h1>
+        <p class="lead mb-4" style="color: var(--gray);">
+            Join 500+ successful event organizers who trust EventFlow Premium. 
+            From small gatherings to large festivals, we've got you covered.
+        </p>
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+            <a href="#pricing" class="btn btn-premium btn-lg">
+                <i class="bi bi-lightning-charge me-2"></i> View Pricing Plans
+            </a>
+            <a href="#comparison" class="btn btn-outline-premium btn-lg">
+                <i class="bi bi-grid me-2"></i> Compare Features
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="row mb-5 animate-fade-in-up" style="animation-delay: 0.1s;">
+    <div class="col-md-3 col-6 mb-4">
+        <div class="stat-card">
+            <i class="bi bi-people"></i>
+            <h3 class="mb-2">500+</h3>
+            <p class="mb-0" style="color: var(--gray);">Premium Users</p>
+        </div>
+    </div>
+    <div class="col-md-3 col-6 mb-4">
+        <div class="stat-card">
+            <i class="bi bi-currency-rupee"></i>
+            <h3 class="mb-2">₹2.5L+</h3>
+            <p class="mb-0" style="color: var(--gray);">Revenue Generated</p>
+        </div>
+    </div>
+    <div class="col-md-3 col-6 mb-4">
+        <div class="stat-card">
+            <i class="bi bi-star"></i>
+            <h3 class="mb-2">4.8/5</h3>
+            <p class="mb-0" style="color: var(--gray);">User Rating</p>
+        </div>
+    </div>
+    <div class="col-md-3 col-6 mb-4">
+        <div class="stat-card">
+            <i class="bi bi-clock-history"></i>
+            <h3 class="mb-2">24/7</h3>
+            <p class="mb-0" style="color: var(--gray);">Support</p>
+        </div>
+    </div>
+</div>
+
+<!-- 🎯 Tier 1: Quick Wins -->
+<div class="row mb-5 animate-fade-in-up" style="animation-delay: 0.2s;">
+    <div class="col-12">
+        <h2 class="mb-4" style="color: var(--dark);">
+            <i class="bi bi-lightning-fill" style="color: #FFC107;"></i> Tier 1: Quick Wins
+        </h2>
+        <p class="mb-4" style="color: var(--gray);">Start with these essential features that users love and pay for immediately</p>
+        
+        <div class="feature-grid">
+            <!-- Remove Branding -->
+            <div class="feature-item">
+                <span class="feature-badge badge-essential">ESSENTIAL</span>
+                <h5 style="color: var(--dark);">
+                    <i class="bi bi-tag-fill me-2" style="color: var(--secondary);"></i> Remove Branding
+                </h5>
+                <p class="text-muted">Remove "Powered by EventFlow" watermarks from all pages</p>
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <span class="h4 mb-0" style="color: var(--dark);">₹99</span>
+                    <span class="text-muted">One-time</span>
+                </div>
+                <button class="btn btn-premium w-100 mt-3" onclick="buyFeature('remove_branding')">
+                    <i class="bi bi-cart me-2"></i> Buy Now
+                </button>
+            </div>
+
+            <!-- Better PDF Reports -->
+            <div class="feature-item">
+                <span class="feature-badge badge-popular">MOST POPULAR</span>
+                <h5 style="color: var(--dark);">
+                    <i class="bi bi-file-pdf-fill me-2" style="color: var(--primary);"></i> Professional PDF Reports
+                </h5>
+                <p class="text-muted">Export beautiful reports with charts, logos, and custom formatting</p>
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <span class="h4 mb-0" style="color: var(--dark);">₹49</span>
+                    <span class="text-muted">Per report</span>
+                </div>
+                <button class="btn btn-premium w-100 mt-3" onclick="buyFeature('pdf_reports')">
+                    <i class="bi bi-cart me-2"></i> Buy Now
+                </button>
+            </div>
+
+            <!-- Email Templates -->
+            <div class="feature-item">
+                <span class="feature-badge badge-new">NEW</span>
+                <h5 style="color: var(--dark);">
+                    <i class="bi bi-envelope-fill me-2" style="color: var(--accent);"></i> Email Template Packs
+                </h5>
+                <p class="text-muted">10+ professional email designs including festival-specific templates</p>
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <span class="h4 mb-0" style="color: var(--dark);">₹199</span>
+                    <span class="text-muted">One-time</span>
+                </div>
+                <button class="btn btn-premium w-100 mt-3" onclick="buyFeature('email_templates')">
+                    <i class="bi bi-cart me-2"></i> Buy Now
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 💰 Tier 2: Money Makers -->
+<div class="row mb-5 animate-fade-in-up" style="animation-delay: 0.3s;">
+    <div class="col-12">
+        <h2 class="mb-4" style="color: var(--dark);">
+            <i class="bi bi-cash-coin me-2" style="color: #28a745;"></i> Tier 2: Money Makers
+        </h2>
+        <p class="mb-4" style="color: var(--gray);">Features that generate significant revenue for you and your events</p>
+        
+        <div class="feature-grid">
+            <!-- WhatsApp Integration -->
+            <div class="feature-item">
+                <h5 style="color: var(--dark);">
+                    <i class="bi bi-whatsapp me-2" style="color: #25D366;"></i> WhatsApp Integration
+                </h5>
+                <p class="text-muted">Send confirmations and reminders via WhatsApp (Kerala's favorite!)</p>
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <span class="h4 mb-0" style="color: var(--dark);">₹99</span>
+                    <span class="text-muted">Per month</span>
+                </div>
+                <button class="btn btn-premium w-100 mt-3" onclick="buyFeature('whatsapp')">
+                    <i class="bi bi-cart me-2"></i> Subscribe
+                </button>
+            </div>
+
+            <!-- Payment Processing -->
+            <div class="feature-item">
+                <span class="feature-badge badge-essential">REVENUE GENERATOR</span>
+                <h5 style="color: var(--dark);">
+                    <i class="bi bi-credit-card-fill me-2" style="color: #FFC107;"></i> Payment Processing
+                </h5>
+                <p class="text-muted">Accept UPI, cards, and net banking for tickets & donations</p>
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <span class="h6 mb-0" style="color: var(--dark);">2% + ₹3</span>
+                    <span class="text-muted">Per transaction</span>
+                </div>
+                <button class="btn btn-premium w-100 mt-3" onclick="buyFeature('payments')">
+                    <i class="bi bi-cart me-2"></i> Enable
+                </button>
+            </div>
+
+            <!-- Custom Domain -->
+            <div class="feature-item">
+                <h5 style="color: var(--dark);">
+                    <i class="bi bi-globe me-2" style="color: var(--primary);"></i> Custom Domain
+                </h5>
+                <p class="text-muted">yourform.yourdomain.com - Professional look, higher conversions</p>
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <span class="h4 mb-0" style="color: var(--dark);">₹299</span>
+                    <span class="text-muted">Per month</span>
+                </div>
+                <button class="btn btn-premium w-100 mt-3" onclick="buyFeature('custom_domain')">
+                    <i class="bi bi-cart me-2"></i> Subscribe
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 🎪 Kerala Special Packages -->
+<div class="row mb-5 animate-fade-in-up" style="animation-delay: 0.4s;">
+    <div class="col-12">
+        <div class="kerala-special">
+            <h2 class="mb-3">
+                <i class="bi bi-flag-fill me-2"></i> Kerala Special Packages
+            </h2>
+            <p class="mb-4 opacity-75">Tailored solutions for Kerala's unique event needs</p>
+            
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="bg-white rounded p-4 text-dark" style="border-radius: var(--border-radius);">
+                        <h5>
+                            <i class="bi bi-building me-2" style="color: var(--primary);"></i> Temple Package
+                        </h5>
+                        <p class="small text-muted">Prasadam management, donation tracking, volunteer scheduling</p>
+                        <div class="h4 mb-0">₹999<span class="text-muted small">/month</span></div>
+                        <button class="btn btn-outline-premium w-100 mt-3" onclick="buyFeature('temple_package')">
+                            Choose Package
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="bg-white rounded p-4 text-dark" style="border-radius: var(--border-radius);">
+                        <h5>
+                            <i class="bi bi-heart-fill me-2" style="color: var(--secondary);"></i> Wedding Package
+                        </h5>
+                        <p class="small text-muted">Multiple events, guest accommodation, vendor coordination</p>
+                        <div class="h4 mb-0">₹4,999<span class="text-muted small">/event</span></div>
+                        <button class="btn btn-outline-premium w-100 mt-3" onclick="buyFeature('wedding_package')" 
+                                style="border-color: var(--secondary); color: var(--secondary);">
+                            Choose Package
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="bg-white rounded p-4 text-dark" style="border-radius: var(--border-radius);">
+                        <h5>
+                            <i class="bi bi-mortarboard-fill me-2" style="color: var(--accent);"></i> College Package
+                        </h5>
+                        <p class="small text-muted">All clubs access, department events, alumni features</p>
+                        <div class="h4 mb-0">₹4,999<span class="text-muted small">/semester</span></div>
+                        <button class="btn btn-outline-premium w-100 mt-3" onclick="buyFeature('college_package')"
+                                style="border-color: var(--accent); color: var(--accent);">
+                            Choose Package
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 📊 Pricing Plans -->
+<div class="row mb-5" id="pricing">
+    <div class="col-12">
+        <h2 class="text-center mb-5 animate-fade-in-up" style="color: var(--dark);">Choose Your Perfect Plan</h2>
+        
+        <div class="row">
+            <!-- Free Plan -->
+            <div class="col-md-4 mb-4">
+                <div class="plan-card h-100 animate-fade-in-up" style="animation-delay: 0.1s;">
+                    <div class="plan-header">
+                        <h4 class="fw-bold" style="color: var(--dark);">Free</h4>
+                        <p style="color: var(--gray);">For getting started</p>
+                        <div class="plan-price">
+                            <span class="currency">₹</span>0
+                            <span class="period">/month</span>
+                        </div>
+                        <button class="btn btn-outline-premium w-100" onclick="selectPlan('free')">
+                            Get Started
+                        </button>
+                    </div>
+                    <div class="p-4">
+                        <ul class="feature-list">
+                            <li><div class="feature-icon included"><i class="bi bi-check"></i></div> Up to 100 responses</li>
+                            <li><div class="feature-icon included"><i class="bi bi-check"></i></div> Basic forms</li>
+                            <li><div class="feature-icon included"><i class="bi bi-check"></i></div> Email support</li>
+                            <li><div class="feature-icon not-included"><i class="bi bi-x"></i></div> Remove branding</li>
+                            <li><div class="feature-icon not-included"><i class="bi bi-x"></i></div> Custom domain</li>
+                            <li><div class="feature-icon not-included"><i class="bi bi-x"></i></div> WhatsApp integration</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pro Plan -->
+            <div class="col-md-4 mb-4">
+                <div class="plan-card popular h-100 animate-fade-in-up" style="animation-delay: 0.2s;">
+                    <div class="popular-badge">MOST POPULAR</div>
+                    <div class="plan-header premium">
+                        <h4 class="fw-bold">Pro</h4>
+                        <p>For growing businesses</p>
+                        <div class="plan-price">
+                            <span class="currency">₹</span>499
+                            <span class="period">/month</span>
+                        </div>
+                        <button class="btn btn-premium w-100" style="background: white; color: var(--primary);" onclick="selectPlan('pro')">
+                            Start 14-Day Trial
+                        </button>
+                    </div>
+                    <div class="p-4">
+                        <ul class="feature-list">
+                            <li><div class="feature-icon included"><i class="bi bi-check"></i></div> Unlimited responses</li>
+                            <li><div class="feature-icon included"><i class="bi bi-check"></i></div> Remove branding</li>
+                            <li><div class="feature-icon included"><i class="bi bi-check"></i></div> Custom domain</li>
+                            <li><div class="feature-icon included"><i class="bi bi-check"></i></div> Professional PDFs</li>
+                            <li><div class="feature-icon included"><i class="bi bi-check"></i></div> WhatsApp integration</li>
+                            <li><div class="feature-icon included"><i class="bi bi-check"></i></div> Priority support</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Business Plan -->
+            <div class="col-md-4 mb-4">
+                <div class="plan-card h-100 animate-fade-in-up" style="animation-delay: 0.3s;">
+                    <div class="plan-header">
+                        <h4 class="fw-bold" style="color: var(--dark);">Business</h4>
+                        <p style="color: var(--gray);">For agencies & enterprises</p>
+                        <div class="plan-price">
+                            <span class="currency">₹</span>999
+                            <span class="period">/month</span>
+                        </div>
+                        <button class="btn btn-premium w-100" onclick="selectPlan('business')">
+                            Contact Sales
+                        </button>
+                    </div>
+                    <div class="p-4">
+                        <ul class="feature-list">
+                            <li><div class="feature-icon included"><i class="bi bi-check"></i></div> Everything in Pro</li>
+                            <li><div class="feature-icon included"><i class="bi bi-check"></i></div> White-label option</li>
+                            <li><div class="feature-icon included"><i class="bi bi-check"></i></div> API access</li>
+                            <li><div class="feature-icon included"><i class="bi bi-check"></i></div> Team collaboration</li>
+                            <li><div class="feature-icon included"><i class="bi bi-check"></i></div> Advanced analytics</li>
+                            <li><div class="feature-icon included"><i class="bi bi-check"></i></div> Dedicated manager</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 📊 Feature Comparison Table -->
+<div class="row mb-5" id="comparison">
+    <div class="col-12">
+        <h2 class="text-center mb-5 animate-fade-in-up" style="color: var(--dark);">Feature Comparison</h2>
+        
+        <div class="comparison-table animate-fade-in-up" style="animation-delay: 0.1s;">
+            <table class="table table-borderless mb-0">
+                <thead>
+                    <tr>
+                        <th width="40%" style="background: var(--gradient); color: white;">Feature</th>
+                        <th width="20%" class="text-center" style="background: var(--gradient); color: white;">Free</th>
+                        <th width="20%" class="text-center" style="background: var(--gradient); color: white;">Pro</th>
+                        <th width="20%" class="text-center" style="background: var(--gradient); color: white;">Business</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Monthly Responses</strong></td>
+                        <td class="text-center">100</td>
+                        <td class="text-center">Unlimited</td>
+                        <td class="text-center">Unlimited</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Remove Branding</strong></td>
+                        <td class="text-center"><i class="bi bi-x cross-mark"></i></td>
+                        <td class="text-center"><i class="bi bi-check check-mark"></i></td>
+                        <td class="text-center"><i class="bi bi-check check-mark"></i></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Custom Domain</strong></td>
+                        <td class="text-center"><i class="bi bi-x cross-mark"></i></td>
+                        <td class="text-center"><i class="bi bi-check check-mark"></i></td>
+                        <td class="text-center"><i class="bi bi-check check-mark"></i></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Professional PDFs</strong></td>
+                        <td class="text-center">Basic</td>
+                        <td class="text-center"><i class="bi bi-check check-mark"></i></td>
+                        <td class="text-center"><i class="bi bi-check check-mark"></i></td>
+                    </tr>
+                    <tr>
+                        <td><strong>WhatsApp Integration</strong></td>
+                        <td class="text-center"><i class="bi bi-x cross-mark"></i></td>
+                        <td class="text-center">100/month</td>
+                        <td class="text-center">Unlimited</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Payment Processing</strong></td>
+                        <td class="text-center"><i class="bi bi-x cross-mark"></i></td>
+                        <td class="text-center"><i class="bi bi-check check-mark"></i></td>
+                        <td class="text-center"><i class="bi bi-check check-mark"></i></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Team Members</strong></td>
+                        <td class="text-center">1</td>
+                        <td class="text-center">3</td>
+                        <td class="text-center">10</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Email Templates</strong></td>
+                        <td class="text-center">Basic</td>
+                        <td class="text-center">10+</td>
+                        <td class="text-center">Unlimited</td>
+                    </tr>
+                    <tr>
+                        <td><strong>API Access</strong></td>
+                        <td class="text-center"><i class="bi bi-x cross-mark"></i></td>
+                        <td class="text-center"><i class="bi bi-x cross-mark"></i></td>
+                        <td class="text-center"><i class="bi bi-check check-mark"></i></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Support</strong></td>
+                        <td class="text-center">Email</td>
+                        <td class="text-center">Priority</td>
+                        <td class="text-center">24/7 Phone</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- 💰 Revenue Calculator -->
+<div class="row mb-5">
+    <div class="col-lg-8 mx-auto">
+        <div class="revenue-calculator animate-fade-in-up" style="animation-delay: 0.2s;">
+            <h4 class="text-center mb-4" style="color: var(--dark);">
+                <i class="bi bi-calculator me-2" style="color: var(--primary);"></i> Revenue Calculator
+            </h4>
+            <p class="text-center mb-4" style="color: var(--gray);">See how much you can earn with EventFlow Premium</p>
+            
+            <div class="row mb-4">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-semibold" style="color: var(--dark);">Monthly Free Users</label>
+                    <input type="range" class="form-range" min="100" max="10000" step="100" value="1000" id="userCount">
+                    <div class="d-flex justify-content-between">
+                        <span style="color: var(--gray);">100</span>
+                        <span id="userCountValue" class="fw-bold" style="color: var(--primary);">1,000</span>
+                        <span style="color: var(--gray);">10,000</span>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-semibold" style="color: var(--dark);">Upgrade Rate</label>
+                    <input type="range" class="form-range" min="1" max="20" step="0.5" value="5" id="upgradeRate">
+                    <div class="d-flex justify-content-between">
+                        <span style="color: var(--gray);">1%</span>
+                        <span id="upgradeRateValue" class="fw-bold" style="color: var(--primary);">5%</span>
+                        <span style="color: var(--gray);">20%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="revenue-result">
+                <div id="revenueAmount">₹60,000/month</div>
+                <small>Estimated Revenue</small>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-md-4 text-center">
+                    <div class="h5 mb-2" id="payingUsers" style="color: var(--dark);">50</div>
+                    <small style="color: var(--gray);">Paying Users</small>
+                </div>
+                <div class="col-md-4 text-center">
+                    <div class="h5 mb-2" id="oneTimeRevenue" style="color: var(--dark);">₹25,000</div>
+                    <small style="color: var(--gray);">One-time Revenue</small>
+                </div>
+                <div class="col-md-4 text-center">
+                    <div class="h5 mb-2" id="commissionRevenue" style="color: var(--dark);">₹35,000</div>
+                    <small style="color: var(--gray);">Commission Revenue</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Testimonials -->
+<div class="row mb-5">
+    <div class="col-12">
+        <h2 class="text-center mb-5 animate-fade-in-up" style="color: var(--dark);">What Our Users Say</h2>
+        
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="testimonial-card animate-fade-in-up" style="animation-delay: 0.1s;">
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User" class="testimonial-avatar me-3">
+                        <div>
+                            <h6 class="mb-1" style="color: var(--dark);">Arun Kumar</h6>
+                            <small style="color: var(--gray);">Wedding Planner, Kochi</small>
+                        </div>
+                    </div>
+                    <p class="mb-0" style="color: var(--dark);">"The wedding package saved me 20 hours of work per event. Worth every rupee!"</p>
+                    <div class="mt-2" style="color: #FFC107;">
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="testimonial-card animate-fade-in-up" style="animation-delay: 0.2s;">
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="https://randomuser.me/api/portraits/women/45.jpg" alt="User" class="testimonial-avatar me-3">
+                        <div>
+                            <h6 class="mb-1" style="color: var(--dark);">Priya Nair</h6>
+                            <small style="color: var(--gray);">College Event Head, Trivandrum</small>
+                        </div>
+                    </div>
+                    <p class="mb-0" style="color: var(--dark);">"Our college festival registration increased by 300% with WhatsApp reminders!"</p>
+                    <div class="mt-2" style="color: #FFC107;">
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="testimonial-card animate-fade-in-up" style="animation-delay: 0.3s;">
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="https://randomuser.me/api/portraits/men/68.jpg" alt="User" class="testimonial-avatar me-3">
+                        <div>
+                            <h6 class="mb-1" style="color: var(--dark);">Thomas Joseph</h6>
+                            <small style="color: var(--gray);">Temple Committee, Thrissur</small>
+                        </div>
+                    </div>
+                    <p class="mb-0" style="color: var(--dark);">"Donation tracking with professional receipts made our temple management professional."</p>
+                    <div class="mt-2" style="color: #FFC107;">
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- FAQ -->
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <h2 class="text-center mb-5 animate-fade-in-up" style="color: var(--dark);">Frequently Asked Questions</h2>
+        
+        <div class="accordion" id="faqAccordion">
+            <div class="accordion-item animate-fade-in-up" style="animation-delay: 0.1s;">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                        Can I upgrade from Free to Pro anytime?
+                    </button>
+                </h2>
+                <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        Yes! You can upgrade at any time. When you upgrade, you'll get immediate access to all Pro features. The billing will be prorated for the remaining days in your billing cycle.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="accordion-item animate-fade-in-up" style="animation-delay: 0.2s;">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                        Do you offer refunds?
+                    </button>
+                </h2>
+                <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        We offer a 14-day money-back guarantee for all Pro plans. If you're not satisfied, contact our support team within 14 days of purchase for a full refund.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="accordion-item animate-fade-in-up" style="animation-delay: 0.3s;">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                        How does payment processing work?
+                    </button>
+                </h2>
+                <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        We use Razorpay for secure payment processing. You can accept UPI, credit/debit cards, net banking, and wallets. We charge a small commission of 2% + ₹3 per successful transaction.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="accordion-item animate-fade-in-up" style="animation-delay: 0.4s;">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                        Can I use my own domain?
+                    </button>
+                </h2>
+                <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        Yes! With Pro and Business plans, you can connect your custom domain (like forms.yourcompany.com). We provide step-by-step instructions for DNS configuration.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="accordion-item animate-fade-in-up" style="animation-delay: 0.5s;">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">
+                        Is there a long-term contract?
+                    </button>
+                </h2>
+                <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        No! All our plans are month-to-month. You can cancel anytime with no cancellation fees. We also offer annual plans with 20% discount if you prefer to pay yearly.
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-5">
+            <a href="#pricing" class="btn btn-premium btn-lg">
+                <i class="bi bi-rocket-takeoff me-2"></i> Get Started Now
+            </a>
+            <p class="mt-3" style="color: var(--gray);">14-day free trial • No credit card required • Cancel anytime</p>
+        </div>
+    </div>
+</div>
+
+<script>
+// Revenue Calculator
+const userCountSlider = document.getElementById('userCount');
+const userCountValue = document.getElementById('userCountValue');
+const upgradeRateSlider = document.getElementById('upgradeRate');
+const upgradeRateValue = document.getElementById('upgradeRateValue');
+const revenueAmount = document.getElementById('revenueAmount');
+const payingUsers = document.getElementById('payingUsers');
+const oneTimeRevenue = document.getElementById('oneTimeRevenue');
+const commissionRevenue = document.getElementById('commissionRevenue');
+
+function updateRevenueCalculator() {
+    const users = parseInt(userCountSlider.value);
+    const upgradeRate = parseFloat(upgradeRateSlider.value) / 100;
+    
+    // Calculations
+    const payingCount = Math.round(users * upgradeRate);
+    const monthlyRevenue = Math.round(payingCount * 499); // Average plan
+    const oneTimeRev = Math.round(payingCount * 200); // Average one-time purchases
+    const commissionRev = Math.round(monthlyRevenue * 0.4); // Commission revenue
+    
+    // Update display
+    userCountValue.textContent = users.toLocaleString();
+    upgradeRateValue.textContent = `${upgradeRate * 100}%`;
+    revenueAmount.textContent = `₹${(monthlyRevenue + commissionRev).toLocaleString()}/month`;
+    payingUsers.textContent = payingCount;
+    oneTimeRevenue.textContent = `₹${oneTimeRev.toLocaleString()}`;
+    commissionRevenue.textContent = `₹${commissionRev.toLocaleString()}`;
+}
+
+userCountSlider.addEventListener('input', updateRevenueCalculator);
+upgradeRateSlider.addEventListener('input', updateRevenueCalculator);
+
+// Initialize calculator
+updateRevenueCalculator();
+
+// Smooth scroll to pricing
+function scrollToPricing() {
+    document.getElementById('pricing').scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+    });
+}
+
+// Plan selection
+function selectPlan(plan) {
+    const plans = {
+        'free': { name: 'Free', price: 0 },
+        'pro': { name: 'Pro', price: 499 },
+        'business': { name: 'Business', price: 999 }
+    };
+    
+    const selected = plans[plan];
+    
+    // Show modal or redirect to checkout
+    if (plan === 'free') {
+        window.location.href = '/signup';
+    } else if (plan === 'pro') {
+        showCheckoutModal(selected);
+    } else {
+        window.location.href = '/contact?plan=business';
+    }
+}
+
+// Feature purchase
+function buyFeature(feature) {
+    const features = {
+        'remove_branding': { name: 'Remove Branding', price: 99, type: 'one-time' },
+        'pdf_reports': { name: 'Professional PDF Reports', price: 49, type: 'per-report' },
+        'email_templates': { name: 'Email Template Pack', price: 199, type: 'one-time' },
+        'whatsapp': { name: 'WhatsApp Integration', price: 99, type: 'monthly' },
+        'payments': { name: 'Payment Processing', price: '2% + ₹3', type: 'commission' },
+        'custom_domain': { name: 'Custom Domain', price: 299, type: 'monthly' },
+        'temple_package': { name: 'Temple Package', price: 999, type: 'monthly' },
+        'wedding_package': { name: 'Wedding Package', price: 4999, type: 'per-event' },
+        'college_package': { name: 'College Package', price: 4999, type: 'semester' }
+    };
+    
+    const selected = features[feature];
+    showCheckoutModal(selected);
+}
+
+// Show checkout modal
+function showCheckoutModal(item) {
+    // Create modal HTML
+    const modalHTML = `
+        <div class="modal fade" id="checkoutModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content" style="border-radius: var(--border-radius); border: none;">
+                    <div class="modal-header" style="background: var(--gradient); color: white; border-radius: var(--border-radius) var(--border-radius) 0 0;">
+                        <h5 class="modal-title">Purchase ${item.name}</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" style="padding: 30px;">
+                        <div class="text-center mb-4">
+                            <div class="display-4 mb-3">🎯</div>
+                            <h4 style="color: var(--dark);">${item.name}</h4>
+                            <div class="h2 mt-3" style="color: var(--primary);">
+                                ${typeof item.price === 'number' ? '₹' : ''}${item.price}
+                                <small class="text-muted">/${item.type}</small>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label" style="color: var(--dark);">Email Address</label>
+                            <input type="email" class="form-control form-control-modern" placeholder="you@example.com" id="checkoutEmail">
+                        </div>
+                        
+                        <div class="alert alert-info" style="background: var(--primary-light); border-color: var(--primary-light); color: var(--dark);">
+                            <i class="bi bi-info-circle me-2" style="color: var(--primary);"></i>
+                            After payment, you'll receive activation instructions via email.
+                        </div>
+                    </div>
+                    <div class="modal-footer" style="border-top: 1px solid var(--primary-light);">
+                        <button type="button" class="btn btn-outline-premium" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-premium" onclick="processPayment('${item.name}')">
+                            <i class="bi bi-credit-card me-2"></i> Proceed to Payment
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add modal to body
+    const modalContainer = document.createElement('div');
+    modalContainer.innerHTML = modalHTML;
+    document.body.appendChild(modalContainer);
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('checkoutModal'));
+    modal.show();
+    
+    // Remove modal from DOM after hidden
+    document.getElementById('checkoutModal').addEventListener('hidden.bs.modal', function () {
+        modalContainer.remove();
+    });
+}
+
+// Process payment (simulated)
+function processPayment(itemName) {
+    const email = document.getElementById('checkoutEmail').value;
+    
+    if (!email || !email.includes('@')) {
+        alert('Please enter a valid email address');
+        return;
+    }
+    
+    // Simulate payment processing
+    const purchaseBtn = document.querySelector('#checkoutModal .btn-premium');
+    purchaseBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Processing...';
+    purchaseBtn.disabled = true;
+    
+    setTimeout(() => {
+        // Show success message
+        const modalBody = document.querySelector('#checkoutModal .modal-body');
+        modalBody.innerHTML = `
+            <div class="text-center py-4">
+                <div class="display-1 text-success mb-3">
+                    <i class="bi bi-check-circle-fill"></i>
+                </div>
+                <h4 class="mb-3" style="color: var(--dark);">Payment Successful!</h4>
+                <p class="text-muted">You have successfully purchased ${itemName}.</p>
+                <p class="text-muted">Activation instructions have been sent to ${email}</p>
+                <div class="mt-4">
+                    <a href="/dashboard" class="btn btn-premium">
+                        <i class="bi bi-speedometer2 me-2"></i> Go to Dashboard
+                    </a>
+                </div>
+            </div>
+        `;
+        
+        document.querySelector('#checkoutModal .modal-footer').style.display = 'none';
+    }, 2000);
+}
+
+// Add scroll animations
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate elements on scroll
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+                const delay = entry.target.getAttribute('data-delay') || 0;
+                entry.target.style.animationDelay = delay;
+            }
+        });
+    }, { threshold: 0.1 });
+    
+    // Observe all animated elements
+    document.querySelectorAll('.animate-fade-in-up').forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(30px)';
+        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(el);
+    });
+    
+    // Add smooth scrolling for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href');
+            if(targetId === '#') return;
+            
+            const targetElement = document.querySelector(targetId);
+            if(targetElement) {
+                window.scrollTo({
+                    top: targetElement.offsetTop - 100,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+

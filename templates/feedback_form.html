@@ -1,0 +1,1747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventFlow | Share Your Feedback</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Elegant Design System (Same as index.html) */
+        :root {
+            --primary: #2563EB;           /* Royal Blue */
+            --primary-dark: #1D4ED8;
+            --primary-light: #DBEAFE;
+            --secondary: #7C3AED;         /* Royal Purple */
+            --accent: #059669;            /* Emerald Green */
+            --success: #10B981;
+            --warning: #F59E0B;
+            --dark: #111827;              /* Deep Charcoal */
+            --light: #FFFFFF;
+            --surface: #F9FAFB;
+            --border: #E5E7EB;
+            --text-primary: #1F2937;
+            --text-secondary: #6B7280;
+            --text-tertiary: #9CA3AF;
+            
+            /* Elegant Gradients */
+            --gradient-primary: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%);
+            --gradient-secondary: linear-gradient(135deg, #059669 0%, #0D9488 100%);
+            --gradient-dark: linear-gradient(135deg, #111827 0%, #1F2937 100%);
+            --gradient-light: linear-gradient(135deg, #FFFFFF 0%, #F9FAFB 100%);
+            
+            /* Sophisticated Spacing */
+            --space-xs: 0.5rem;
+            --space-sm: 0.75rem;
+            --space-md: 1.25rem;
+            --space-lg: 2rem;
+            --space-xl: 3rem;
+            --space-2xl: 5rem;
+            
+            /* Refined Radius */
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --radius-2xl: 1.5rem;
+            --radius-full: 9999px;
+            
+            /* Premium Shadows */
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --shadow-blue: 0 10px 15px -3px rgba(37, 99, 235, 0.1);
+            
+            /* Smooth Transitions */
+            --transition-fast: 150ms ease;
+            --transition-base: 250ms ease;
+            --transition-slow: 400ms ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg,
+                rgba(249, 250, 251, 0.9) 0%,
+                rgba(241, 245, 249, 0.9) 50%,
+                rgba(226, 232, 240, 0.9) 100%
+            );
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            min-height: 100vh;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(229, 231, 235, 0.8);
+            padding: 1rem 0;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .navbar-brand img {
+            height: 40px;
+            width: auto;
+            transition: transform var(--transition-fast);
+        }
+
+        .navbar-brand:hover img {
+            transform: scale(1.05);
+        }
+
+        .brand-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: -0.01em;
+        }
+
+        .nav-link {
+            font-weight: 500;
+            color: var(--text-secondary) !important;
+            padding: 0.5rem 1rem !important;
+            border-radius: var(--radius-md);
+            transition: all var(--transition-fast);
+        }
+
+        .nav-link:hover {
+            color: var(--primary) !important;
+            background: var(--primary-light);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1.75rem;
+            font-weight: 600;
+            border-radius: var(--radius-md);
+            border: none;
+            transition: all var(--transition-base);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: var(--shadow-blue);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: var(--gradient-secondary);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Feedback Form Container */
+        .feedback-container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .feedback-header {
+            text-align: center;
+            margin-bottom: var(--space-2xl);
+        }
+
+        .feedback-header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: var(--space-sm);
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .feedback-header .lead {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Multi-page Form */
+        .multi-page-form {
+            position: relative;
+            min-height: 500px;
+        }
+
+        .form-page {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .form-page.active {
+            display: block;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            background: var(--light);
+            border-radius: var(--radius-xl);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border);
+            margin-bottom: var(--space-xl);
+        }
+
+        .progress {
+            height: 10px;
+            background: var(--surface);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: var(--gradient-primary);
+            border-radius: var(--radius-full);
+            transition: width 0.5s ease;
+        }
+
+        /* Cards */
+        .card-glass {
+            background: var(--light);
+            border-radius: var(--radius-xl);
+            padding: var(--space-xl);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            transition: all var(--transition-base);
+            margin-bottom: var(--space-lg);
+        }
+
+        .card-glass:hover {
+            box-shadow: var(--shadow-lg);
+        }
+
+        .card-glass.text-center {
+            padding: var(--space-2xl);
+        }
+
+        /* Form Controls */
+        .form-control-modern {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            color: var(--text-primary);
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: var(--radius-md);
+            transition: all var(--transition-fast);
+        }
+
+        .form-control-modern:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            background: var(--light);
+        }
+
+        .form-control-modern.is-invalid {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        /* Feature Icon */
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--primary-light);
+            border-radius: var(--radius-xl);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto var(--space-lg);
+            font-size: 2.5rem;
+            color: var(--primary);
+            transition: all var(--transition-base);
+        }
+
+        /* Rating Stars */
+        .rating-container {
+            background: linear-gradient(135deg, var(--primary-light) 0%, rgba(37, 99, 235, 0.05) 100%);
+            border-radius: var(--radius-xl);
+            padding: var(--space-xl);
+            text-align: center;
+        }
+
+        .stars {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-md);
+            margin-bottom: var(--space-md);
+        }
+
+        .star {
+            font-size: 3rem;
+            color: #e0e0e0;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .star:hover {
+            transform: scale(1.2);
+            color: #fbbf24;
+        }
+
+        .star.active {
+            color: #f59e0b;
+            transform: scale(1.1);
+        }
+
+        .star:hover ~ .star {
+            color: #e0e0e0;
+        }
+
+        .rating-label {
+            font-size: 1.125rem;
+            font-weight: 500;
+            min-height: 1.5rem;
+        }
+
+        /* Type Options */
+        .type-option {
+            border: 2px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            cursor: pointer;
+            transition: all var(--transition-base);
+            height: 100%;
+            background: var(--light);
+        }
+
+        .type-option:hover {
+            transform: translateY(-4px);
+            border-color: var(--primary-light);
+            box-shadow: var(--shadow-md);
+        }
+
+        .type-option.selected {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            box-shadow: var(--shadow-md);
+        }
+
+        .type-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-lg);
+            background: var(--primary-light);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: var(--space-md);
+            font-size: 1.5rem;
+            transition: all var(--transition-base);
+        }
+
+        .type-option.selected .type-icon {
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        /* Character Counter */
+        .char-counter {
+            font-size: 0.875rem;
+            color: var(--text-tertiary);
+            text-align: right;
+            margin-top: 0.5rem;
+        }
+
+        .char-counter.text-warning {
+            color: var(--warning);
+        }
+
+        .char-counter.text-danger {
+            color: #ef4444;
+        }
+
+        /* Review Summary */
+        .review-summary {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            border: 1px solid var(--border);
+        }
+
+        .review-item {
+            padding-bottom: var(--space-md);
+            margin-bottom: var(--space-md);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .review-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        /* Page Dots */
+        .page-dots {
+            display: flex;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-top: var(--space-xl);
+        }
+
+        .page-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--border);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .page-dot.active {
+            background: var(--primary);
+            transform: scale(1.2);
+        }
+
+        .page-dot:hover:not(.active) {
+            background: var(--text-tertiary);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: rgba(255, 255, 255, 0.8);
+            padding: var(--space-xl) 0 var(--space-lg);
+            margin-top: var(--space-2xl);
+            position: relative;
+        }
+
+        footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: var(--space-md);
+        }
+
+        .footer-logo img {
+            height: 32px;
+            width: auto;
+        }
+
+        .footer-links h5 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--space-md);
+        }
+
+        .footer-links ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: all var(--transition-fast);
+        }
+
+        .footer-links a:hover {
+            color: white;
+            padding-left: 0.25rem;
+        }
+
+        /* Modal */
+        .modal-content {
+            border: none;
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(-100px); opacity: 0; }
+        }
+
+        .page-enter {
+            animation: slideIn 0.5s ease;
+        }
+
+        .page-exit {
+            animation: slideOut 0.5s ease;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .feedback-header h1 {
+                font-size: 2rem;
+            }
+            
+            .card-glass {
+                padding: var(--space-lg);
+            }
+            
+            .card-glass.text-center {
+                padding: var(--space-xl);
+            }
+            
+            .feature-icon {
+                width: 64px;
+                height: 64px;
+                font-size: 2rem;
+            }
+            
+            .star {
+                font-size: 2.25rem;
+            }
+            
+            .type-option {
+                padding: var(--space-md);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .feedback-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+            
+            .progress-container {
+                padding: var(--space-md);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <img src="/static/logo/icon.png" alt="EventFlow Logo">
+                <span class="brand-name">EventFlow</span>
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('index') }}#features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('index') }}#process">How It Works</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('index') }}#testimonials">Testimonials</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('feedback') }}">Feedback</a>
+                    </li>
+                    
+                    {% if 'user_id' in session %}
+                    <li class="nav-item ms-3">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline">Dashboard</a>
+                    </li>
+                    <li class="nav-item ms-2">
+                        <a href="{{ url_for('logout') }}" class="btn btn-primary">Logout</a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item ms-3">
+                        <a href="{{ url_for('login') }}" class="btn btn-outline">Login</a>
+                    </li>
+                    <li class="nav-item ms-2">
+                        <a href="{{ url_for('signup') }}" class="btn btn-primary">Get Started Free</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Feedback Form -->
+    <div class="feedback-container">
+        <div class="feedback-header">
+            <h1>💬 Share Your Feedback</h1>
+            <p class="lead">Help us improve EventFlow. Answer a few questions to share your thoughts!</p>
+        </div>
+
+        <!-- Multi-page Form Container -->
+        <div class="multi-page-form" id="multiPageForm">
+            <!-- Progress Bar -->
+            <div class="progress-container">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">Step <span id="currentStep">1</span> of <span id="totalSteps">5</span></h5>
+                    <span id="progressPercentage">20%</span>
+                </div>
+                <div class="progress">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" id="progressBar" style="width: 20%"></div>
+                </div>
+            </div>
+            
+            <!-- Page 1: Personal Information -->
+            <div class="form-page active" id="page1">
+                <div class="card-glass text-center">
+                    <div class="card-body">
+                        <div class="feature-icon">
+                            <i class="bi bi-person-circle"></i>
+                        </div>
+                        <h3>Let's Start with Your Details</h3>
+                        <p class="text-muted">Tell us a bit about yourself</p>
+                    </div>
+                </div>
+                
+                <div class="card-glass">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Your Name *</label>
+                                <input type="text" class="form-control-modern" id="name" 
+                                       placeholder="Enter your name" required
+                                       value="{{ session.get('username', '') }}">
+                                <div class="invalid-feedback">Please enter your name</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Your Email *</label>
+                                <input type="email" class="form-control-modern" id="email" 
+                                       placeholder="your.email@example.com" required
+                                       value="{{ session.get('email', '') }}">
+                                <div class="invalid-feedback">Please enter a valid email</div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check mt-3">
+                                    <input class="form-check-input" type="checkbox" id="canContact" checked>
+                                    <label class="form-check-label" for="canContact">
+                                        <i class="bi bi-envelope-check me-2"></i>
+                                        Yes, you may contact me about this feedback
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-5">
+                            <button class="btn btn-primary btn-lg px-5 next-btn" data-next="2">
+                                Next: Rating <i class="bi bi-arrow-right ms-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page 2: Rating -->
+            <div class="form-page" id="page2">
+                <div class="card-glass text-center">
+                    <div class="card-body">
+                        <div class="feature-icon">
+                            <i class="bi bi-star"></i>
+                        </div>
+                        <h3>How was your experience?</h3>
+                        <p class="text-muted">Rate your overall experience with EventFlow</p>
+                    </div>
+                </div>
+                
+                <div class="card-glass">
+                    <div class="card-body">
+                        <div class="rating-container">
+                            <div class="stars" id="ratingStars">
+                                {% for i in range(1, 6) %}
+                                <span class="star" data-value="{{ i }}">★</span>
+                                {% endfor %}
+                            </div>
+                            <input type="hidden" id="rating" value="0">
+                            <div id="ratingLabel" class="rating-label">
+                                <span class="text-muted">Tap to rate</span>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-5">
+                            <button class="btn btn-outline prev-btn" data-prev="1">
+                                <i class="bi bi-arrow-left me-2"></i> Back
+                            </button>
+                            <button class="btn btn-primary next-btn" data-next="3">
+                                Next: Feedback Type <i class="bi bi-arrow-right ms-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page 3: Feedback Type -->
+            <div class="form-page" id="page3">
+                <div class="card-glass text-center">
+                    <div class="card-body">
+                        <div class="feature-icon">
+                            <i class="bi bi-tag"></i>
+                        </div>
+                        <h3>What type of feedback?</h3>
+                        <p class="text-muted">Select the category that best fits your feedback</p>
+                    </div>
+                </div>
+                
+                <div class="card-glass">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6 mb-3">
+                                <div class="type-option" data-type="suggestion">
+                                    <div class="type-icon">
+                                        <i class="bi bi-lightbulb"></i>
+                                    </div>
+                                    <div class="type-content">
+                                        <h6>Feature Idea</h6>
+                                        <p class="text-muted small">Suggest a new feature or improvement</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="type-option" data-type="bug">
+                                    <div class="type-icon">
+                                        <i class="bi bi-bug"></i>
+                                    </div>
+                                    <div class="type-content">
+                                        <h6>Bug Report</h6>
+                                        <p class="text-muted small">Report an issue or problem</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="type-option" data-type="praise">
+                                    <div class="type-icon">
+                                        <i class="bi bi-heart"></i>
+                                    </div>
+                                    <div class="type-content">
+                                        <h6>Praise</h6>
+                                        <p class="text-muted small">Share what you love</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="type-option" data-type="general">
+                                    <div class="type-icon">
+                                        <i class="bi bi-chat-left"></i>
+                                    </div>
+                                    <div class="type-content">
+                                        <h6>General Feedback</h6>
+                                        <p class="text-muted small">Other thoughts or comments</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="feedbackType" value="">
+                        
+                        <div class="d-flex justify-content-between mt-5">
+                            <button class="btn btn-outline prev-btn" data-prev="2">
+                                <i class="bi bi-arrow-left me-2"></i> Back
+                            </button>
+                            <button class="btn btn-primary next-btn" data-next="4">
+                                Next: Details <i class="bi bi-arrow-right ms-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page 4: Message Details -->
+            <div class="form-page" id="page4">
+                <div class="card-glass text-center">
+                    <div class="card-body">
+                        <div class="feature-icon">
+                            <i class="bi bi-chat-text"></i>
+                        </div>
+                        <h3>Tell us more</h3>
+                        <p class="text-muted">Share the details of your feedback</p>
+                    </div>
+                </div>
+                
+                <div class="card-glass">
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <label class="form-label">Your Feedback *</label>
+                            <textarea class="form-control-modern" id="message" rows="6" 
+                                      placeholder="Please share your thoughts in detail. What do you like? What can be improved? Any specific suggestions?"
+                                      required></textarea>
+                            <div class="char-counter mt-2">
+                                <span id="charCount">0</span> characters
+                            </div>
+                            <div class="invalid-feedback">Please provide your feedback (at least 10 characters)</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label">How did you hear about EventFlow? (optional)</label>
+                            <select class="form-control-modern" id="source">
+                                <option value="">Select an option</option>
+                                <option value="google">Google Search</option>
+                                <option value="social">Social Media</option>
+                                <option value="friend">Friend/Colleague</option>
+                                <option value="email">Email/Newsletter</option>
+                                <option value="blog">Blog/Article</option>
+                                <option value="event">At an Event</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label">Specific Page/Feature (Optional)</label>
+                            <input type="text" class="form-control-modern" id="context" 
+                                   placeholder="e.g., Dashboard, Registration Form, Email System">
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-5">
+                            <button class="btn btn-outline prev-btn" data-prev="3">
+                                <i class="bi bi-arrow-left me-2"></i> Back
+                            </button>
+                            <button class="btn btn-primary next-btn" data-next="5">
+                                Next: Final Step <i class="bi bi-arrow-right ms-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page 5: Review & Submit -->
+            <div class="form-page" id="page5">
+                <div class="card-glass text-center">
+                    <div class="card-body">
+                        <div class="feature-icon">
+                            <i class="bi bi-check-circle"></i>
+                        </div>
+                        <h3>Review & Submit</h3>
+                        <p class="text-muted">Review your feedback before submitting</p>
+                    </div>
+                </div>
+                
+                <div class="card-glass">
+                    <div class="card-body">
+                        <div class="review-summary mb-4">
+                            <div class="review-item mb-3">
+                                <h6 class="text-muted mb-2">Your Details</h6>
+                                <p class="mb-1" id="reviewName"></p>
+                                <p class="mb-0" id="reviewEmail"></p>
+                            </div>
+                            
+                            <div class="review-item mb-3">
+                                <h6 class="text-muted mb-2">Rating</h6>
+                                <div id="reviewRating"></div>
+                            </div>
+                            
+                            <div class="review-item mb-3">
+                                <h6 class="text-muted mb-2">Feedback Type</h6>
+                                <p class="mb-0" id="reviewType"></p>
+                            </div>
+                            
+                            <div class="review-item mb-3">
+                                <h6 class="text-muted mb-2">Your Message</h6>
+                                <p class="mb-0" id="reviewMessage"></p>
+                            </div>
+                            
+                            <div class="review-item">
+                                <h6 class="text-muted mb-2">Additional Info</h6>
+                                <p class="mb-1" id="reviewSource"></p>
+                                <p class="mb-0" id="reviewContext"></p>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Your feedback will be reviewed by our team. You can expect to hear back within 3-5 business days if you requested contact.
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-5">
+                            <button class="btn btn-outline prev-btn" data-prev="4">
+                                <i class="bi bi-arrow-left me-2"></i> Back
+                            </button>
+                            <button class="btn btn-success btn-lg px-5" id="submitBtn">
+                                <i class="bi bi-send me-2"></i> Submit Feedback
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Form Navigation Dots -->
+            <div class="text-center mt-4">
+                <div class="page-dots">
+                    {% for i in range(1, 6) %}
+                    <span class="page-dot {% if i == 1 %}active{% endif %}" data-page="{{ i }}"></span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <div class="footer-logo">
+                        <img src="/static/logo/logo.png" alt="EventFlow Logo">
+                        <span class="brand-name">EventFlow</span>
+                    </div>
+                    <p class="text-white-50 mb-4">
+                        Professional event management made simple. Free tools for modern organizers.
+                    </p>
+                    <div class="social-links">
+                        <a href="https://www.instagram.com/eventflow.app2026/">
+                            <i class="bi bi-instagram"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-2 col-md-4 mb-4">
+                    <h5>Product</h5>
+                    <ul class="footer-links">
+                        <li><a href="{{ url_for('index') }}#features">Features</a></li>
+                        <li><a href="{{ url_for('index') }}#process">How It Works</a></li>
+                        <li><a href="{{ url_for('index') }}#testimonials">Testimonials</a></li>
+                        <li><a href="{{ url_for('feedback') }}">Feedback</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-lg-2 col-md-4 mb-4">
+                    <h5>Legal</h5>
+                    <ul class="footer-links">
+                        <li><a href="{{ url_for('privacy_policy') }}">Privacy Policy</a></li>
+                        <li><a href="{{ url_for('terms') }}">Terms of Service</a></li>
+                        <li><a href="mailto:eventflow.app2026@gmail.com">Contact Support</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-lg-4 col-md-4 mb-4">
+                    <h5>Get Started</h5>
+                    <p class="text-white-50 mb-3">
+                        Start creating professional events today.
+                    </p>
+                    {% if 'user_id' not in session %}
+                    <a href="{{ url_for('signup') }}" class="btn btn-outline-light">Sign Up Free</a>
+                    {% else %}
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-light">Go to Dashboard</a>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <hr class="bg-light opacity-25 my-4">
+            
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="mb-0 text-white-50">
+                        © 2024 EventFlow. All rights reserved.
+                    </p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0 text-white-50">
+                        Contact: <a href="mailto:eventflow.app2026@gmail.com" class="text-white-50">eventflow.app2026@gmail.com</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Success Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center p-5">
+                    <div class="feature-icon mx-auto mb-4" style="width: 100px; height: 100px; background: var(--gradient-primary); color: white;">
+                        <i class="bi bi-check-lg display-4"></i>
+                    </div>
+                    <h3 class="mb-3">🎉 Thank You!</h3>
+                    <p class="text-muted mb-4">Your feedback has been submitted successfully!</p>
+                    
+                    <div class="mb-4" id="feedbackId"></div>
+                    
+                    <div class="alert alert-info mb-4">
+                        <i class="bi bi-info-circle me-2"></i>
+                        A confirmation email has been sent to your inbox with details.
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary" onclick="window.location.href='{{ url_for("dashboard") if session.user_id else url_for("index") }}'">
+                            <i class="bi bi-house me-2"></i> Return Home
+                        </button>
+                        <button class="btn btn-outline" onclick="resetForm()">
+                            <i class="bi bi-plus-circle me-2"></i> Submit Another
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Same JavaScript code from the original feedback form goes here
+        // (The JavaScript code remains exactly the same as in your original)
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('multiPageForm');
+            const currentStep = document.getElementById('currentStep');
+            const totalSteps = document.getElementById('totalSteps');
+            const progressBar = document.getElementById('progressBar');
+            const progressPercentage = document.getElementById('progressPercentage');
+            const submitBtn = document.getElementById('submitBtn');
+            const pageDots = document.querySelectorAll('.page-dot');
+            const formPages = document.querySelectorAll('.form-page');
+            
+            const totalPages = 5;
+            let currentPage = 1;
+            let isSubmitting = false;
+            let formData = {
+                name: '',
+                email: '',
+                rating: 0,
+                type: '',
+                message: '',
+                source: '',
+                context: '',
+                can_contact: true
+            };
+            
+            // Initialize
+            totalSteps.textContent = totalPages;
+            updateProgress();
+            
+            // Navigation functions
+            function goToPage(page) {
+                if (page < 1 || page > totalPages) return;
+                
+                // Animate current page out
+                const currentPageEl = document.getElementById(`page${currentPage}`);
+                currentPageEl.classList.add('page-exit');
+                
+                setTimeout(() => {
+                    // Hide current page
+                    formPages.forEach(p => {
+                        p.classList.remove('active');
+                        p.classList.remove('page-exit');
+                        p.classList.remove('page-enter');
+                    });
+                    
+                    // Show new page
+                    const newPageEl = document.getElementById(`page${page}`);
+                    newPageEl.classList.add('active');
+                    newPageEl.classList.add('page-enter');
+                    
+                    currentPage = page;
+                    currentStep.textContent = page;
+                    
+                    // Update progress
+                    updateProgress();
+                    
+                    // Update dots
+                    updatePageDots();
+                    
+                    // Save form data before leaving
+                    saveCurrentPageData();
+                    
+                    // Load next page data
+                    loadPageData(page);
+                }, 300);
+            }
+            
+            function updateProgress() {
+                const percentage = ((currentPage - 1) / (totalPages - 1)) * 100;
+                progressBar.style.width = `${percentage}%`;
+                progressPercentage.textContent = `${Math.round(percentage)}%`;
+            }
+            
+            function updatePageDots() {
+                pageDots.forEach((dot, index) => {
+                    const pageNum = index + 1;
+                    if (pageNum === currentPage) {
+                        dot.classList.add('active');
+                    } else {
+                        dot.classList.remove('active');
+                    }
+                });
+            }
+            
+            // Page data handling
+            function saveCurrentPageData() {
+                switch(currentPage) {
+                    case 1:
+                        formData.name = document.getElementById('name').value;
+                        formData.email = document.getElementById('email').value;
+                        formData.can_contact = document.getElementById('canContact').checked;
+                        break;
+                    case 2:
+                        formData.rating = parseInt(document.getElementById('rating').value);
+                        break;
+                    case 3:
+                        formData.type = document.getElementById('feedbackType').value;
+                        break;
+                    case 4:
+                        formData.message = document.getElementById('message').value;
+                        formData.source = document.getElementById('source').value;
+                        formData.context = document.getElementById('context').value;
+                        break;
+                }
+            }
+            
+            function loadPageData(page) {
+                if (page === 5) {
+                    // Populate review page
+                    document.getElementById('reviewName').textContent = formData.name || 'Not provided';
+                    document.getElementById('reviewEmail').textContent = formData.email || 'Not provided';
+                    
+                    // Rating stars
+                    const ratingStars = formData.rating > 0 ? '★'.repeat(formData.rating) + '☆'.repeat(5 - formData.rating) : 'Not rated';
+                    document.getElementById('reviewRating').innerHTML = `<span class="fs-4">${ratingStars}</span> <span class="ms-2">(${formData.rating}/5)</span>`;
+                    
+                    // Type
+                    const typeLabels = {
+                        'suggestion': 'Feature Idea 💡',
+                        'bug': 'Bug Report 🐛',
+                        'praise': 'Praise ❤️',
+                        'general': 'General Feedback 💬'
+                    };
+                    document.getElementById('reviewType').textContent = typeLabels[formData.type] || 'Not selected';
+                    
+                    // Message
+                    const shortMessage = formData.message.length > 200 ? formData.message.substring(0, 200) + '...' : formData.message;
+                    document.getElementById('reviewMessage').textContent = shortMessage || 'Not provided';
+                    
+                    // Source
+                    const sourceLabels = {
+                        'google': 'Google Search',
+                        'social': 'Social Media',
+                        'friend': 'Friend/Colleague',
+                        'email': 'Email/Newsletter',
+                        'blog': 'Blog/Article',
+                        'event': 'At an Event',
+                        'other': 'Other'
+                    };
+                    document.getElementById('reviewSource').textContent = sourceLabels[formData.source] || 'Not specified';
+                    document.getElementById('reviewContext').textContent = formData.context || 'Not specified';
+                }
+            }
+            
+            // Navigation events
+            document.querySelectorAll('.next-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (validateCurrentPage()) {
+                        const nextPage = parseInt(this.dataset.next);
+                        goToPage(nextPage);
+                    }
+                });
+            });
+            
+            document.querySelectorAll('.prev-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const prevPage = parseInt(this.dataset.prev);
+                    goToPage(prevPage);
+                });
+            });
+            
+            pageDots.forEach(dot => {
+                dot.addEventListener('click', function() {
+                    const targetPage = parseInt(this.dataset.page);
+                    if (targetPage < currentPage) {
+                        // Can go back to any page
+                        goToPage(targetPage);
+                    } else if (targetPage === currentPage + 1 && validateCurrentPage()) {
+                        // Can go to next page if current page is valid
+                        goToPage(targetPage);
+                    }
+                });
+            });
+            
+            // Validate current page
+            function validateCurrentPage() {
+                let isValid = true;
+                
+                switch(currentPage) {
+                    case 1:
+                        const name = document.getElementById('name');
+                        const email = document.getElementById('email');
+                        
+                        if (!name.value.trim()) {
+                            name.classList.add('is-invalid');
+                            isValid = false;
+                        } else {
+                            name.classList.remove('is-invalid');
+                        }
+                        
+                        if (!email.value.trim() || !isValidEmail(email.value)) {
+                            email.classList.add('is-invalid');
+                            isValid = false;
+                        } else {
+                            email.classList.remove('is-invalid');
+                        }
+                        break;
+                        
+                    case 2:
+                        const rating = parseInt(document.getElementById('rating').value);
+                        if (rating === 0) {
+                            showAlert('Please provide a rating', 'warning');
+                            isValid = false;
+                        }
+                        break;
+                        
+                    case 3:
+                        const type = document.getElementById('feedbackType').value;
+                        if (!type) {
+                            showAlert('Please select a feedback type', 'warning');
+                            isValid = false;
+                        }
+                        break;
+                        
+                    case 4:
+                        const message = document.getElementById('message');
+                        if (!message.value.trim() || message.value.length < 10) {
+                            message.classList.add('is-invalid');
+                            isValid = false;
+                        } else {
+                            message.classList.remove('is-invalid');
+                        }
+                        break;
+                }
+                
+                if (!isValid && currentPage !== 2 && currentPage !== 3) {
+                    // Scroll to first error
+                    const firstError = document.querySelector('.is-invalid');
+                    if (firstError) {
+                        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        firstError.focus();
+                    }
+                }
+                
+                return isValid;
+            }
+            
+            function isValidEmail(email) {
+                const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return re.test(email);
+            }
+            
+            // Rating functionality
+            const stars = document.querySelectorAll('.star');
+            const ratingInput = document.getElementById('rating');
+            const ratingLabel = document.getElementById('ratingLabel');
+            
+            const ratingLabels = {
+                0: 'Tap to rate',
+                1: 'Poor - Needs major improvements',
+                2: 'Fair - Has significant issues',
+                3: 'Good - Works but could be better',
+                4: 'Very Good - Mostly satisfied',
+                5: 'Excellent - Perfect!'
+            };
+            
+            stars.forEach(star => {
+                star.addEventListener('click', function() {
+                    const value = parseInt(this.dataset.value);
+                    ratingInput.value = value;
+                    formData.rating = value;
+                    
+                    // Update visual stars
+                    stars.forEach(s => {
+                        const sValue = parseInt(s.dataset.value);
+                        if (sValue <= value) {
+                            s.classList.add('active');
+                        } else {
+                            s.classList.remove('active');
+                        }
+                    });
+                    
+                    updateRatingLabel(value);
+                });
+                
+                star.addEventListener('mouseover', function() {
+                    const value = parseInt(this.dataset.value);
+                    stars.forEach(s => {
+                        const sValue = parseInt(s.dataset.value);
+                        if (sValue <= value) {
+                            s.style.color = '#fbbf24';
+                        } else {
+                            s.style.color = '#e0e0e0';
+                        }
+                    });
+                });
+                
+                star.addEventListener('mouseout', function() {
+                    const currentRating = parseInt(ratingInput.value);
+                    stars.forEach(s => {
+                        const sValue = parseInt(s.dataset.value);
+                        if (sValue <= currentRating) {
+                            s.style.color = '#f59e0b';
+                        } else {
+                            s.style.color = '#e0e0e0';
+                        }
+                    });
+                });
+            });
+            
+            function updateRatingLabel(value) {
+                if (ratingLabels[value]) {
+                    ratingLabel.innerHTML = `<span class="fw-semibold ${getRatingColorClass(value)}">${ratingLabels[value]}</span>`;
+                }
+            }
+            
+            function getRatingColorClass(value) {
+                if (value <= 2) return 'text-danger';
+                if (value === 3) return 'text-warning';
+                return 'text-success';
+            }
+            
+            // Feedback type selection
+            const typeOptions = document.querySelectorAll('.type-option');
+            const feedbackTypeInput = document.getElementById('feedbackType');
+            
+            typeOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    // Remove previous selection
+                    typeOptions.forEach(opt => opt.classList.remove('selected'));
+                    
+                    // Add selection to clicked option
+                    this.classList.add('selected');
+                    const type = this.dataset.type;
+                    feedbackTypeInput.value = type;
+                    formData.type = type;
+                });
+            });
+            
+            // Character counter for message
+            const messageTextarea = document.getElementById('message');
+            const charCount = document.getElementById('charCount');
+            
+            messageTextarea.addEventListener('input', function() {
+                const length = this.value.length;
+                charCount.textContent = length;
+                
+                if (length > 1000) {
+                    charCount.classList.add('text-danger');
+                } else if (length > 800) {
+                    charCount.classList.add('text-warning');
+                    charCount.classList.remove('text-danger');
+                } else {
+                    charCount.classList.remove('text-warning', 'text-danger');
+                }
+                
+                formData.message = this.value;
+            });
+            
+            // Source and context inputs
+            document.getElementById('source').addEventListener('change', function() {
+                formData.source = this.value;
+            });
+            
+            document.getElementById('context').addEventListener('input', function() {
+                formData.context = this.value;
+            });
+            
+            // Name and email inputs
+            document.getElementById('name').addEventListener('input', function() {
+                formData.name = this.value;
+            });
+            
+            document.getElementById('email').addEventListener('input', function() {
+                formData.email = this.value;
+            });
+            
+            // Contact permission
+            document.getElementById('canContact').addEventListener('change', function() {
+                formData.can_contact = this.checked;
+            });
+            
+            // Form submission
+            submitBtn.addEventListener('click', async function() {
+                if (isSubmitting) return;
+                
+                console.log("🔍 DEBUG 1: Submit button clicked");
+                console.log("🔍 Current form data:", formData);
+                
+                // Final validation
+                saveCurrentPageData();
+                
+                console.log("🔍 DEBUG 2: After saveCurrentPageData:", formData);
+                
+                // Validate required fields
+                if (!formData.name || !formData.email || !formData.rating || !formData.type || !formData.message) {
+                    console.log("❌ Validation failed:", {
+                        name: formData.name,
+                        email: formData.email,
+                        rating: formData.rating,
+                        type: formData.type,
+                        message: formData.message
+                    });
+                    showAlert('Please complete all required fields', 'danger');
+                    return;
+                }
+                
+                console.log("✅ DEBUG 3: All validations passed");
+                
+                isSubmitting = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Submitting...';
+                submitBtn.disabled = true;
+                
+                try {
+                    console.log("🔍 DEBUG 4: Starting fetch request");
+                    
+                    // Create the form data
+                    const formDataToSend = new URLSearchParams({
+                        'name': formData.name,
+                        'email': formData.email,
+                        'rating': formData.rating.toString(),
+                        'type': formData.type,
+                        'message': formData.message,
+                        'source': formData.source || '',
+                        'context': formData.context || '',
+                        'can_contact': formData.can_contact ? 'on' : '',
+                        'user_id': '{{ session.get("user_id", "") }}',
+                        'csrf_token': '{{ csrf_token() }}'
+                    });
+                    
+                    console.log("🔍 DEBUG 5: Form data to send:", Object.fromEntries(formDataToSend));
+                    console.log("🔍 DEBUG 6: Endpoint URL:", '{{ url_for("submit_feedback") }}');
+                    
+                    // Make the request
+                    const response = await fetch('{{ url_for("submit_feedback") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: formDataToSend
+                    });
+                    
+                    console.log("🔍 DEBUG 7: Response received");
+                    console.log("🔍 DEBUG 8: Response status:", response.status);
+                    
+                    // Check if response is JSON
+                    const contentType = response.headers.get('content-type');
+                    console.log("🔍 DEBUG 9: Content-Type:", contentType);
+                    
+                    let result;
+                    if (contentType && contentType.includes('application/json')) {
+                        result = await response.json();
+                    } else {
+                        const text = await response.text();
+                        console.error("❌ Response is not JSON:", text.substring(0, 500));
+                        throw new Error('Server returned non-JSON response');
+                    }
+                    
+                    console.log("🔍 DEBUG 10: Response data:", result);
+                    
+                    if (result.success) {
+                        console.log("✅ DEBUG 11: Submission successful!");
+                        
+                        // Update modal content
+                        const feedbackIdEl = document.getElementById('feedbackId');
+                        feedbackIdEl.innerHTML = `
+                            <div class="alert alert-success">
+                                <i class="bi bi-check-circle me-2"></i>
+                                Feedback submitted successfully!
+                                <div class="mt-2">
+                                    <small class="text-muted">Reference ID: ${result.feedback_id}</small>
+                                    ${result.email_sent ? '<div class="text-success small mt-1"><i class="bi bi-envelope-check me-1"></i>Confirmation email sent</div>' : ''}
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Show the modal
+                        console.log("🔍 DEBUG 12: Showing modal...");
+                        const modal = new bootstrap.Modal(document.getElementById('successModal'));
+                        modal.show();
+                        console.log("✅ DEBUG 13: Modal should be visible now");
+                        
+                        // Show toast
+                        showToast('Feedback submitted successfully!', 'success');
+                        
+                    } else {
+                        console.error("❌ DEBUG 14: Submission failed:", result.error);
+                        showAlert(result.error || 'Failed to submit feedback', 'danger');
+                    }
+                    
+                } catch (error) {
+                    console.error("❌ DEBUG 15: Error occurred:", error);
+                    console.error("❌ Error name:", error.name);
+                    console.error("❌ Error message:", error.message);
+                    
+                    showAlert(error.message || 'An error occurred. Please try again.', 'danger');
+                } finally {
+                    console.log("🔍 DEBUG 16: Finally block executing");
+                    isSubmitting = false;
+                    submitBtn.innerHTML = '<i class="bi bi-send me-2"></i> Submit Feedback';
+                    submitBtn.disabled = false;
+                }
+            });
+            
+            // Form reset
+            window.resetForm = function() {
+                formData = {
+                    name: '',
+                    email: '',
+                    rating: 0,
+                    type: '',
+                    message: '',
+                    source: '',
+                    context: '',
+                    can_contact: true
+                };
+                
+                // Reset all inputs
+                document.getElementById('name').value = '';
+                document.getElementById('email').value = '';
+                document.getElementById('canContact').checked = true;
+                document.getElementById('rating').value = '0';
+                document.getElementById('feedbackType').value = '';
+                document.getElementById('message').value = '';
+                document.getElementById('source').value = '';
+                document.getElementById('context').value = '';
+                
+                // Reset stars
+                stars.forEach(star => star.classList.remove('active'));
+                updateRatingLabel(0);
+                
+                // Reset type selection
+                typeOptions.forEach(opt => opt.classList.remove('selected'));
+                
+                // Reset character counter
+                charCount.textContent = '0';
+                charCount.classList.remove('text-warning', 'text-danger');
+                
+                // Go back to first page
+                goToPage(1);
+                
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('successModal'));
+                if (modal) {
+                    modal.hide();
+                }
+            };
+            
+            // Helper functions
+            function showToast(message, type = 'info') {
+                const toast = document.createElement('div');
+                toast.className = 'position-fixed bottom-0 end-0 p-3';
+                toast.style.zIndex = '11';
+                
+                const bgColor = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : 'bg-info';
+                
+                toast.innerHTML = `
+                    <div class="toast show" role="alert">
+                        <div class="toast-header ${bgColor} text-white">
+                            <strong class="me-auto">
+                                ${type === 'success' ? '<i class="bi bi-check-circle"></i>' : 
+                                  type === 'error' ? '<i class="bi bi-exclamation-circle"></i>' : 
+                                  '<i class="bi bi-info-circle"></i>'}
+                                ${type.charAt(0).toUpperCase() + type.slice(1)}
+                            </strong>
+                            <button type="button" class="btn-close btn-close-white" onclick="this.parentElement.parentElement.remove()"></button>
+                        </div>
+                        <div class="toast-body">
+                            ${message}
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(toast);
+                
+                // Auto-remove toast after 5 seconds
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.remove();
+                    }
+                }, 5000);
+            }
+            
+            function showAlert(message, type = 'info') {
+                // Remove existing alerts
+                const existingAlerts = document.querySelectorAll('.alert-dismissible');
+                existingAlerts.forEach(alert => alert.remove());
+                
+                // Create new alert
+                const alertDiv = document.createElement('div');
+                alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
+                alertDiv.style.zIndex = '1060';
+                alertDiv.innerHTML = `
+                    <i class="bi bi-${type === 'danger' ? 'exclamation-triangle' : type === 'warning' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                
+                document.body.appendChild(alertDiv);
+                
+                // Auto-remove after 5 seconds
+                setTimeout(() => {
+                    if (alertDiv.parentNode) {
+                        alertDiv.remove();
+                    }
+                }, 5000);
+            }
+            
+            // Keyboard navigation
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowRight' || e.key === 'Enter') {
+                    if (currentPage < totalPages) {
+                        e.preventDefault();
+                        document.querySelector(`.next-btn[data-next="${currentPage + 1}"]`)?.click();
+                    }
+                } else if (e.key === 'ArrowLeft') {
+                    if (currentPage > 1) {
+                        e.preventDefault();
+                        document.querySelector(`.prev-btn[data-prev="${currentPage - 1}"]`)?.click();
+                    }
+                }
+            });
+            
+            // Auto-save to localStorage
+            function autoSaveToLocalStorage() {
+                try {
+                    localStorage.setItem('feedbackFormData', JSON.stringify(formData));
+                    localStorage.setItem('feedbackCurrentPage', currentPage.toString());
+                } catch (e) {
+                    console.error('Failed to save form data:', e);
+                }
+            }
+            
+            // Load from localStorage
+            function loadFromLocalStorage() {
+                try {
+                    const savedData = localStorage.getItem('feedbackFormData');
+                    const savedPage = localStorage.getItem('feedbackCurrentPage');
+                    
+                    if (savedData && savedPage && confirm('We found a saved draft of your feedback. Would you like to continue where you left off?')) {
+                        formData = JSON.parse(savedData);
+                        const pageNum = parseInt(savedPage);
+                        
+                        // Load data into form
+                        document.getElementById('name').value = formData.name || '';
+                        document.getElementById('email').value = formData.email || '';
+                        document.getElementById('canContact').checked = formData.can_contact !== false;
+                        
+                        if (formData.rating > 0) {
+                            document.getElementById('rating').value = formData.rating;
+                            stars.forEach(star => {
+                                const sValue = parseInt(star.dataset.value);
+                                if (sValue <= formData.rating) {
+                                    star.classList.add('active');
+                                }
+                            });
+                            updateRatingLabel(formData.rating);
+                        }
+                        
+                        if (formData.type) {
+                            const typeOption = document.querySelector(`[data-type="${formData.type}"]`);
+                            if (typeOption) typeOption.classList.add('selected');
+                            document.getElementById('feedbackType').value = formData.type;
+                        }
+                        
+                        document.getElementById('message').value = formData.message || '';
+                        document.getElementById('source').value = formData.source || '';
+                        document.getElementById('context').value = formData.context || '';
+                        
+                        // Update character counter
+                        charCount.textContent = formData.message?.length || 0;
+                        
+                        // Go to saved page
+                        goToPage(pageNum);
+                        
+                        // Clear saved data
+                        localStorage.removeItem('feedbackFormData');
+                        localStorage.removeItem('feedbackCurrentPage');
+                    }
+                } catch (e) {
+                    console.error('Failed to load form data:', e);
+                    localStorage.removeItem('feedbackFormData');
+                    localStorage.removeItem('feedbackCurrentPage');
+                }
+            }
+            
+            // Initialize auto-save interval
+            setInterval(autoSaveToLocalStorage, 5000);
+            
+            // Load saved data on page load
+            loadFromLocalStorage();
+            
+            // Clear saved data on successful submission
+            submitBtn.addEventListener('click', () => {
+                localStorage.removeItem('feedbackFormData');
+                localStorage.removeItem('feedbackCurrentPage');
+            });
+        });
+    </script>
+</body>
+</html>

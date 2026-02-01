@@ -1,0 +1,426 @@
+[file name]: share_form.html
+[file content begin]
+{% extends "base.html" %}
+{% block title %}Share Form - {{ form.title }}{% endblock %}
+
+{% block page_title %}Share Form{% endblock %}
+{% block page_subtitle %}
+<p class="text-muted mb-0">{{ form.title }} | {{ event.name }}</p>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Email Results Section -->
+        {% if last_results %}
+        <div class="card-modern mb-4">
+            <div class="card-header-modern bg-light">
+                <h5 class="mb-0"><i class="bi bi-envelope-check me-2"></i>Last Email Results</h5>
+            </div>
+            <div class="card-body-modern">
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm">
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Status</th>
+                                <th>Message</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for result in last_results %}
+                            <tr>
+                                <td class="text-truncate" style="max-width: 150px;" title="{{ result.email }}">
+                                    {{ result.email }}
+                                </td>
+                                <td>
+                                    {% if result.status == 'sent' %}
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-check-circle me-1"></i> Sent
+                                    </span>
+                                    {% elif result.status == 'failed' %}
+                                    <span class="badge bg-danger">
+                                        <i class="bi bi-x-circle me-1"></i> Failed
+                                    </span>
+                                    {% elif result.status == 'invalid' %}
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="bi bi-exclamation-triangle me-1"></i> Invalid
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-truncate" style="max-width: 200px;" title="{{ result.message }}">
+                                    {{ result.message }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Summary Stats -->
+                {% set sent_count = last_results|selectattr('status', 'equalto', 'sent')|list|length %}
+                {% set failed_count = last_results|selectattr('status', 'equalto', 'failed')|list|length %}
+                {% set invalid_count = last_results|selectattr('status', 'equalto', 'invalid')|list|length %}
+                
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <div class="d-flex gap-3">
+                        {% if sent_count > 0 %}
+                        <span class="badge bg-success p-2">
+                            <i class="bi bi-check-circle me-1"></i> {{ sent_count }} sent
+                        </span>
+                        {% endif %}
+                        {% if failed_count > 0 %}
+                        <span class="badge bg-danger p-2">
+                            <i class="bi bi-x-circle me-1"></i> {{ failed_count }} failed
+                        </span>
+                        {% endif %}
+                        {% if invalid_count > 0 %}
+                        <span class="badge bg-warning text-dark p-2">
+                            <i class="bi bi-exclamation-triangle me-1"></i> {{ invalid_count }} invalid
+                        </span>
+                        {% endif %}
+                    </div>
+                    <a href="{{ url_for('clear_email_status') }}" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-trash"></i> Clear Results
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="card-modern mb-4">
+            <div class="card-header-modern">
+                <h5 class="mb-0"><i class="bi bi-link me-2"></i>Direct Link</h5>
+            </div>
+            <div class="card-body-modern">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Form URL</label>
+                    <div class="input-group mb-2">
+                        <input type="text" class="form-control form-control-modern" id="directLink" value="{{ form_url }}" readonly>
+                        <button class="btn btn-primary-modern" type="button" onclick="copyToClipboard('directLink')">
+                            <i class="bi bi-copy"></i> Copy Link
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">HTML Embed Code</label>
+                    <div class="input-group">
+                        <textarea class="form-control form-control-modern" id="htmlEmbed" rows="2" readonly>
+<a href="{{ form_url }}" target="_blank" style="background-color: #4361ee; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600;">Register for {{ event.name }}</a>
+                        </textarea>
+                        <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('htmlEmbed')">
+                            <i class="bi bi-copy"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-modern mb-4">
+            <div class="card-header-modern">
+                <h5 class="mb-0"><i class="bi bi-envelope me-2"></i>Email Sharing</h5>
+            </div>
+            <div class="card-body-modern">
+                <form method="POST" action="{{ url_for('share_form', event_id=event.id, form_id=form.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="send_email" value="1">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Recipient Email(s)</label>
+                        <input type="text" class="form-control form-control-modern" name="recipient_emails" 
+                               placeholder="email1@example.com, email2@example.com" required>
+                        <div class="form-text">Separate multiple emails with commas</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Custom Message (Optional)</label>
+                        <textarea class="form-control form-control-modern" name="custom_message" rows="3" 
+                                  placeholder="Add a personal message..."></textarea>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary-modern btn-modern">
+                            <i class="bi bi-envelope"></i> Send Form Link
+                        </button>
+                        <a href="{{ url_for('check_email_config') }}" class="btn btn-info-modern btn-modern">
+                            <i class="bi bi-gear"></i> Email Settings
+                        </a>
+                    </div>
+                </form>
+                
+                <!-- Quick Links -->
+                <div class="mt-4 pt-3 border-top">
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('view_email_log') }}" class="btn btn-outline-info btn-sm">
+                            <i class="bi bi-file-text"></i> View Email Log
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-modern mb-4">
+            <div class="card-header-modern">
+                <h5 class="mb-0"><i class="bi bi-share me-2"></i>Social Media</h5>
+            </div>
+            <div class="card-body-modern">
+                <div class="row g-2">
+                    <div class="col-6 col-md-3">
+                        <a href="https://www.facebook.com/sharer/sharer.php?u={{ form_url|urlencode }}" 
+                           target="_blank" class="btn btn-outline-primary btn-modern w-100">
+                            <i class="bi bi-facebook"></i> Facebook
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a href="https://twitter.com/intent/tweet?url={{ form_url|urlencode }}&text=Register%20for%20{{ event.name|urlencode }}" 
+                           target="_blank" class="btn btn-outline-info btn-modern w-100">
+                            <i class="bi bi-twitter"></i> Twitter
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ form_url|urlencode }}" 
+                           target="_blank" class="btn btn-outline-primary btn-modern w-100">
+                            <i class="bi bi-linkedin"></i> LinkedIn
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a href="whatsapp://send?text=Register%20for%20{{ event.name|urlencode }}%3A%20{{ form_url|urlencode }}" 
+                           target="_blank" class="btn btn-outline-success btn-modern w-100">
+                            <i class="bi bi-whatsapp"></i> WhatsApp
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-modern">
+            <div class="card-header-modern">
+                <h5 class="mb-0"><i class="bi bi-code me-2"></i>Embed Form</h5>
+            </div>
+            <div class="card-body-modern">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Iframe Embed Code</label>
+                    <div class="input-group">
+                        <textarea class="form-control form-control-modern" rows="3" id="iframeEmbed" readonly>
+<iframe src="{{ form_url }}" width="100%" height="500" frameborder="0" style="border: 1px solid #ddd; border-radius: 8px;"></iframe>
+                        </textarea>
+                        <button class="btn btn-outline-secondary" onclick="copyToClipboard('iframeEmbed')">
+                            <i class="bi bi-copy"></i>
+                        </button>
+                    </div>
+                    <div class="form-text">Add this code to your website to embed the form</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card-modern mb-4">
+            <div class="card-header-modern">
+                <h5 class="mb-0"><i class="bi bi-qr-code me-2"></i>QR Code</h5>
+            </div>
+            <div class="card-body-modern text-center">
+                {% if qr_code %}
+                <img src="{{ qr_code }}" alt="QR Code" class="img-fluid mb-3" style="max-width: 250px;">
+                <div class="mb-3">
+                    <button class="btn btn-primary-modern btn-modern" onclick="downloadQRCode()">
+                        <i class="bi bi-download"></i> Download QR Code
+                    </button>
+                </div>
+                {% else %}
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    QR Code generation requires QR code library
+                </div>
+                {% endif %}
+                <p class="text-muted small">
+                    Scan this QR code with a smartphone camera to open the form directly.
+                </p>
+            </div>
+        </div>
+        
+        <div class="card-modern mb-4">
+            <div class="card-header-modern">
+                <h5 class="mb-0"><i class="bi bi-lightning me-2"></i>Quick Actions</h5>
+            </div>
+            <div class="card-body-modern">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('view_form', event_id=event.id, form_id=form.id) }}" class="btn btn-outline-secondary btn-modern">
+                        <i class="bi bi-arrow-left"></i> Back to Form
+                    </a>
+                    <a href="{{ url_for('download_csv', event_id=event.id, form_id=form.id) }}" class="btn btn-success-modern btn-modern">
+                        <i class="bi bi-download"></i> Download CSV
+                    </a>
+                    <a href="{{ url_for('generate_pro_pdf', event_id=event.id, form_id=form.id) }}" class="btn btn-danger-modern btn-modern">
+                        <i class="bi bi-file-earmark-text"></i> Download Report
+                    </a>
+                    <a href="{{ url_for('view_uploads', event_id=event.id, form_id=form.id) }}" class="btn btn-info-modern btn-modern">
+                        <i class="bi bi-folder"></i> View Uploaded Files
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-modern">
+            <div class="card-header-modern">
+                <h5 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Sharing Tips</h5>
+            </div>
+            <div class="card-body-modern">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item border-0 px-0 py-2">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        <strong>Email:</strong> Best for formal invitations
+                    </div>
+                    <div class="list-group-item border-0 px-0 py-2">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        <strong>QR Code:</strong> Perfect for printed materials
+                    </div>
+                    <div class="list-group-item border-0 px-0 py-2">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        <strong>Social Media:</strong> Great for wider reach
+                    </div>
+                    <div class="list-group-item border-0 px-0 py-2">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        <strong>Direct Link:</strong> Easy to share anywhere
+                    </div>
+                    <div class="list-group-item border-0 px-0 py-2">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        <strong>Embed Code:</strong> Add to your website
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Help Card -->
+        <div class="card-modern mt-4">
+            <div class="card-header-modern bg-light">
+                <h5 class="mb-0"><i class="bi bi-question-circle me-2"></i>Need Help?</h5>
+            </div>
+            <div class="card-body-modern">
+                <p class="small text-muted mb-2">
+                    <i class="bi bi-info-circle text-primary me-1"></i>
+                    <strong>Email sending issues?</strong>
+                </p>
+                <ul class="small ps-3 mb-2">
+                    <li>Check email configuration</li>
+                    <li>View email logs for details</li>
+                </ul>
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('check_email_config') }}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-gear"></i> Email Settings
+                    </a>
+                    <a href="{{ url_for('view_email_log') }}" class="btn btn-sm btn-outline-info">
+                        <i class="bi bi-file-text"></i> View Email Log
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyToClipboard(elementId) {
+    const element = document.getElementById(elementId);
+    element.select();
+    element.setSelectionRange(0, 99999);
+    
+    try {
+        document.execCommand('copy');
+        showToast('Copied to clipboard!', 'success');
+    } catch (err) {
+        showToast('Failed to copy: ' + err, 'error');
+    }
+}
+
+function downloadQRCode() {
+    {% if qr_code %}
+    const link = document.createElement('a');
+    link.href = "{{ qr_code }}";
+    const eventName = "{{ event.name|slugify }}" || "event";
+    const formTitle = "{{ form.title|slugify }}" || "form";
+    const filename = 'qr_code_' + eventName + '_' + formTitle + '.png';
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('QR Code downloaded!', 'success');
+    {% endif %}
+}
+
+function showToast(message, type) {
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `toast-alert toast-${type}`;
+    toast.innerHTML = `
+        <div class="toast-content">
+            <i class="bi ${type === 'success' ? 'bi-check-circle' : 'bi-exclamation-circle'} me-2"></i>
+            ${message}
+        </div>
+    `;
+    
+    // Add to page
+    document.body.appendChild(toast);
+    
+    // Show with animation
+    setTimeout(() => toast.classList.add('show'), 10);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 300);
+    }, 3000);
+}
+
+// Auto-dismiss email results after 30 seconds
+document.addEventListener('DOMContentLoaded', function() {
+    const emailResultsCard = document.querySelector('.card-modern:has(.card-header-modern.bg-light)');
+    if (emailResultsCard) {
+        setTimeout(() => {
+            emailResultsCard.style.opacity = '0.7';
+            setTimeout(() => {
+                emailResultsCard.style.display = 'none';
+            }, 1000);
+        }, 30000); // 30 seconds
+    }
+});
+</script>
+
+<style>
+.toast-alert {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: white;
+    border-radius: 8px;
+    padding: 12px 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 9999;
+    transform: translateX(150%);
+    transition: transform 0.3s ease;
+    border-left: 4px solid #4361ee;
+}
+.toast-alert.show {
+    transform: translateX(0);
+}
+.toast-success {
+    border-left-color: #198754;
+}
+.toast-error {
+    border-left-color: #dc3545;
+}
+.toast-info {
+    border-left-color: #0dcaf0;
+}
+.toast-warning {
+    border-left-color: #ffc107;
+}
+.toast-content {
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+}
+</style>
+{% endblock %}
+[file content end]

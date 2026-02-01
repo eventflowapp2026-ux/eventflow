@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Security Center - Admin{% endblock %}
+
+{% block page_title %}🔒 Security Center{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Security Status -->
+    <div class="col-md-4 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="bi bi-shield-check display-1 text-success mb-3"></i>
+                <h4>Security Status</h4>
+                <p class="text-success"><strong>All Systems Secure</strong></p>
+                <button class="btn btn-outline-success" onclick="runSecurityScan()">
+                    Run Security Scan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Security Events -->
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Recent Security Events</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    No security events in the last 24 hours
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Settings -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Security Settings</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Enable Two-Factor Authentication</label>
+                                <select class="form-select" name="two_factor">
+                                    <option value="disabled">Disabled</option>
+                                    <option value="admin_only">Admins Only</option>
+                                    <option value="all_users">All Users</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Session Timeout (minutes)</label>
+                                <input type="number" class="form-control" name="session_timeout" value="60" min="5">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Failed Login Attempts Limit</label>
+                                <input type="number" class="form-control" name="max_attempts" value="5" min="1">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Lockout Duration (minutes)</label>
+                                <input type="number" class="form-control" name="lockout_duration" value="15" min="1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="ip_whitelist">
+                            <label class="form-check-label">Enable IP Whitelist</label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Save Security Settings</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

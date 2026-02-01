@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Debug Tools - Admin{% endblock %}
+
+{% block page_title %}🐛 Debug Tools{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Debug Actions -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">System Debug</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <input type="hidden" name="action" value="clear_cache">
+                    <button type="submit" class="btn btn-warning w-100 mb-3">
+                        <i class="bi bi-bucket me-2"></i>Clear System Cache
+                    </button>
+                </form>
+                
+                <form method="POST">
+                    <input type="hidden" name="action" value="test_email">
+                    <div class="mb-3">
+                        <label class="form-label">Test Email Address</label>
+                        <input type="email" class="form-control" name="test_email" placeholder="test@example.com">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-envelope me-2"></i>Send Test Email
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Information -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">System Info</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <tr>
+                        <td><strong>Python Version:</strong></td>
+                        <td>{{ python_version }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Flask Version:</strong></td>
+                        <td>{{ flask_version }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Server Time:</strong></td>
+                        <td>{{ now.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Debug Mode:</strong></td>
+                        <td>{{ 'Enabled' if app.debug else 'Disabled' }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Advanced Debug -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Advanced Debug Tools</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <button class="btn btn-outline-info w-100 mb-2" onclick="testDatabase()">
+                            Test Database Connection
+                        </button>
+                    </div>
+                    <div class="col-md-4">
+                        <button class="btn btn-outline-success w-100 mb-2" onclick="testSMTP()">
+                            Test SMTP Server
+                        </button>
+                    </div>
+                    <div class="col-md-4">
+                        <button class="btn btn-outline-warning w-100 mb-2" onclick="checkFilePermissions()">
+                            Check File Permissions
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

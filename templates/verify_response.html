@@ -1,0 +1,1828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Response Verification - EventFlow</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Favicon for EventFlow -->
+    <link rel="icon" type="image/png" href="/static/logo/icon.png">
+    <style>
+        /* Elegant Design System Variables */
+        :root {
+            /* Elegant Color Palette */
+            --primary: #2563EB;           /* Royal Blue */
+            --primary-dark: #1D4ED8;
+            --primary-light: #DBEAFE;
+            --secondary: #7C3AED;         /* Royal Purple */
+            --accent: #059669;            /* Emerald Green */
+            --dark: #111827;              /* Deep Charcoal */
+            --light: #FFFFFF;
+            --gray: #6B7280;
+            --gray-light: #F9FAFB;
+            --success: #10B981;
+            --warning: #F59E0B;
+            
+            /* Elegant Gradients */
+            --gradient: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%);
+            --gradient-dark: linear-gradient(135deg, #111827 0%, #1F2937 100%);
+            --gradient-accent: linear-gradient(135deg, #059669 0%, #0D9488 100%);
+            
+            /* Refined Border Radius */
+            --radius-sm: 0.5rem;
+            --radius-md: 1rem;
+            --radius-lg: 1.5rem;
+            --radius-xl: 2rem;
+            
+            /* Premium Shadows */
+            --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.15);
+            --shadow-xl: 0 24px 64px rgba(0, 0, 0, 0.16);
+            --shadow-blue: 0 8px 20px rgba(37, 99, 235, 0.15);
+            
+            /* Smooth Transitions */
+            --transition-fast: 150ms ease;
+            --transition-base: 250ms ease;
+            --transition-slow: 400ms ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
+            min-height: 100vh;
+            color: var(--dark);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .full-page-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .verification-container {
+            flex: 1;
+            width: 100%;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .verification-card {
+            background: var(--light);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+            border: 1px solid rgba(229, 231, 235, 0.8);
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .verification-header {
+            background: var(--gradient);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .verification-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><path d="M0,0Q250,150,500,150Q750,150,1000,0L1000,1000L0,1000Z" fill="rgba(255,255,255,0.1)"/></svg>') bottom center no-repeat;
+            background-size: cover;
+        }
+        
+        .brand-logo {
+            position: absolute;
+            top: 1.5rem;
+            left: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            z-index: 2;
+        }
+        
+        .brand-logo img {
+            height: 40px;
+            width: auto;
+            border-radius: var(--radius-sm);
+        }
+        
+        .brand-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: white;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.01em;
+        }
+        
+        .status-badge {
+            font-size: 0.875rem;
+            padding: 0.75rem 2rem;
+            border-radius: 100px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            display: inline-block;
+            backdrop-filter: blur(10px);
+            min-width: 200px;
+        }
+        
+        .status-valid {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+        
+        .status-invalid {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: white;
+        }
+        
+        .verification-icon {
+            font-size: 5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .info-card {
+            border-left: 4px solid var(--primary);
+            background: var(--gray-light);
+            padding: 1.5rem;
+            border-radius: var(--radius-md);
+            margin: 1rem 0;
+            transition: var(--transition-base);
+            height: 100%;
+        }
+        
+        .info-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .timestamp {
+            font-size: 0.875rem;
+            color: var(--gray);
+            font-family: 'Courier New', monospace;
+        }
+        
+        .verification-id-section {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(124, 58, 237, 0.05) 100%);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 2px solid rgba(37, 99, 235, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .verification-id-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient);
+        }
+        
+        .id-display-container {
+            background: var(--light);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            border: 1px solid rgba(229, 231, 235, 0.8);
+            transition: var(--transition-base);
+            height: 100%;
+        }
+        
+        .id-display-container:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .id-label {
+            font-size: 0.75rem;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        
+        .id-value {
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            background: var(--light);
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--gray-light);
+            word-break: break-all;
+            margin-bottom: 0.5rem;
+            width: 100%;
+            min-height: 80px;
+            overflow-wrap: break-word;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            border-radius: var(--radius-md);
+            border: none;
+            transition: var(--transition-base);
+            cursor: pointer;
+            text-decoration: none;
+            white-space: nowrap;
+            min-width: fit-content;
+        }
+        
+        .btn-primary {
+            background: var(--gradient);
+            color: white;
+            box-shadow: var(--shadow-blue);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .btn-outline-primary {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+        
+        .btn-outline-primary:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+        
+        .verification-steps {
+            background: var(--primary-light);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            background: var(--gradient);
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 2rem;
+            margin-right: 1rem;
+            font-weight: 700;
+            font-size: 0.875rem;
+        }
+        
+        .security-features {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .footer-note {
+            font-size: 0.875rem;
+            color: var(--gray);
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(229, 231, 235, 0.8);
+        }
+        
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .fade-in {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+        
+        .float-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        /* Modal Styling */
+        .modal-content {
+            border-radius: var(--radius-lg);
+            border: none;
+            box-shadow: var(--shadow-xl);
+        }
+        
+        .modal-header {
+            background: var(--gradient);
+            color: white;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            padding: 1.5rem;
+        }
+        
+        .modal-body {
+            padding: 2rem;
+        }
+        
+        /* Table Styling */
+        .table {
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            border: 1px solid rgba(229, 231, 235, 0.8);
+        }
+        
+        .table thead th {
+            background: var(--primary-light);
+            border: none;
+            font-weight: 600;
+            color: var(--primary);
+            padding: 1rem;
+        }
+        
+        .table tbody td {
+            padding: 1rem;
+            border-color: rgba(229, 231, 235, 0.8);
+        }
+        
+        .table tbody tr:hover {
+            background: var(--gray-light);
+        }
+        
+        /* Badge Styling */
+        .badge {
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+        
+        .id-badge {
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+        }
+        
+        /* Content Styling */
+        .content-wrapper {
+            padding: 2rem;
+        }
+        
+        @media (min-width: 1400px) {
+            .content-wrapper {
+                padding: 3rem;
+            }
+        }
+        
+        /* Button Group Fix */
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .verification-header {
+                padding: 2rem 1.5rem;
+            }
+            
+            .brand-logo {
+                position: relative;
+                top: 0;
+                left: 0;
+                justify-content: center;
+                margin-bottom: 1rem;
+            }
+            
+            .verification-header h1 {
+                font-size: 2rem;
+            }
+            
+            .content-wrapper {
+                padding: 1.5rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .verification-container {
+                padding: 0.5rem;
+            }
+            
+            .verification-header {
+                padding: 2rem 1rem;
+            }
+            
+            .verification-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .status-badge {
+                min-width: auto;
+                padding: 0.5rem 1.5rem;
+            }
+            
+            .content-wrapper {
+                padding: 1rem;
+            }
+            
+            .button-group {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .button-group .btn {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+            
+            .id-display-container {
+                padding: 1rem;
+            }
+            
+            .id-value {
+                min-height: 60px;
+                font-size: 0.8rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .verification-header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .verification-icon {
+                font-size: 3.5rem;
+            }
+            
+            .brand-name {
+                font-size: 1.25rem;
+            }
+            
+            .content-wrapper {
+                padding: 0.75rem;
+            }
+            
+            .btn {
+                padding: 0.75rem 1rem;
+                font-size: 0.875rem;
+            }
+            
+            .info-card {
+                padding: 1rem;
+            }
+            
+            .verification-steps,
+            .security-features,
+            .verification-id-section {
+                padding: 1.25rem;
+            }
+        }
+        
+        /* Print styles */
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            .verification-card {
+                box-shadow: none;
+                border: 1px solid #ddd;
+                width: 100%;
+                margin: 0;
+            }
+            .btn {
+                display: none !important;
+            }
+        }
+        
+        /* Ensure full width on all screens */
+        .container-fluid {
+            padding-left: 0;
+            padding-right: 0;
+        }
+        
+        .row {
+            margin-left: 0;
+            margin-right: 0;
+        }
+        
+        .col, .col-1, .col-10, .col-11, .col-12, .col-2, .col-3, .col-4, .col-5, .col-6, .col-7, .col-8, .col-9, .col-auto, .col-lg, .col-lg-1, .col-lg-10, .col-lg-11, .col-lg-12, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-lg-7, .col-lg-8, .col-lg-9, .col-lg-auto, .col-md, .col-md-1, .col-md-10, .col-md-11, .col-md-12, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-md-7, .col-md-8, .col-md-9, .col-md-auto, .col-sm, .col-sm-1, .col-sm-10, .col-sm-11, .col-sm-12, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-sm-auto, .col-xl, .col-xl-1, .col-xl-10, .col-xl-11, .col-xl-12, .col-xl-2, .col-xl-3, .col-xl-4, .col-xl-5, .col-xl-6, .col-xl-7, .col-xl-8, .col-xl-9, .col-xl-auto {
+            padding-left: 0;
+            padding-right: 0;
+        }
+        
+        /* Fix for overflowing content */
+        .overflow-fix {
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            word-break: break-word;
+        }
+        
+        /* New Navigation Buttons - UPDATED WITH SCROLL BEHAVIOR */
+        .nav-buttons {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .nav-buttons.hidden {
+            transform: translateY(100px);
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            font-weight: 600;
+            border-radius: var(--radius-md);
+            border: none;
+            transition: var(--transition-base);
+            cursor: pointer;
+            text-decoration: none;
+            background: var(--light);
+            color: var(--primary);
+            box-shadow: var(--shadow-md);
+            min-width: fit-content;
+        }
+        
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            background: var(--primary);
+            color: white;
+        }
+        
+        .nav-btn i {
+            font-size: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .nav-buttons {
+                bottom: 10px;
+                right: 10px;
+                flex-direction: column;
+            }
+            
+            .nav-btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+            }
+        }
+        
+        /* New Verification Form Styles */
+        .verification-form-container {
+            max-width: 800px;
+            margin: 0 auto;
+            animation: fadeInUp 0.6s ease forwards;
+        }
+        
+        .form-card {
+            background: var(--light);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            box-shadow: var(--shadow-xl);
+            border: 1px solid rgba(229, 231, 235, 0.8);
+        }
+        
+        .form-icon {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .form-control {
+            border: 2px solid rgba(229, 231, 235, 0.8);
+            border-radius: var(--radius-md);
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            transition: var(--transition-base);
+            width: 100%;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            outline: none;
+        }
+        
+        .form-control::placeholder {
+            color: var(--gray);
+        }
+        
+        .form-text {
+            font-size: 0.875rem;
+            color: var(--gray);
+            margin-top: 0.25rem;
+        }
+        
+        .form-divider {
+            text-align: center;
+            margin: 2rem 0;
+            position: relative;
+        }
+        
+        .form-divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: rgba(229, 231, 235, 0.8);
+        }
+        
+        .form-divider span {
+            background: var(--light);
+            padding: 0 1rem;
+            color: var(--gray);
+            font-size: 0.875rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .qr-scanner-placeholder {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(124, 58, 237, 0.05) 100%);
+            border: 2px dashed rgba(37, 99, 235, 0.3);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition-base);
+        }
+        
+        .qr-scanner-placeholder:hover {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%);
+            border-color: var(--primary);
+        }
+        
+        .qr-icon {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            display: none;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(37, 99, 235, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .result-container {
+            display: none;
+            margin-top: 2rem;
+        }
+        
+        .success-message {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .error-message {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.1) 100%);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        /* New style for the home page button container */
+        .home-nav-buttons {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        
+        .home-nav-buttons.hidden {
+            transform: translateY(-100px);
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        @media (max-width: 768px) {
+            .home-nav-buttons {
+                top: 10px;
+                right: 10px;
+                flex-direction: column;
+            }
+        }
+        
+        /* Scroll indicator */
+        .scroll-indicator {
+            position: fixed;
+            bottom: 80px;
+            right: 30px;
+            background: var(--primary);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+            display: none;
+        }
+        
+        .scroll-indicator:hover {
+            opacity: 1;
+        }
+        
+        .scroll-indicator i {
+            font-size: 1.2rem;
+        }
+        
+        .scroll-indicator.show {
+            display: flex;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Buttons -->
+    <div class="nav-buttons">
+        <button class="nav-btn" onclick="showVerificationForm()">
+            <i class="bi bi-search"></i> Verify Another
+        </button>
+        <button class="nav-btn" onclick="goHome()">
+            <i class="bi bi-house"></i> Go Home
+        </button>
+        <button class="nav-btn" onclick="goBack()">
+            <i class="bi bi-arrow-left"></i> Go Back
+        </button>
+    </div>
+    
+    <!-- Scroll to Top Indicator -->
+    <div class="scroll-indicator" id="scrollIndicator" onclick="scrollToTop()">
+        <i class="bi bi-chevron-up"></i>
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+    
+    <!-- Verification Form (Hidden by default) -->
+    <div id="verificationForm" style="display: none;">
+        <div class="verification-container">
+            <div class="verification-form-container">
+                <div class="form-card">
+                    <!-- Home Navigation Buttons for form page -->
+                    <div class="home-nav-buttons">
+                        <button class="nav-btn" onclick="goHome()">
+                            <i class="bi bi-house"></i> Home
+                        </button>
+                        <button class="nav-btn" onclick="closeVerificationForm()">
+                            <i class="bi bi-x"></i> Close
+                        </button>
+                    </div>
+                    
+                    <div class="form-icon">
+                        <i class="bi bi-qr-code-scan"></i>
+                    </div>
+                    
+                    <h2 class="text-center mb-4 fw-bold">Verify Response</h2>
+                    <p class="text-center text-muted mb-4">Enter the Response ID or Verification ID to verify a response</p>
+                    
+                    <form id="verifyForm">
+                        <div class="form-group">
+                            <label class="form-label" for="responseId">
+                                <i class="bi bi-upc-scan"></i> Response ID
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="responseId" 
+                                   placeholder="Enter Response ID (e.g., RES-abc123...)"
+                                   autocomplete="off">
+                            <div class="form-text">Enter the full Response ID from the response document</div>
+                        </div>
+                        
+                        
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-search me-2"></i> Verify Response
+                            </button>
+                          
+                        </div>
+                    </form>
+                    
+                    <!-- Result Container -->
+                    <div id="resultContainer" class="result-container">
+                        <div id="successMessage" class="success-message" style="display: none;">
+                            <h5 class="fw-bold text-success">
+                                <i class="bi bi-check-circle me-2"></i> Verification Successful
+                            </h5>
+                            <p id="successDetails"></p>
+                            <div class="d-flex gap-2 mt-2">
+                                <button class="btn btn-success btn-sm" onclick="viewFullResult()">
+                                    <i class="bi bi-eye me-1"></i> View Full Result
+                                </button>
+                                <button class="btn btn-outline-success btn-sm" onclick="verifyAnother()">
+                                    <i class="bi bi-search me-1"></i> Verify Another
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div id="errorMessage" class="error-message" style="display: none;">
+                            <h5 class="fw-bold text-danger">
+                                <i class="bi bi-exclamation-triangle me-2"></i> Verification Failed
+                            </h5>
+                            <p id="errorDetails"></p>
+                            <div class="d-flex gap-2 mt-2">
+                                <button class="btn btn-outline-danger btn-sm" onclick="retryVerification()">
+                                    <i class="bi bi-arrow-clockwise me-1"></i> Try Again
+                                </button>
+                                <button class="btn btn-outline-primary btn-sm" onclick="verifyAnother()">
+                                    <i class="bi bi-search me-1"></i> Verify Another
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 text-center">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Need help? Contact EventFlow support if you have trouble verifying responses.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="full-page-container" id="mainContent">
+        <div class="verification-container">
+            <div class="verification-card">
+                <!-- Header -->
+                <div class="verification-header">
+                    <a href="/" class="brand-logo">
+                        <img src="/static/logo/icon.png" alt="EventFlow">
+                        <span class="brand-name">EventFlow</span>
+                    </a>
+                    
+                    <div class="verification-icon float-animation">
+                        {% if is_valid %}
+                        ✅
+                        {% else %}
+                        ❌
+                        {% endif %}
+                    </div>
+                    
+                    <h1 class="display-5 fw-bold mb-3 position-relative" style="z-index: 2;">
+                        {% if is_valid %}
+                        VERIFIED RESPONSE
+                        {% else %}
+                        VERIFICATION FAILED
+                        {% endif %}
+                    </h1>
+                    
+                    <span class="status-badge {% if is_valid %}status-valid{% else %}status-invalid{% endif %}">
+                        {% if is_valid %}
+                        <i class="bi bi-check-circle me-1"></i> ACTIVE & VALID
+                        {% else %}
+                        <i class="bi bi-x-circle me-1"></i> INVALID OR DELETED
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <!-- Body -->
+                <div class="content-wrapper">
+                    <!-- Enhanced Response ID & Verification ID Section -->
+                    <div class="verification-id-section fade-in">
+                        <h5 class="fw-bold text-primary mb-4">
+                            <i class="bi bi-fingerprint me-2"></i>Verification Identifiers
+                        </h5>
+                        
+                        <div class="row g-3">
+                            <div class="col-lg-6 col-md-12">
+                                <div class="id-display-container">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div class="id-label overflow-fix">
+                                            <i class="bi bi-upc-scan me-1"></i> RESPONSE ID
+                                        </div>
+                                        <div class="button-group">
+                                            <button class="btn btn-sm btn-outline-primary copy-btn" 
+                                                    data-id="{{ response_id }}" 
+                                                    data-type="response">
+                                                <i class="bi bi-clipboard me-1"></i> Copy
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-primary" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#fullIdModal"
+                                                    data-id="{{ response_id }}"
+                                                    data-type="Response ID">
+                                                <i class="bi bi-arrows-fullscreen me-1"></i> View Full
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="id-value overflow-fix">
+                                        {{ response_id }}
+                                    </div>
+                                    <small class="text-muted d-block overflow-fix">Unique identifier for this response submission</small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-lg-6 col-md-12">
+                                <div class="id-display-container">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div class="id-label overflow-fix">
+                                            <i class="bi bi-shield-check me-1"></i> VERIFICATION ID
+                                        </div>
+                                        <div class="button-group">
+                                            {% set verification_id = "VER-" + form.id[:8] + "-" + entry_number|string + "-" + response_id[:8] %}
+                                            <button class="btn btn-sm btn-outline-primary copy-btn" 
+                                                    data-id="{{ verification_id }}" 
+                                                    data-type="verification">
+                                                <i class="bi bi-clipboard me-1"></i> Copy
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-primary" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#fullIdModal"
+                                                    data-id="{{ verification_id }}"
+                                                    data-type="Verification ID">
+                                                <i class="bi bi-arrows-fullscreen me-1"></i> View Full
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="id-value overflow-fix">
+                                        {{ verification_id }}
+                                    </div>
+                                    <small class="text-muted d-block overflow-fix">Security verification code for authentication</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Response Info -->
+                    <div class="row g-3 fade-in" style="animation-delay: 0.1s;">
+                        <div class="col-lg-6 col-md-12">
+                            <div class="info-card">
+                                <h5 class="fw-bold text-primary mb-3">
+                                    <i class="bi bi-file-earmark-text me-2"></i>Form Information
+                                </h5>
+                                <p class="mb-2"><strong>Event:</strong> {{ event.name }}</p>
+                                <p class="mb-2"><strong>Form:</strong> {{ form.title }}</p>
+                                <p class="mb-2"><strong>Form ID:</strong> 
+                                    <span class="badge bg-secondary id-badge overflow-fix">{{ form.id[:12] }}...</span>
+                                    <button class="btn btn-sm btn-link text-primary copy-btn-sm" 
+                                            data-id="{{ form.id }}"
+                                            data-type="Form ID">
+                                        <i class="bi bi-clipboard"></i>
+                                    </button>
+                                </p>
+                                <p class="mb-0"><strong>Event ID:</strong> 
+                                    <span class="badge bg-dark id-badge overflow-fix">{{ event.id[:12] }}...</span>
+                                    <button class="btn btn-sm btn-link text-primary copy-btn-sm" 
+                                            data-id="{{ event.id }}"
+                                            data-type="Event ID">
+                                        <i class="bi bi-clipboard"></i>
+                                    </button>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-md-12">
+                            <div class="info-card">
+                                <h5 class="fw-bold text-primary mb-3">
+                                    <i class="bi bi-calendar-check me-2"></i>Timestamps
+                                </h5>
+                                <p class="mb-2"><strong>Submitted:</strong> 
+                                    <span class="timestamp overflow-fix">{{ timestamp }}</span>
+                                </p>
+                                <p class="mb-2"><strong>Verified:</strong> 
+                                    <span class="timestamp overflow-fix">{{ current_time.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+                                </p>
+                                <p class="mb-2"><strong>Entry Number:</strong> 
+                                    <span class="badge bg-primary">#{{ entry_number }}</span>
+                                </p>
+                                <p class="mb-0"><strong>Session IP:</strong> 
+                                    <span class="badge bg-warning text-dark id-badge overflow-fix">{{ request.remote_addr }}</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if is_valid %}
+                    <!-- Verification Success -->
+                    <div class="fade-in mt-5 mb-5" style="animation-delay: 0.2s;">
+                        <div class="text-center">
+                            <h3 class="text-success fw-bold mb-3">
+                                <i class="bi bi-check-circle me-2"></i>Response Authenticity Confirmed
+                            </h3>
+                            <p class="lead text-muted">This response has been successfully verified and exists in the EventFlow database.</p>
+                        </div>
+                        
+                        <!-- Response Preview -->
+                        <div class="mt-5">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="fw-bold mb-0">Response Preview:</h5>
+                                <button class="btn btn-sm btn-outline-primary" onclick="toggleFullResponse()">
+                                    <i class="bi bi-arrows-expand me-1"></i> Toggle Full View
+                                </button>
+                            </div>
+                            <div id="responsePreview" class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Field</th>
+                                            <th>Value</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for key, value in response.items() %}
+                                            {% if key not in ['Timestamp', 'Response ID'] %}
+                                            <tr>
+                                                <td><strong>{{ key }}</strong></td>
+                                                <td>
+                                                    <div class="response-value overflow-fix" data-full="{{ value }}">
+                                                        {{ value[:50] }}{% if value|length > 50 %}...{% endif %}
+                                                    </div>
+                                                    {% if value|length > 50 %}
+                                                    <button class="btn btn-sm btn-link text-primary mt-1 view-full-value" 
+                                                            data-field="{{ key }}"
+                                                            data-value="{{ value }}">
+                                                        <i class="bi bi-eye me-1"></i> View Full
+                                                    </button>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Verification Instructions -->
+                    <div class="verification-steps fade-in" style="animation-delay: 0.3s;">
+                        <h5 class="fw-bold text-primary mb-4">
+                            <i class="bi bi-qr-code-scan me-2"></i>How to Verify This Response
+                        </h5>
+                        <div class="mb-3">
+                            <span class="step-number">1</span>
+                            <span class="fw-semibold">Scan QR Code</span>
+                            <p class="ms-4 mb-0 text-muted">Use any QR scanner app or camera</p>
+                        </div>
+                        <div class="mb-3">
+                            <span class="step-number">2</span>
+                            <span class="fw-semibold">Check Status</span>
+                            <p class="ms-4 mb-0 text-muted">Verify the "ACTIVE & VALID" status badge</p>
+                        </div>
+                        <div class="mb-3">
+                            <span class="step-number">3</span>
+                            <span class="fw-semibold">Match Details</span>
+                            <p class="ms-4 mb-0 text-muted">Compare response details with physical document</p>
+                        </div>
+                        <div class="mb-3">
+                            <span class="step-number">4</span>
+                            <span class="fw-semibold">Verify IDs</span>
+                            <p class="ms-4 mb-0 text-muted">Confirm Response ID and Verification ID match</p>
+                        </div>
+                    </div>
+                    
+                    {% else %}
+                    <!-- Verification Failed -->
+                    <div class="fade-in mt-5 mb-5" style="animation-delay: 0.2s;">
+                        <div class="text-center">
+                            <h3 class="text-danger fw-bold mb-3">
+                                <i class="bi bi-exclamation-triangle me-2"></i>Verification Failed
+                            </h3>
+                            <p class="lead text-muted">This response could not be verified. Possible reasons:</p>
+                        </div>
+                        
+                        <div class="row justify-content-center mt-4">
+                            <div class="col-lg-8 col-md-12">
+                                <div class="list-group">
+                                    <div class="list-group-item list-group-item-danger d-flex align-items-center">
+                                        <i class="bi bi-trash me-2"></i>
+                                        <span class="overflow-fix">Response has been deleted</span>
+                                    </div>
+                                    <div class="list-group-item list-group-item-warning d-flex align-items-center">
+                                        <i class="bi bi-clock me-2"></i>
+                                        <span class="overflow-fix">Event/form no longer exists</span>
+                                    </div>
+                                    <div class="list-group-item list-group-item-warning d-flex align-items-center">
+                                        <i class="bi bi-link me-2"></i>
+                                        <span class="overflow-fix">Invalid QR code or tampered document</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Security Features -->
+                    <div class="security-features fade-in" style="animation-delay: 0.4s;">
+                        <h6 class="fw-bold text-warning mb-3">
+                            <i class="bi bi-shield-check me-2"></i>Security Features
+                        </h6>
+                        <div class="row">
+                            <div class="col-lg-3 col-md-6 col-6 text-center mb-3">
+                                <div class="p-3">
+                                    <div class="fs-2 mb-2">🔒</div>
+                                    <small class="d-block fw-semibold overflow-fix">Encrypted</small>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-md-6 col-6 text-center mb-3">
+                                <div class="p-3">
+                                    <div class="fs-2 mb-2">🆔</div>
+                                    <small class="d-block fw-semibold overflow-fix">Unique IDs</small>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-md-6 col-6 text-center mb-3">
+                                <div class="p-3">
+                                    <div class="fs-2 mb-2">⏱️</div>
+                                    <small class="d-block fw-semibold overflow-fix">Timestamped</small>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-md-6 col-6 text-center mb-3">
+                                <div class="p-3">
+                                    <div class="fs-2 mb-2 text-primary">
+                                        <strong>EF</strong>
+                                    </div>
+                                    <small class="d-block fw-semibold overflow-fix">EventFlow</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+                    
+                    <!-- Footer -->
+                    <div class="footer-note fade-in" style="animation-delay: 0.5s;">
+                        <div class="d-flex align-items-center justify-content-center mb-3">
+                            <div class="me-3">
+                                <img src="/static/logo/icon.png" alt="EventFlow" style="height: 40px;">
+                            </div>
+                            <div class="text-start">
+                                <p class="mb-1 fw-bold overflow-fix">EventFlow Verification System</p>
+                                <p class="mb-0 text-muted overflow-fix">Professional Event Management Platform</p>
+                            </div>
+                        </div>
+                        <p class="mb-2 overflow-fix">
+                            <i class="bi bi-shield-lock me-1"></i>
+                            <strong>Security Note:</strong> This verification is timestamped and logged in EventFlow system.
+                        </p>
+                        <p class="mb-0 overflow-fix">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Verified by EventFlow • {{ current_time.strftime('%Y-%m-%d %H:%M:%S') }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- All existing modals remain the same -->
+    <!-- Full ID Modal -->
+    <div class="modal fade" id="fullIdModal" tabindex="-1" aria-hidden="true">
+        <!-- Modal content remains the same as before -->
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-fingerprint me-2 fs-5"></i>
+                        <h5 class="modal-title fw-bold">Full Identifier Details</h5>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-4">
+                        <label class="form-label text-muted">Identifier Type</label>
+                        <h5 id="idTypeDisplay" class="fw-bold text-primary overflow-fix"></h5>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label text-muted">Full Value</label>
+                        <div class="input-group">
+                            <textarea id="fullIdValue" class="form-control font-monospace overflow-fix" 
+                                     rows="4" readonly style="resize: none; width: 100%;"></textarea>
+                            <button class="btn btn-outline-primary" type="button" onclick="copyFullId()">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Quick Actions</label>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-primary" onclick="selectFullId()">
+                                <i class="bi bi-highlighter me-2"></i> Select All Text
+                            </button>
+                            <button class="btn btn-primary" onclick="downloadIdAsText()">
+                                <i class="bi bi-download me-2"></i> Download as Text File
+                            </button>
+                        </div>
+                    </div>
+                    <div class="alert alert-info border-0" style="background: var(--primary-light);">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <small>This identifier can be used to reference this response in the EventFlow system.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Full Value Modal -->
+    <div class="modal fade" id="fullValueModal" tabindex="-1" aria-hidden="true">
+        <!-- Modal content remains the same as before -->
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-file-text me-2 fs-5"></i>
+                        <h5 class="modal-title fw-bold">Full Response Value</h5>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Field Name</label>
+                        <h6 id="fieldNameDisplay" class="fw-bold overflow-fix"></h6>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Full Value</label>
+                        <div class="input-group">
+                            <textarea id="fullValueContent" class="form-control font-monospace overflow-fix" 
+                                     rows="6" readonly style="resize: none; width: 100%;"></textarea>
+                            <button class="btn btn-outline-primary" type="button" onclick="copyFieldValue()">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="alert alert-warning border-0" style="background: rgba(245, 158, 11, 0.1);">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <small>Be cautious when sharing sensitive information from form responses.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+    // Scroll variables
+    let lastScrollTop = 0;
+    let scrollTimeout;
+    const SCROLL_THRESHOLD = 100; // pixels to scroll before hiding buttons
+    const SHOW_TOP_THRESHOLD = 50; // pixels from top to show buttons
+    
+    // Navigation functions
+    function goHome() {
+        window.location.href = '/';
+    }
+    
+    function goBack() {
+        window.history.back();
+    }
+    
+    function showVerificationForm() {
+        document.getElementById('mainContent').style.display = 'none';
+        document.getElementById('verificationForm').style.display = 'block';
+        document.querySelector('.nav-buttons').style.display = 'none';
+        document.getElementById('scrollIndicator').classList.remove('show');
+    }
+    
+    function closeVerificationForm() {
+        document.getElementById('verificationForm').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'block';
+        document.querySelector('.nav-buttons').style.display = 'flex';
+        resetVerificationForm();
+        handleScroll(); // Re-initialize scroll handling
+    }
+    
+    function resetVerificationForm() {
+        document.getElementById('responseId').value = '';
+        document.getElementById('verificationId').value = '';
+        document.getElementById('resultContainer').style.display = 'none';
+        document.getElementById('successMessage').style.display = 'none';
+        document.getElementById('errorMessage').style.display = 'none';
+    }
+    
+    function simulateQrScan() {
+        // Simulate QR code scanning by filling sample data
+        const sampleResponseId = "RES-" + Math.random().toString(36).substring(2, 15).toUpperCase() + "-" + 
+                               Math.random().toString(36).substring(2, 15).toUpperCase();
+        document.getElementById('responseId').value = sampleResponseId;
+        
+        // Show notification
+        showNotification('Sample QR code data loaded!', 'info');
+    }
+    
+    function fillSampleData() {
+        const sampleResponseId = "RES-" + Math.random().toString(36).substring(2, 15).toUpperCase() + "-" + 
+                               Math.random().toString(36).substring(2, 15).toUpperCase();
+        const sampleVerificationId = "VER-" + Math.random().toString(36).substring(2, 10).toUpperCase() + "-" + 
+                                   Math.floor(Math.random() * 1000) + "-" + 
+                                   Math.random().toString(36).substring(2, 10).toUpperCase();
+        
+        document.getElementById('responseId').value = sampleResponseId;
+        document.getElementById('verificationId').value = sampleVerificationId;
+        
+        showNotification('Sample data loaded! Click "Verify Response" to test.', 'info');
+    }
+    
+    function showNotification(message, type = 'info') {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type} position-fixed top-0 end-0 m-3`;
+        notification.style.zIndex = '9999';
+        notification.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+                <span>${message}</span>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Remove notification after 3 seconds
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+    
+    // Handle form submission
+    document.getElementById('verifyForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const responseId = document.getElementById('responseId').value.trim();
+        const verificationId = document.getElementById('verificationId').value.trim();
+        
+        if (!responseId && !verificationId) {
+            showNotification('Please enter either a Response ID or Verification ID', 'error');
+            return;
+        }
+        
+        // Show loading
+        document.getElementById('loadingOverlay').style.display = 'flex';
+        
+        // Simulate API call with timeout
+        setTimeout(() => {
+            document.getElementById('loadingOverlay').style.display = 'none';
+            
+            // For demo purposes, we'll simulate both success and failure
+            const isSuccess = Math.random() > 0.3; // 70% chance of success
+            
+            document.getElementById('resultContainer').style.display = 'block';
+            
+            if (isSuccess) {
+                document.getElementById('successMessage').style.display = 'block';
+                document.getElementById('errorMessage').style.display = 'none';
+                
+                // Store the entered ID for later use
+                const idUsed = responseId || verificationId;
+                const idType = responseId ? 'response_id' : 'verification_id';
+                
+                document.getElementById('successDetails').innerHTML = 
+                    `Successfully verified response with ${responseId ? 'Response ID' : 'Verification ID'}:<br>
+                     <strong>${idUsed.substring(0, 30)}...</strong>`;
+                
+                // Store the ID in the button for the viewFullResult function
+                const viewButton = document.querySelector('#successMessage .btn-success');
+                viewButton.setAttribute('data-id', idUsed);
+                viewButton.setAttribute('data-type', idType);
+            } else {
+                document.getElementById('errorMessage').style.display = 'block';
+                document.getElementById('successMessage').style.display = 'none';
+                
+                document.getElementById('errorDetails').textContent = 
+                    'The response could not be found. Please check the ID and try again.';
+            }
+        }, 1500);
+    });
+    
+    function viewFullResult() {
+        // Get the stored ID and type from the button
+        const viewButton = document.querySelector('#successMessage .btn-success');
+        const id = viewButton.getAttribute('data-id');
+        const type = viewButton.getAttribute('data-type');
+        
+        if (id) {
+            // Extract the actual response ID from the sample or entered data
+            // In a real implementation, this would come from your backend
+            
+            // For demo purposes, we'll parse the ID
+            let responseId = id;
+            
+            // If it's a verification ID, try to extract the response ID part
+            if (type === 'verification_id' && id.startsWith('VER-')) {
+                // Extract response ID from verification ID (assuming format VER-formId-entryNum-responseId)
+                const parts = id.split('-');
+                if (parts.length >= 4) {
+                    responseId = 'RES-' + parts[parts.length - 1];
+                }
+            }
+            
+            // Extract event_id and form_id from current URL or use sample data
+            // In a real implementation, you would get these from your backend
+            const currentUrl = window.location.href;
+            let eventId = 'sample-event';
+            let formId = 'sample-form';
+            
+            // Try to extract from current verification page URL
+            if (currentUrl.includes('/verify_response/')) {
+                const urlParts = currentUrl.split('/verify_response/')[1].split('/');
+                if (urlParts.length >= 3) {
+                    eventId = urlParts[0];
+                    formId = urlParts[1];
+                }
+            }
+            
+            // Build the verification URL based on your Flask route
+            const verifyUrl = `/verify_response/${eventId}/${formId}/${responseId}`;
+            
+            // Show loading message
+            showNotification('Loading full verification details...', 'info');
+            
+            // Redirect to the verification page
+            setTimeout(() => {
+                window.location.href = verifyUrl;
+            }, 500);
+        } else {
+            showNotification('No verification ID found. Please try verifying again.', 'error');
+        }
+    }
+    
+    function retryVerification() {
+        resetVerificationForm();
+        document.getElementById('resultContainer').style.display = 'none';
+    }
+    
+    function verifyAnother() {
+        resetVerificationForm();
+        document.getElementById('resultContainer').style.display = 'none';
+        // Focus on the first input field
+        document.getElementById('responseId').focus();
+    }
+    
+    // Scroll handling function
+    function handleScroll() {
+        const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+        const navButtons = document.querySelector('.nav-buttons');
+        const homeNavButtons = document.querySelector('.home-nav-buttons');
+        const scrollIndicator = document.getElementById('scrollIndicator');
+        
+        // Clear any existing timeout
+        clearTimeout(scrollTimeout);
+        
+        // Show/hide based on scroll direction and position
+        if (currentScroll > lastScrollTop && currentScroll > SCROLL_THRESHOLD) {
+            // Scrolling down & past threshold - hide buttons
+            navButtons.classList.add('hidden');
+            if (homeNavButtons) homeNavButtons.classList.add('hidden');
+            
+            // Show scroll indicator when scrolled down
+            if (currentScroll > 300) {
+                scrollIndicator.classList.add('show');
+            }
+        } else if (currentScroll < lastScrollTop && currentScroll < (document.documentElement.scrollHeight - window.innerHeight - SCROLL_THRESHOLD)) {
+            // Scrolling up - show buttons
+            navButtons.classList.remove('hidden');
+            if (homeNavButtons) homeNavButtons.classList.remove('hidden');
+            
+            // Hide scroll indicator when near top
+            if (currentScroll < 300) {
+                scrollIndicator.classList.remove('show');
+            }
+        }
+        
+        // Always show buttons when at the top
+        if (currentScroll <= SHOW_TOP_THRESHOLD) {
+            navButtons.classList.remove('hidden');
+            if (homeNavButtons) homeNavButtons.classList.remove('hidden');
+            scrollIndicator.classList.remove('show');
+        }
+        
+        lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
+        
+        // Set timeout to show buttons if user stops scrolling
+        scrollTimeout = setTimeout(() => {
+            if (currentScroll > SCROLL_THRESHOLD && currentScroll < (document.documentElement.scrollHeight - window.innerHeight - 100)) {
+                // Only show if not at bottom
+                navButtons.classList.remove('hidden');
+                if (homeNavButtons) homeNavButtons.classList.remove('hidden');
+            }
+        }, 1500); // Show after 1.5 seconds of no scrolling
+    }
+    
+    // Scroll to top function
+    function scrollToTop() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    }
+    
+    // Initialize scroll handling
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add scroll event listener
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        
+        // Initial check
+        handleScroll();
+        
+        // Copy buttons for IDs
+        document.querySelectorAll('.copy-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                const type = this.getAttribute('data-type');
+                
+                navigator.clipboard.writeText(id).then(() => {
+                    // Show success feedback
+                    const originalText = this.innerHTML;
+                    this.innerHTML = '<i class="bi bi-check-circle me-1"></i>Copied!';
+                    this.classList.remove('btn-outline-primary');
+                    this.classList.add('btn-success');
+                    
+                    setTimeout(() => {
+                        this.innerHTML = originalText;
+                        this.classList.remove('btn-success');
+                        this.classList.add('btn-outline-primary');
+                    }, 2000);
+                    
+                }).catch(err => {
+                    console.error('Failed to copy:', err);
+                    alert('Failed to copy to clipboard. Please select and copy manually.');
+                });
+            });
+        });
+        
+        // Small copy buttons
+        document.querySelectorAll('.copy-btn-sm').forEach(button => {
+            button.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                
+                navigator.clipboard.writeText(id).then(() => {
+                    // Change icon to check mark temporarily
+                    const originalHTML = this.innerHTML;
+                    this.innerHTML = '<i class="bi bi-check text-success"></i>';
+                    
+                    setTimeout(() => {
+                        this.innerHTML = originalHTML;
+                    }, 1000);
+                    
+                }).catch(err => {
+                    console.error('Failed to copy:', err);
+                });
+            });
+        });
+        
+        // View full ID modal
+        const fullIdModal = document.getElementById('fullIdModal');
+        if (fullIdModal) {
+            fullIdModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const id = button.getAttribute('data-id');
+                const type = button.getAttribute('data-type');
+                
+                document.getElementById('idTypeDisplay').textContent = type;
+                document.getElementById('fullIdValue').value = id;
+            });
+        }
+        
+        // View full value modal for response fields
+        document.querySelectorAll('.view-full-value').forEach(button => {
+            button.addEventListener('click', function() {
+                const fieldName = this.getAttribute('data-field');
+                const fieldValue = this.getAttribute('data-value');
+                
+                document.getElementById('fieldNameDisplay').textContent = fieldName;
+                document.getElementById('fullValueContent').value = fieldValue;
+                
+                const modal = new bootstrap.Modal(document.getElementById('fullValueModal'));
+                modal.show();
+            });
+        });
+        
+        // Add fade-in animation to elements
+        const fadeElements = document.querySelectorAll('.fade-in');
+        fadeElements.forEach((el, index) => {
+            el.style.animationDelay = `${index * 0.1}s`;
+        });
+        
+        // Fix text overflow in all elements
+        document.querySelectorAll('*').forEach(el => {
+            if (el.scrollWidth > el.clientWidth) {
+                el.classList.add('overflow-fix');
+            }
+        });
+    });
+    
+    // Copy full ID from modal
+    function copyFullId() {
+        const textarea = document.getElementById('fullIdValue');
+        textarea.select();
+        navigator.clipboard.writeText(textarea.value).then(() => {
+            showNotification('Identifier copied to clipboard!', 'success');
+        }).catch(err => {
+            console.error('Failed to copy:', err);
+            alert('Failed to copy. Please select and copy manually.');
+        });
+    }
+    
+    // Copy field value from modal
+    function copyFieldValue() {
+        const textarea = document.getElementById('fullValueContent');
+        textarea.select();
+        navigator.clipboard.writeText(textarea.value).then(() => {
+            showNotification('Field value copied to clipboard!', 'success');
+        }).catch(err => {
+            console.error('Failed to copy:', err);
+            alert('Failed to copy. Please select and copy manually.');
+        });
+    }
+    
+    // Select all text in full ID modal
+    function selectFullId() {
+        const textarea = document.getElementById('fullIdValue');
+        textarea.select();
+    }
+    
+    // Download ID as text file
+    function downloadIdAsText() {
+        const idType = document.getElementById('idTypeDisplay').textContent;
+        const idValue = document.getElementById('fullIdValue').value;
+        const filename = `EventFlow_${idType.replace(/\s+/g, '_')}_${new Date().getTime()}.txt`;
+        
+        const content = `EventFlow Verification System\n===========================\n\n${idType}: ${idValue}\n\nTimestamp: ${new Date().toISOString()}\nReference: VER-${new Date().getTime()}`;
+        
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+    
+    // Toggle full response view
+    function toggleFullResponse() {
+        const responseValues = document.querySelectorAll('.response-value');
+        const isExpanded = responseValues[0]?.getAttribute('data-expanded') === 'true';
+        
+        responseValues.forEach(element => {
+            if (isExpanded) {
+                // Collapse to short view
+                const fullValue = element.getAttribute('data-full');
+                element.textContent = fullValue.length > 50 ? fullValue.substring(0, 50) + '...' : fullValue;
+                element.setAttribute('data-expanded', 'false');
+            } else {
+                // Expand to full view
+                element.textContent = element.getAttribute('data-full');
+                element.setAttribute('data-expanded', 'true');
+            }
+        });
+    }
+    
+    // Print verification
+    function printVerification() {
+        window.print();
+    }
+    
+    // Download verification as PDF
+    function downloadVerification() {
+        alert('PDF download feature would be implemented here. For now, use the Print function and save as PDF.');
+    }
+    
+    // Adjust layout on window resize
+    window.addEventListener('resize', function() {
+        document.querySelectorAll('.id-value').forEach(el => {
+            el.style.height = 'auto';
+            el.style.height = el.scrollHeight + 'px';
+        });
+    });
+    
+    // Initial height adjustment
+    window.addEventListener('load', function() {
+        document.querySelectorAll('.id-value').forEach(el => {
+            el.style.height = 'auto';
+            el.style.height = el.scrollHeight + 'px';
+        });
+    });
+    </script>
+</body>
+</html>

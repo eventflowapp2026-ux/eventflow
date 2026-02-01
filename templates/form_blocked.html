@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Blocked - EventFlow</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/static/logo/icon.png">
+    
+    <style>
+        /* Elegant Design System - Matching your index.html */
+        :root {
+            --primary: #2563EB;
+            --primary-dark: #1D4ED8;
+            --primary-light: #DBEAFE;
+            --secondary: #7C3AED;
+            --accent: #059669;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --danger-light: #FEE2E2;
+            --danger-dark: #B91C1C;
+            --dark: #111827;
+            --light: #FFFFFF;
+            --surface: #F9FAFB;
+            --border: #E5E7EB;
+            --text-primary: #1F2937;
+            --text-secondary: #6B7280;
+            
+            /* Elegant Gradients */
+            --gradient-primary: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%);
+            --gradient-secondary: linear-gradient(135deg, #059669 0%, #0D9488 100%);
+            --gradient-danger: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+            --gradient-warning: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+            --gradient-dark: linear-gradient(135deg, #111827 0%, #1F2937 100%);
+            
+            /* Sophisticated Spacing */
+            --space-xs: 0.5rem;
+            --space-sm: 0.75rem;
+            --space-md: 1.25rem;
+            --space-lg: 2rem;
+            --space-xl: 3rem;
+            
+            /* Refined Radius */
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --radius-2xl: 1.5rem;
+            --radius-full: 9999px;
+            
+            /* Premium Shadows */
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --shadow-danger: 0 10px 15px -3px rgba(239, 68, 68, 0.1);
+            
+            /* Smooth Transitions */
+            --transition-fast: 150ms ease;
+            --transition-base: 250ms ease;
+            --transition-slow: 400ms ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--light);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            min-height: 100vh;
+        }
+
+        /* Navigation */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(229, 231, 235, 0.8);
+            padding: 1rem 0;
+            transition: all var(--transition-base);
+        }
+
+        .navbar.scrolled {
+            box-shadow: var(--shadow-md);
+            padding: 0.75rem 0;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .navbar-brand img {
+            height: 40px;
+            width: auto;
+            transition: transform var(--transition-fast);
+        }
+
+        .navbar-brand:hover img {
+            transform: scale(1.05);
+        }
+
+        .brand-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: -0.01em;
+        }
+
+        .nav-link {
+            font-weight: 500;
+            color: var(--text-secondary) !important;
+            padding: 0.5rem 1rem !important;
+            border-radius: var(--radius-md);
+            transition: all var(--transition-fast);
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: var(--primary) !important;
+            background: var(--primary-light);
+        }
+
+        /* Main Content */
+        .main-content {
+            min-height: 100vh;
+            padding-top: 120px;
+            background: linear-gradient(135deg,
+                rgba(249, 250, 251, 0.9) 0%,
+                rgba(241, 245, 249, 0.9) 50%,
+                rgba(226, 232, 240, 0.9) 100%
+            );
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .hero-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0.4;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(239, 68, 68, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 80% 20%, rgba(220, 38, 38, 0.1) 0%, transparent 40%);
+        }
+
+        /* Blocked Content */
+        .blocked-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: var(--space-xl) 0;
+        }
+
+        .blocked-card {
+            background: var(--light);
+            border-radius: var(--radius-2xl);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .blocked-header {
+            background: var(--gradient-danger);
+            color: white;
+            padding: var(--space-xl);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .blocked-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><path d="M0,0Q250,150,500,150Q750,150,1000,0L1000,1000L0,1000Z" fill="rgba(255,255,255,0.1)"/></svg>') bottom center no-repeat;
+            background-size: cover;
+        }
+
+        .blocked-icon {
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto var(--space-lg);
+            font-size: 3.5rem;
+            color: white;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            animation: pulseWarning 2s infinite;
+        }
+
+        @keyframes pulseWarning {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 0 20px rgba(255, 255, 255, 0);
+            }
+        }
+
+        .blocked-body {
+            padding: var(--space-xl);
+        }
+
+        .info-card {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            border: 1px solid var(--border);
+            margin-bottom: var(--space-lg);
+            transition: all var(--transition-base);
+        }
+
+        .info-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .info-card-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+            color: var(--text-primary);
+        }
+
+        .info-card-header i {
+            font-size: 1.25rem;
+            color: var(--primary);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.5rem 1rem;
+            background: var(--danger-light);
+            color: var(--danger-dark);
+            border-radius: var(--radius-full);
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: var(--space-sm);
+        }
+
+        .status-badge i {
+            font-size: 1rem;
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            padding: var(--space-md);
+            background: var(--light);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--space-md);
+            border: 1px solid var(--border);
+            transition: all var(--transition-base);
+        }
+
+        .timeline-item:hover {
+            border-color: var(--primary-light);
+            background: var(--primary-light);
+        }
+
+        .timeline-number {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.125rem;
+            flex-shrink: 0;
+        }
+
+        .creator-avatar {
+            width: 48px;
+            height: 48px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1.75rem;
+            font-weight: 600;
+            border-radius: var(--radius-md);
+            border: none;
+            transition: all var(--transition-base);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: var(--gradient-danger);
+            color: white;
+            box-shadow: var(--shadow-danger);
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-sm);
+            margin-top: var(--space-lg);
+        }
+
+        /* Admin Tools */
+        .admin-tools {
+            background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+            border: 2px solid #F59E0B;
+            border-radius: var(--radius-xl);
+            padding: var(--space-lg);
+            margin-top: var(--space-xl);
+        }
+
+        .admin-tools-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+            color: #92400E;
+        }
+
+        /* Alert */
+        .alert {
+            border-radius: var(--radius-lg);
+            border: none;
+            padding: var(--space-md);
+            margin-bottom: var(--space-md);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: rgba(255, 255, 255, 0.8);
+            padding: var(--space-xl) 0 var(--space-lg);
+            position: relative;
+            margin-top: auto;
+        }
+
+        footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: var(--space-md);
+        }
+
+        .footer-logo img {
+            height: 32px;
+            width: auto;
+        }
+
+        .footer-links h5 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--space-md);
+        }
+
+        .footer-links ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: all var(--transition-fast);
+        }
+
+        .footer-links a:hover {
+            color: white;
+            padding-left: 0.25rem;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: var(--space-md);
+        }
+
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-md);
+            color: white;
+            text-decoration: none;
+            transition: all var(--transition-fast);
+        }
+
+        .social-links a:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .blocked-header {
+                padding: var(--space-lg);
+            }
+            
+            .blocked-body {
+                padding: var(--space-lg);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding-top: 100px;
+            }
+            
+            .blocked-header {
+                padding: var(--space-md);
+            }
+            
+            .blocked-body {
+                padding: var(--space-md);
+            }
+            
+            .blocked-icon {
+                width: 80px;
+                height: 80px;
+                font-size: 2.5rem;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .button-group .btn {
+                width: 100%;
+            }
+            
+            .timeline-item {
+                flex-direction: column;
+                text-align: center;
+                gap: var(--space-sm);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .blocked-header {
+                padding: var(--space-sm);
+            }
+            
+            .blocked-body {
+                padding: var(--space-sm);
+            }
+            
+            .btn {
+                padding: 0.875rem 1.5rem;
+            }
+            
+            .info-card {
+                padding: var(--space-md);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <img src="/static/logo/icon.png" alt="EventFlow Logo">
+                <span class="brand-name">EventFlow</span>
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a href="/#features" class="nav-link">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/how-it-works" class="nav-link">How It Works</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/feedback" class="nav-link">Feedback</a>
+                    </li>
+                    
+                    {% if 'user_id' in session %}
+                    <li class="nav-item ms-3">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline">Dashboard</a>
+                    </li>
+                    <li class="nav-item ms-2">
+                        <a href="{{ url_for('logout') }}" class="btn btn-primary">Logout</a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item ms-3">
+                        <a href="{{ url_for('login') }}" class="btn btn-outline">Login</a>
+                    </li>
+                    <li class="nav-item ms-2">
+                        <a href="{{ url_for('signup') }}" class="btn btn-primary">Get Started Free</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="hero-pattern"></div>
+        <div class="container">
+            <div class="blocked-container fade-in">
+                <!-- Main Blocked Card -->
+                <div class="blocked-card">
+                    <!-- Header -->
+                    <div class="blocked-header">
+                        <div class="blocked-icon">
+                            <i class="bi bi-shield-exclamation"></i>
+                        </div>
+                        <h1 class="display-5 fw-bold mb-3">Form Blocked</h1>
+                        <p class="lead mb-0 opacity-90">This form has been temporarily disabled for review</p>
+                    </div>
+                    
+                    <!-- Body -->
+                    <div class="blocked-body">
+                        <!-- Status Alert -->
+                        <div class="alert alert-danger fade-in" style="animation-delay: 0.1s;">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-exclamation-triangle-fill me-3 fs-4"></i>
+                                <div>
+                                    <h5 class="alert-heading mb-2">Under Review</h5>
+                                    <p class="mb-0">
+                                        This form has been reported and is currently being reviewed by our moderation team.
+                                        {% if block_reason %}
+                                        <br><strong>Reported for:</strong> {{ block_reason }}
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Form Information -->
+                        <div class="info-card fade-in" style="animation-delay: 0.2s;">
+                            <div class="info-card-header">
+                                <i class="bi bi-file-text"></i>
+                                <h5 class="mb-0">Form Details</h5>
+                            </div>
+                            
+                            <div class="status-badge">
+                                <i class="bi bi-shield-lock"></i>
+                                STATUS: BLOCKED
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <p class="text-muted small mb-1">Form ID</p>
+                                    <div class="bg-dark text-light p-2 rounded font-monospace">
+                                        {{ form_id[:8] }}...
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <p class="text-muted small mb-1">Blocked Since</p>
+                                    <div class="bg-light p-2 rounded">
+                                        {% if block_timestamp %}
+                                            {{ block_timestamp|format_date }}
+                                        {% else %}
+                                            Recently
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {% if form and form.title %}
+                            <div class="mb-3">
+                                <p class="text-muted small mb-1">Form Title</p>
+                                <h5 class="mb-0">{{ form.title }}</h5>
+                            </div>
+                            {% endif %}
+                            
+                            {% if event and event.name %}
+                            <div>
+                                <p class="text-muted small mb-1">Event</p>
+                                <p class="mb-0">{{ event.name }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Creator Information -->
+                        {% if creator_info and creator_info.name %}
+                        <div class="info-card fade-in" style="animation-delay: 0.3s;">
+                            <div class="info-card-header">
+                                <i class="bi bi-person"></i>
+                                <h5 class="mb-0">Form Creator</h5>
+                            </div>
+                            
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="creator-avatar me-3">
+                                    <span>{{ creator_info.name[0] }}</span>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">{{ creator_info.name }}</h6>
+                                    {% if creator_info.verified %}
+                                    <span class="badge bg-success mt-1">
+                                        <i class="bi bi-check-circle-fill me-1"></i> Verified
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            {% if creator_info.email %}
+                            <div class="mb-2">
+                                <p class="text-muted small mb-1">Contact</p>
+                                <p class="mb-0">{{ creator_info.email }}</p>
+                            </div>
+                            {% endif %}
+                            
+                            {% if creator_info.events_created %}
+                            <div>
+                                <p class="text-muted small mb-1">Events Created</p>
+                                <p class="mb-0">{{ creator_info.events_created }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Review Timeline -->
+                        <div class="info-card fade-in" style="animation-delay: 0.4s;">
+                            <div class="info-card-header">
+                                <i class="bi bi-clock-history"></i>
+                                <h5 class="mb-0">Review Timeline</h5>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <p class="text-muted">
+                                    Our moderation team follows a strict review process to ensure fair treatment.
+                                    Here's what happens next:
+                                </p>
+                            </div>
+                            
+                            <div class="timeline-item">
+                                <div class="timeline-number">1</div>
+                                <div>
+                                    <h6 class="mb-2">Initial Review</h6>
+                                    <p class="text-muted mb-0 small">Report is assessed by our automated system and flagged for manual review</p>
+                                </div>
+                            </div>
+                            
+                            <div class="timeline-item">
+                                <div class="timeline-number">2</div>
+                                <div>
+                                    <h6 class="mb-2">Manual Investigation</h6>
+                                    <p class="text-muted mb-0 small">Our moderation team investigates the reported content (24-48 hours)</p>
+                                </div>
+                            </div>
+                            
+                            <div class="timeline-item">
+                                <div class="timeline-number">3</div>
+                                <div>
+                                    <h6 class="mb-2">Final Decision</h6>
+                                    <p class="text-muted mb-0 small">Based on findings, we either restore or permanently remove the form</p>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info mt-3">
+                                <i class="bi bi-info-circle me-2"></i>
+                                <small>
+                                    <strong>Typical Review Time:</strong> 24-48 hours. The form creator has been notified of this action.
+                                    You'll be able to access this form again once the review is complete.
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <!-- Admin Tools (if admin) -->
+                        {% if session.user_id == 'admin' %}
+                        <div class="admin-tools fade-in" style="animation-delay: 0.5s;">
+                            <div class="admin-tools-header">
+                                <i class="bi bi-tools"></i>
+                                <h5 class="mb-0">Admin Tools</h5>
+                            </div>
+                            
+                            <p class="text-dark mb-3">
+                                You're viewing this as an administrator. You can take the following actions:
+                            </p>
+                            
+                            <div class="button-group">
+                                <a href="{{ url_for('show_form', form_id=form_id) }}" 
+                                   class="btn btn-primary">
+                                    <i class="bi bi-eye me-2"></i> View Form Anyway
+                                </a>
+                                
+                                <form action="{{ url_for('admin_unblock_form', form_id=form_id) }}" 
+                                      method="POST" class="d-inline">
+                                    <button type="submit" 
+                                            class="btn btn-success"
+                                            onclick="return confirm('Unblock this form? This will make it accessible to all users again.')">
+                                        <i class="bi bi-check-circle me-2"></i> Unblock Form
+                                    </button>
+                                </form>
+                                
+                                <a href="{{ url_for('admin_form_reports') }}" 
+                                   class="btn btn-info">
+                                    <i class="bi bi-clipboard-data me-2"></i> View Reports
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Action Buttons -->
+                        <div class="button-group fade-in" style="animation-delay: 0.6s;">
+                            <a href="{{ url_for('index') }}" class="btn btn-primary">
+                                <i class="bi bi-house me-2"></i> Return to Home
+                            </a>
+                            
+                            <a href="mailto:moderation@eventflow.com?subject=Form%20Block%20Appeal:%20{{ form_id }}" 
+                               class="btn btn-outline">
+                                <i class="bi bi-envelope me-2"></i> Contact Support
+                            </a>
+                            
+                            <button onclick="window.history.back()" class="btn btn-outline">
+                                <i class="bi bi-arrow-left me-2"></i> Go Back
+                            </button>
+                        </div>
+                        
+                        <!-- Help Text -->
+                        <div class="text-center mt-4 fade-in" style="animation-delay: 0.7s;">
+                            <p class="text-muted small mb-0">
+                                <i class="bi bi-shield-check me-1"></i>
+                                This form was blocked by EventFlow's moderation system to protect our community.
+                                Need immediate assistance? Contact 
+                                <a href="mailto:eventflow.app2026@gmail.com">eventflow.app2026@gmail.com</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Additional Help Card -->
+                <div class="info-card mt-4 fade-in" style="animation-delay: 0.8s;">
+                    <div class="text-center">
+                        <h5 class="mb-3">
+                            <i class="bi bi-question-circle text-primary me-2"></i>
+                            Need More Help?
+                        </h5>
+                        <p class="text-muted mb-3">
+                            If you believe this block is in error, or if you're the form creator seeking to appeal,
+                            our support team is here to help.
+                        </p>
+                        <div class="button-group justify-content-center">
+                            <a href="mailto:eventflow.app2026@gmail.com?subject=Form%20Block%20Appeal:%20{{ form_id }}" 
+                               class="btn btn-danger">
+                                <i class="bi bi-life-preserver me-2"></i> Appeal Block Decision
+                            </a>
+                            <a href="{{ url_for('feedback') }}" class="btn btn-outline">
+                                <i class="bi bi-chat-dots me-2"></i> Send Feedback
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <div class="footer-logo">
+                        <img src="/static/logo/icon.png" alt="EventFlow Logo">
+                        <span class="brand-name">EventFlow</span>
+                    </div>
+                    <p class="text-white-50 mb-4">
+                        Professional event management made simple. Free tools for modern organizers.
+                    </p>
+                    <div class="social-links">
+                        <a href="https://www.instagram.com/eventflow.app2026/">
+                            <i class="bi bi-instagram"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-2 col-md-4 mb-4">
+                    <h5>Product</h5>
+                    <ul class="footer-links">
+                        <li><a href="/#features">Features</a></li>
+                        <li><a href="/how-it-works">How It Works</a></li>
+                        <li><a href="/feedback">Feedback</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-lg-2 col-md-4 mb-4">
+                    <h5>Legal</h5>
+                    <ul class="footer-links">
+                        <li><a href="{{ url_for('privacy_policy') }}">Privacy Policy</a></li>
+                        <li><a href="{{ url_for('terms') }}">Terms of Service</a></li>
+                        <li><a href="mailto:eventflow.app2026@gmail.com">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-lg-4 col-md-4 mb-4">
+                    <h5>Get Started</h5>
+                    <p class="text-white-50 mb-3">
+                        Start creating professional events today.
+                    </p>
+                    {% if 'user_id' not in session %}
+                    <a href="{{ url_for('signup') }}" class="btn btn-outline-light">Sign Up Free</a>
+                    {% else %}
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-light">Go to Dashboard</a>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <hr class="bg-light opacity-25 my-4">
+            
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="mb-0 text-white-50">
+                        © 2024 EventFlow. All rights reserved.
+                    </p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0 text-white-50">
+                        Contact: <a href="mailto:eventflow.app2026@gmail.com" class="text-white-50">eventflow.app2026@gmail.com</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Add animations to cards on scroll
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add fade-in animation to elements
+            const fadeElements = document.querySelectorAll('.fade-in');
+            fadeElements.forEach((el, index) => {
+                el.style.animationDelay = `${index * 0.1}s`;
+            });
+
+            // Add hover effect to cards
+            const cards = document.querySelectorAll('.info-card, .timeline-item');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-4px)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+
+            // Smooth scrolling for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
+                    
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+
+            // Logo fallback handling
+            const logoImages = document.querySelectorAll('img[src*="logo"]');
+            logoImages.forEach(img => {
+                img.addEventListener('error', function() {
+                    const parent = this.parentElement;
+                    const textFallback = parent.querySelector('.brand-name');
+                    if (textFallback) {
+                        this.style.display = 'none';
+                        textFallback.style.display = 'block';
+                    }
+                });
+            });
+
+            // Add click effect to admin buttons
+            const adminButtons = document.querySelectorAll('.admin-tools .btn');
+            adminButtons.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    this.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 150);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

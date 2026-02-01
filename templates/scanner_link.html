@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventFlow Mobile Scanner - {{ event.name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .scanner-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .qr-container {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .qr-code {
+            max-width: 300px;
+            height: auto;
+            display: block;
+            margin: 0 auto 20px;
+            border: 10px solid white;
+            border-radius: 10px;
+        }
+        .copy-box {
+            background: #f1f5f9;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            word-break: break-all;
+        }
+        .btn-scanner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 10px 0;
+            width: 100%;
+            transition: transform 0.3s;
+        }
+        .btn-scanner:hover {
+            transform: translateY(-3px);
+            color: white;
+        }
+        .step {
+            background: #e8f4fd;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 4px solid #4361ee;
+        }
+    </style>
+</head>
+<body>
+    <div class="scanner-card">
+        <div class="text-center mb-4">
+            <h1 class="display-5 fw-bold">📱 Mobile Scanner</h1>
+            <p class="text-muted">Scan responses on your mobile device</p>
+        </div>
+        
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i>
+            <strong>Event:</strong> {{ event.name }}<br>
+            <strong>Form:</strong> {{ form_id }}<br>
+            <strong>Entries:</strong> {{ stats.total_responses if stats else 'Loading...' }}
+        </div>
+        
+        <div class="qr-container">
+            <h5><i class="bi bi-qr-code"></i> Scan QR Code</h5>
+            <p class="text-muted">Scan this QR code with your phone camera to open the scanner app</p>
+            {% if qr_code %}
+                <img src="{{ qr_code }}" alt="Scanner QR Code" class="qr-code">
+            {% else %}
+                <div class="alert alert-warning">QR Code could not be generated</div>
+            {% endif %}
+        </div>
+        
+        <div class="text-center mb-4">
+            <a href="{{ scanner_deep_link }}" class="btn-scanner">
+                <i class="bi bi-phone"></i> Open in Scanner App
+            </a>
+            <small class="text-muted d-block mt-2">Or use the web version below</small>
+        </div>
+        
+        <h5><i class="bi bi-link"></i> Direct Links</h5>
+        <div class="copy-box">
+            <small class="text-muted">Deep Link:</small><br>
+            <code id="deeplink">{{ scanner_deep_link }}</code>
+            <button onclick="copyToClipboard('deeplink')" class="btn btn-sm btn-outline-primary mt-2">
+                <i class="bi bi-clipboard"></i> Copy
+            </button>
+        </div>
+        
+        <div class="copy-box">
+            <small class="text-muted">CSV URL:</small><br>
+            <code id="csvurl">{{ csv_url }}</code>
+            <button onclick="copyToClipboard('csvurl')" class="btn btn-sm btn-outline-primary mt-2">
+                <i class="bi bi-clipboard"></i> Copy
+            </button>
+        </div>
+        
+        <div class="step">
+            <h6><i class="bi bi-1-circle"></i> Step 1: Install Scanner App</h6>
+            <p class="mb-1">Download "EventFlow Scanner" from Play Store/App Store</p>
+        </div>
+        
+        <div class="step">
+            <h6><i class="bi bi-2-circle"></i> Step 2: Load Data</h6>
+            <p class="mb-1">Open the scanner app and paste the CSV URL above</p>
+        </div>
+        
+        <div class="step">
+            <h6><i class="bi bi-3-circle"></i> Step 3: Start Scanning</h6>
+            <p class="mb-1">Scan QR codes from printed response tickets</p>
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{{ url_for('view_form', event_id=event.id, form_id=form_id) }}" 
+               class="btn btn-outline-secondary">
+               <i class="bi bi-arrow-left"></i> Back to Form
+            </a>
+            <a href="/scanner_web_fallback?csv={{ csv_url }}" 
+               class="btn btn-primary">
+               <i class="bi bi-globe"></i> Web Scanner
+            </a>
+        </div>
+    </div>
+    
+    <script>
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                const button = element.nextElementSibling;
+                const original = button.innerHTML;
+                button.innerHTML = '<i class="bi bi-check"></i> Copied!';
+                button.classList.remove('btn-outline-primary');
+                button.classList.add('btn-success');
+                
+                setTimeout(() => {
+                    button.innerHTML = original;
+                    button.classList.remove('btn-success');
+                    button.classList.add('btn-outline-primary');
+                }, 2000);
+            });
+        }
+        
+        // Auto-copy CSV URL for convenience
+        setTimeout(() => {
+            copyToClipboard('csvurl');
+        }, 1000);
+    </script>
+</body>
+</html>

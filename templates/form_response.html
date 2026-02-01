@@ -1,0 +1,3337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if form and form.title %}{{ form.title }} - EventFlow{% else %}Form - EventFlow{% endif %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/static/logo/icon.png">
+    
+    <style>
+        /* Elegant Design System */
+        :root {
+            --primary: #2563EB;
+            --primary-dark: #1D4ED8;
+            --primary-light: #DBEAFE;
+            --secondary: #7C3AED;
+            --accent: #059669;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --dark: #111827;
+            --light: #FFFFFF;
+            --surface: #F9FAFB;
+            --border: #E5E7EB;
+            --text-primary: #1F2937;
+            --text-secondary: #6B7280;
+            --text-tertiary: #9CA3AF;
+            
+            /* Elegant Gradients */
+            --gradient-primary: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%);
+            --gradient-secondary: linear-gradient(135deg, #059669 0%, #0D9488 100%);
+            --gradient-success: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            --gradient-dark: linear-gradient(135deg, #111827 0%, #1F2937 100%);
+            --gradient-light: linear-gradient(135deg, #FFFFFF 0%, #F9FAFB 100%);
+            
+            /* Sophisticated Spacing */
+            --space-xs: 0.5rem;
+            --space-sm: 0.75rem;
+            --space-md: 1.25rem;
+            --space-lg: 2rem;
+            --space-xl: 3rem;
+            --space-2xl: 4rem;
+            
+            /* Refined Radius */
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --radius-2xl: 1.5rem;
+            --radius-full: 9999px;
+            
+            /* Premium Shadows */
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --shadow-blue: 0 10px 15px -3px rgba(37, 99, 235, 0.1);
+            --shadow-success: 0 10px 15px -3px rgba(16, 185, 129, 0.1);
+            
+            /* Smooth Transitions */
+            --transition-fast: 150ms ease;
+            --transition-base: 250ms ease;
+            --transition-slow: 400ms ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--light);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Navigation */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(229, 231, 235, 0.8);
+            padding: 1rem 0;
+            transition: all var(--transition-base);
+        }
+
+        .navbar.scrolled {
+            box-shadow: var(--shadow-md);
+            padding: 0.75rem 0;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .navbar-brand img {
+            height: 40px;
+            width: auto;
+            transition: transform var(--transition-fast);
+        }
+
+        .navbar-brand:hover img {
+            transform: scale(1.05);
+        }
+
+        .brand-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: -0.01em;
+        }
+
+        /* Main Content */
+        .main-content {
+            min-height: 100vh;
+            padding-top: 120px;
+            background: linear-gradient(135deg,
+                rgba(249, 250, 251, 0.9) 0%,
+                rgba(241, 245, 249, 0.9) 50%,
+                rgba(226, 232, 240, 0.9) 100%
+            );
+            position: relative;
+        }
+
+        .hero-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0.4;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(37, 99, 235, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 80% 20%, rgba(124, 58, 237, 0.1) 0%, transparent 40%);
+        }
+
+        /* Success Message */
+        .success-message-container {
+            display: none;
+        }
+
+        .success-card {
+            background: var(--light);
+            border-radius: var(--radius-2xl);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-xl);
+            padding: var(--space-2xl);
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .success-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-success);
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--gradient-success);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto var(--space-lg);
+            font-size: 2.5rem;
+            color: white;
+            animation: scaleIn 0.5s ease-out 0.3s both;
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .success-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: var(--space-md);
+            color: var(--text-primary);
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--success) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .success-message {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            margin-bottom: var(--space-xl);
+            line-height: 1.6;
+        }
+
+        /* Form Cards */
+        .form-card {
+            background: var(--light);
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            margin-bottom: var(--space-lg);
+            transition: all var(--transition-base);
+        }
+
+        .form-card:hover {
+            box-shadow: var(--shadow-xl);
+            transform: translateY(-2px);
+        }
+
+        .form-header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: var(--space-xl);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><path d="M0,0Q250,150,500,150Q750,150,1000,0L1000,1000L0,1000Z" fill="rgba(255,255,255,0.1)"/></svg>') bottom center no-repeat;
+            background-size: cover;
+        }
+
+        .form-body {
+            padding: var(--space-xl);
+        }
+
+        /* Enhanced Form Description Styles */
+        .form-description-section {
+            margin: var(--space-lg) 0;
+        }
+
+        .form-description-card-enhanced {
+            background: var(--light);
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            transition: all var(--transition-base);
+        }
+
+        .form-description-card-enhanced:hover {
+            box-shadow: var(--shadow-xl);
+            transform: translateY(-2px);
+        }
+
+        /* Header Styles */
+        .form-description-header {
+            background: var(--gradient-primary);
+            padding: var(--space-lg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-description-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.1) 0%, 
+                rgba(255, 255, 255, 0) 50%, 
+                rgba(255, 255, 255, 0.1) 100%);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: var(--space-md);
+        }
+
+        .header-icon i {
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .header-text {
+            flex: 1;
+        }
+
+        .header-text h5 {
+            color: white;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .header-text p {
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 0.875rem;
+        }
+
+        .badge-premium {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-full);
+            font-weight: 600;
+            font-size: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+
+        /* Body Styles */
+        .form-description-body {
+            padding: var(--space-xl);
+        }
+
+        /* Description Content */
+        .description-content {
+            margin-bottom: var(--space-lg);
+        }
+
+        .description-text-wrapper {
+            position: relative;
+        }
+
+        .description-text {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: var(--text-primary);
+            margin-bottom: var(--space-md);
+        }
+
+        .description-text p {
+            margin-bottom: 1rem;
+        }
+
+        .description-text p:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-button-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: var(--space-md);
+        }
+
+        .btn-more-info {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border: none;
+            color: white;
+            padding: 0.625rem 1.5rem;
+            border-radius: var(--radius-full);
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all var(--transition-base);
+            text-decoration: none;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-more-info:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            color: white;
+        }
+
+        .btn-more-info:active {
+            transform: translateY(0);
+        }
+
+        /* Quick Tips Section */
+        .tips-section {
+            background: linear-gradient(135deg, 
+                rgba(37, 99, 235, 0.03) 0%, 
+                rgba(124, 58, 237, 0.02) 100%);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            margin-top: var(--space-lg);
+            border: 1px solid rgba(37, 99, 235, 0.1);
+        }
+
+        .tips-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+        }
+
+        .tips-header i {
+            font-size: 1.25rem;
+            color: var(--primary);
+        }
+
+        .tips-header h6 {
+            color: var(--text-primary);
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .tips-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .tips-list li {
+            padding: 0.375rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .tips-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        .required-marker {
+            color: var(--danger);
+            font-weight: bold;
+        }
+
+        /* Security Footer */
+        .form-description-footer {
+            background: var(--surface);
+            padding: var(--space-md) var(--space-xl);
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .security-badge {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+            font-size: 0.875rem;
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .security-badge i {
+            font-size: 1rem;
+        }
+
+        .update-info {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+        }
+
+        /* Modal Styles */
+        .modal-content {
+            border-radius: var(--radius-xl);
+            border: none;
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+        }
+
+        .modal-header {
+            background: var(--gradient-primary);
+            color: white;
+            border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+            padding: var(--space-lg);
+            border-bottom: none;
+        }
+
+        .modal-title {
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .modal-body {
+            padding: var(--space-xl);
+            background: var(--surface);
+        }
+
+        .modal-footer {
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            padding: var(--space-lg);
+        }
+
+        /* Form Information Grid */
+        .form-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--space-md);
+            margin-bottom: var(--space-xl);
+        }
+
+        .info-card {
+            background: var(--light);
+            border-radius: var(--radius-lg);
+            padding: var(--space-md);
+            border: 1px solid var(--border);
+            transition: all var(--transition-base);
+        }
+
+        .info-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary);
+        }
+
+        .info-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: var(--space-sm);
+            font-size: 1.25rem;
+        }
+
+        .info-icon.primary {
+            background: linear-gradient(135deg, var(--primary-light) 0%, rgba(37, 99, 235, 0.1) 100%);
+            color: var(--primary);
+        }
+
+        .info-icon.success {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%);
+            color: var(--success);
+        }
+
+        .info-icon.warning {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.05) 100%);
+            color: var(--warning);
+        }
+
+        .info-icon.secondary {
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(91, 33, 182, 0.05) 100%);
+            color: var(--secondary);
+        }
+
+        .info-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+            display: block;
+        }
+
+        .info-value {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: block;
+        }
+
+        .info-value.active {
+            color: var(--success);
+        }
+
+        .info-value.inactive {
+            color: var(--warning);
+        }
+
+        .info-value.public {
+            color: var(--success);
+        }
+
+        .info-value.private {
+            color: var(--secondary);
+        }
+
+        /* Statistics Section */
+        .stats-section {
+            background: linear-gradient(135deg, 
+                rgba(37, 99, 235, 0.05) 0%, 
+                rgba(124, 58, 237, 0.03) 100%);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            margin: var(--space-xl) 0;
+            border: 1px solid rgba(37, 99, 235, 0.1);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: var(--space-md);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Form Controls */
+        .form-control-modern {
+            border: 2px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 0.875rem 1rem;
+            font-size: 1rem;
+            transition: all var(--transition-base);
+            background: var(--light);
+            color: var(--text-primary);
+        }
+
+        .form-control-modern:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            outline: none;
+        }
+
+        .form-control-modern.is-invalid {
+            border-color: var(--danger);
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right calc(0.375em + 0.1875rem) center;
+            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+        }
+
+        .form-control-modern.is-invalid:focus {
+            border-color: var(--danger);
+            box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-xs);
+        }
+
+        .form-label.text-danger {
+            color: var(--danger) !important;
+        }
+
+        .invalid-feedback {
+            display: none;
+            width: 100%;
+            margin-top: 0.25rem;
+            font-size: 0.875rem;
+            color: var(--danger);
+        }
+
+        .is-invalid ~ .invalid-feedback {
+            display: block;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1.75rem;
+            font-weight: 600;
+            border-radius: var(--radius-md);
+            border: none;
+            transition: all var(--transition-base);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: var(--shadow-blue);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: var(--gradient-success);
+            color: white;
+            box-shadow: var(--shadow-success);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+            color: white;
+            box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.1);
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+            margin-top: var(--space-xl);
+        }
+
+        /* Enhanced Submit Button Animations */
+        .submit-button {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-weight: 700;
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            width: 100%;
+            font-size: 1.125rem;
+            transition: all var(--transition-base);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            box-shadow: 
+                0 10px 20px rgba(37, 99, 235, 0.3),
+                0 6px 6px rgba(37, 99, 235, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+        }
+
+        .submit-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                135deg,
+                rgba(255, 255, 255, 0.1) 0%,
+                rgba(255, 255, 255, 0.2) 50%,
+                rgba(255, 255, 255, 0.1) 100%
+            );
+            z-index: -1;
+            opacity: 0;
+            transition: opacity var(--transition-base);
+        }
+
+        .submit-button::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent 30%,
+                rgba(255, 255, 255, 0.1) 50%,
+                transparent 70%
+            );
+            transform: rotate(45deg);
+            animation: shine 3s infinite linear;
+            z-index: -1;
+        }
+
+        @keyframes shine {
+            0% {
+                transform: translateX(-100%) translateY(-100%) rotate(45deg);
+            }
+            100% {
+                transform: translateX(100%) translateY(100%) rotate(45deg);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) scale(1);
+            }
+            50% {
+                transform: translateY(-5px) scale(1.02);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 
+                    0 10px 20px rgba(37, 99, 235, 0.3),
+                    0 6px 6px rgba(37, 99, 235, 0.2),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            }
+            50% {
+                box-shadow: 
+                    0 15px 30px rgba(37, 99, 235, 0.4),
+                    0 10px 10px rgba(37, 99, 235, 0.3),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+            }
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                box-shadow: 
+                    0 0 20px rgba(37, 99, 235, 0.5),
+                    0 10px 20px rgba(37, 99, 235, 0.3);
+            }
+            50% {
+                box-shadow: 
+                    0 0 40px rgba(37, 99, 235, 0.8),
+                    0 15px 30px rgba(37, 99, 235, 0.5);
+            }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        @keyframes wiggle {
+            0%, 100% {
+                transform: rotate(0deg);
+            }
+            25% {
+                transform: rotate(5deg);
+            }
+            75% {
+                transform: rotate(-5deg);
+            }
+        }
+
+        .submit-button:hover {
+            transform: translateY(-3px);
+            animation: 
+                float 3s ease-in-out infinite,
+                pulse 2s ease-in-out infinite,
+                glow 2s ease-in-out infinite;
+        }
+
+        .submit-button:hover::before {
+            opacity: 1;
+        }
+
+        .submit-button:hover .submit-icon {
+            animation: bounce 1s ease infinite;
+        }
+
+        .submit-button:hover .button-text {
+            background: linear-gradient(45deg, #ffffff, #e2e8ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: textGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes textGlow {
+            0%, 100% {
+                text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            }
+            50% {
+                text-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+            }
+        }
+
+        .submit-button:active {
+            transform: translateY(-1px) scale(0.98);
+            animation: none;
+            box-shadow: 
+                0 5px 10px rgba(37, 99, 235, 0.3),
+                0 3px 3px rgba(37, 99, 235, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+        }
+
+        .submit-button:active::after {
+            animation-play-state: paused;
+        }
+
+        /* Loading animation */
+        .submit-button.loading {
+            animation: 
+                pulse 1s ease-in-out infinite,
+                loadingBg 2s linear infinite !important;
+        }
+
+        @keyframes loadingBg {
+            0% {
+                background: linear-gradient(135deg, #2563EB 0%, #7C3AED 33%, #059669 66%, #10B981 100%);
+            }
+            25% {
+                background: linear-gradient(135deg, #7C3AED 0%, #059669 33%, #10B981 66%, #2563EB 100%);
+            }
+            50% {
+                background: linear-gradient(135deg, #059669 0%, #10B981 33%, #2563EB 66%, #7C3AED 100%);
+            }
+            75% {
+                background: linear-gradient(135deg, #10B981 0%, #2563EB 33%, #7C3AED 66%, #059669 100%);
+            }
+            100% {
+                background: linear-gradient(135deg, #2563EB 0%, #7C3AED 33%, #059669 66%, #10B981 100%);
+            }
+        }
+
+        /* Particle effects container */
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            animation: particleFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes particleFloat {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--tx), var(--ty)) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Ripple effect */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            pointer-events: none;
+        }
+
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* Sparkle effect */
+        .sparkle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #ffffff;
+            border-radius: 50%;
+            animation: sparkle 1s ease-out;
+            pointer-events: none;
+        }
+
+        @keyframes sparkle {
+            0% {
+                transform: scale(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1) rotate(180deg);
+                opacity: 0;
+            }
+        }
+
+        /* Confetti container for button */
+        .button-confetti {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Progress bar animation */
+        .progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #10B981, #059669, #0D9488);
+            width: 0%;
+            border-radius: 0 0 var(--radius-full) var(--radius-full);
+            transition: width 0.3s ease;
+        }
+
+        .submit-button:hover .progress-bar {
+            width: 100%;
+            animation: progressFill 2s ease-in-out infinite;
+        }
+
+        @keyframes progressFill {
+            0%, 100% {
+                width: 0%;
+            }
+            50% {
+                width: 100%;
+            }
+        }
+
+        /* 3D effect on hover */
+        .submit-button::before {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            right: 4px;
+            bottom: -4px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: var(--radius-full);
+            z-index: -2;
+            opacity: 0;
+            transition: opacity var(--transition-base);
+        }
+
+        .submit-button:hover::before {
+            opacity: 1;
+        }
+
+        /* Icon animation */
+        .submit-icon {
+            position: relative;
+            animation: iconFloat 2s ease-in-out infinite;
+        }
+
+        @keyframes iconFloat {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-3px) rotate(5deg);
+            }
+        }
+
+        /* Add some special effects for mobile */
+        @media (hover: none) {
+            .submit-button {
+                animation: 
+                    pulse 2s ease-in-out infinite,
+                    glow 2s ease-in-out infinite;
+            }
+            
+            .submit-button:active {
+                animation: wiggle 0.3s ease;
+            }
+        }
+
+        /* Creator Info */
+        .creator-card {
+            background: var(--light);
+            border-radius: var(--radius-lg);
+            padding: var(--space-md);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: var(--space-lg);
+            transition: all var(--transition-base);
+        }
+
+        .creator-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .creator-avatar {
+            width: 48px;
+            height: 48px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+
+        /* Badges */
+        .badge {
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-full);
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+
+        .badge-success {
+            background: var(--gradient-success);
+            color: white;
+        }
+
+        .badge-warning {
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+            color: white;
+        }
+
+        /* File Upload */
+        .file-upload-info {
+            background-color: var(--primary-light);
+            border-left: 4px solid var(--primary);
+            padding: var(--space-sm);
+            border-radius: var(--radius-sm);
+            margin-top: var(--space-xs);
+            font-size: 0.875rem;
+        }
+
+        .file-type-badge {
+            display: inline-block;
+            background: var(--surface);
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            margin: 0.125rem;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        /* Report Button */
+        .report-btn {
+            position: fixed;
+            bottom: var(--space-lg);
+            right: var(--space-lg);
+            z-index: 1000;
+        }
+
+        .report-btn .btn {
+            border-radius: var(--radius-full);
+            padding: 0.875rem 1.5rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Alerts */
+        .alert {
+            border-radius: var(--radius-lg);
+            border: none;
+            padding: var(--space-md);
+            margin-bottom: var(--space-md);
+        }
+
+        .global-alert {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        /* List Groups */
+        .list-group-item {
+            border: none;
+            padding: var(--space-sm);
+            transition: var(--transition-fast);
+            background: transparent;
+        }
+
+        .list-group-item:hover {
+            background-color: var(--surface);
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .submit-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: rgba(255, 255, 255, 0.8);
+            padding: var(--space-xl) 0 var(--space-lg);
+            position: relative;
+            margin-top: var(--space-xl);
+        }
+
+        footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: var(--space-md);
+        }
+
+        .footer-logo img {
+            height: 32px;
+            width: auto;
+        }
+
+        .footer-links h5 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--space-md);
+        }
+
+        .footer-links ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: all var(--transition-fast);
+        }
+
+        .footer-links a:hover {
+            color: white;
+            padding-left: 0.25rem;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: var(--space-md);
+        }
+
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-md);
+            color: white;
+            text-decoration: none;
+            transition: all var(--transition-fast);
+        }
+
+        .social-links a:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .form-header {
+                padding: var(--space-lg);
+            }
+            
+            .form-body {
+                padding: var(--space-lg);
+            }
+            
+            .success-card {
+                padding: var(--space-xl);
+            }
+            
+            .success-title {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding-top: 100px;
+            }
+            
+            .form-header {
+                padding: var(--space-md);
+            }
+            
+            .form-body {
+                padding: var(--space-md);
+            }
+            
+            .form-description-body {
+                padding: var(--space-lg);
+            }
+            
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--space-md);
+            }
+            
+            .header-text {
+                text-align: left;
+            }
+            
+            .badge-premium {
+                align-self: flex-start;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                gap: var(--space-sm);
+                align-items: flex-start;
+            }
+            
+            .report-btn {
+                bottom: var(--space-md);
+                right: var(--space-md);
+            }
+            
+            .report-btn .btn {
+                padding: 0.75rem 1.25rem;
+                font-size: 0.875rem;
+            }
+            
+            .success-card {
+                padding: var(--space-lg);
+            }
+            
+            .success-title {
+                font-size: 1.75rem;
+            }
+            
+            .success-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 2rem;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .button-group .btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .form-header {
+                padding: var(--space-sm);
+            }
+            
+            .form-body {
+                padding: var(--space-sm);
+            }
+            
+            .form-description-body {
+                padding: var(--space-md);
+            }
+            
+            .form-description-header {
+                padding: var(--space-md);
+            }
+            
+            .btn, .submit-button {
+                padding: 0.875rem 1.5rem;
+            }
+            
+            .creator-card {
+                padding: var(--space-sm);
+            }
+            
+            .success-card {
+                padding: var(--space-md);
+            }
+            
+            .success-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <img src="/static/logo/icon.png" alt="EventFlow Logo">
+                <span class="brand-name">EventFlow</span>
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    {% if 'user_id' in session %}
+                    <li class="nav-item">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline me-2">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ url_for('logout') }}" class="btn btn-primary">Logout</a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a href="{{ url_for('login') }}" class="btn btn-outline me-2">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ url_for('signup') }}" class="btn btn-primary">Get Started Free</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="hero-pattern"></div>
+        <div class="container">
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show fade-in" role="alert">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-{{ 'check-circle' if category == 'success' else 'exclamation-triangle' }}-fill me-2"></i>
+                                {{ message }}
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <!-- Admin Warning for Blocked Forms -->
+            {% if is_blocked and session.user_id == 'admin' %}
+            <div class="alert alert-warning alert-dismissible fade show fade-in" role="alert">
+                <strong>⚠️ ADMIN VIEW ONLY - FORM IS BLOCKED</strong>
+                <ul class="mb-0 mt-2">
+                    <li><strong>Reason:</strong> {{ block_reason }}</li>
+                    <li><strong>Blocked since:</strong> {{ block_timestamp|format_date }}</li>
+                    {% if block_data %}
+                    <li><strong>Block duration:</strong> {{ block_data.block_duration }} days</li>
+                    <li><strong>Reports count:</strong> {{ block_data.report_count }}</li>
+                    <li><strong>Blocked by:</strong> {{ block_data.blocked_by_name if block_data.blocked_by_name else block_data.blocked_by }}</li>
+                    {% endif %}
+                </ul>
+                <div class="mt-2">
+                    <a href="{{ url_for('admin_form_reports') }}" class="btn btn-sm btn-danger">📋 Manage Reports</a>
+                    <form action="{{ url_for('admin_unblock_form', form_id=form.id) }}" method="POST" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-success" 
+                                onclick="return confirm('Unblock this form?')">
+                            ✅ Unblock Form
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Report Button (Floating) -->
+            {% if not is_blocked %}
+            <div class="report-btn">
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#reportFormModal">
+                    <i class="bi bi-flag"></i> Report Form
+                </button>
+            </div>
+            {% endif %}
+
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <!-- Success Message (Hidden by default, shown after submission) -->
+                    <div id="successMessage" class="success-message-container">
+                        <div class="success-card fade-in">
+                            <div class="success-icon">
+                                <i class="bi bi-check-lg"></i>
+                            </div>
+                            <h2 class="success-title">Response Recorded!</h2>
+                            <p class="success-message">
+                                Thank you for submitting your response to <strong>"{{ form.title }}"</strong>.
+                                Your information has been securely saved.
+                            </p>
+                            <div class="alert alert-info mb-4">
+                                <i class="bi bi-info-circle me-2"></i>
+                                <small>
+                                    Your response has been recorded successfully. The event organizer will review your submission.
+                                </small>
+                            </div>
+                            <div class="button-group">
+                                <button type="button" class="btn btn-success" onclick="showFormAgain()">
+                                    <i class="bi bi-plus-circle me-2"></i> Add Another Response
+                                </button>
+                                <a href="{{ url_for('index') }}" class="btn btn-outline">
+                                    <i class="bi bi-house me-2"></i> Back to Home
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Original Form Content (Visible by default) -->
+                    <div id="formContent">
+                        <!-- Creator Info Card -->
+                        <div class="creator-card fade-in">
+                            <div class="d-flex align-items-center">
+                                <div class="creator-avatar me-3">
+                                    <span>{{ creator_info.name[0] if creator_info and creator_info.name else 'U' }}</span>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex align-items-center mb-1">
+                                        <h6 class="mb-0 me-2">Form Creator</h6>
+                                        <button type="button" class="btn btn-sm btn-outline py-0 px-2" 
+                                                data-bs-toggle="modal" data-bs-target="#creatorModal">
+                                            <i class="bi bi-info-circle"></i> Info
+                                        </button>
+                                    </div>
+                                    <p class="text-muted small mb-0">
+                                        Created by <strong>{{ creator_info.name if creator_info else 'Unknown User' }}</strong>
+                                        {% if creator_info and creator_info.verified %}
+                                            <span class="badge badge-success ms-2">
+                                                <i class="bi bi-check-circle-fill"></i> Verified
+                                            </span>
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Main Form Card -->
+                        <div class="form-card fade-in" style="animation-delay: 0.1s;">
+                            <div class="form-header">
+                                <h4 class="mb-0">{{ form.title }}</h4>
+                                <p class="mb-0 text-white-50">{{ event.name }}</p>
+                                {% if form.schedule and form.schedule.enabled %}
+                                <div class="mt-2">
+                                    <span class="badge {% if form.schedule.is_active %}badge-success{% else %}badge-warning{% endif %}">
+                                        <i class="bi bi-clock"></i> {{ form.schedule.status_message }}
+                                    </span>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-body">
+                                {% if form.schedule and form.schedule.enabled and not form.schedule.is_active %}
+                                <div class="alert alert-warning text-center">
+                                    <i class="bi bi-exclamation-triangle me-2"></i>
+                                    <strong>This form is currently inactive.</strong><br>
+                                    {{ form.schedule.status_message }}
+                                </div>
+                                {% else %}
+                                
+                                <!-- Enhanced Form Description with More Information Button -->
+                                {% if form.description %}
+                                <div class="form-description-section fade-in" style="animation-delay: 0.15s;">
+                                    <div class="form-description-card-enhanced">
+                                        <!-- Card Header with Gradient Background -->
+                                        <div class="form-description-header">
+                                            <div class="header-content">
+                                                <div class="header-icon">
+                                                    <i class="bi bi-file-text"></i>
+                                                </div>
+                                                <div class="header-text">
+                                                    <h5 class="mb-1">Form Description</h5>
+                                                    <p class="mb-0 text-white-75">Important information about this form</p>
+                                                </div>
+                                                <div class="header-badge">
+                                                    <span class="badge-premium">
+                                                        <i class="bi bi-stars"></i>
+                                                        Details
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Card Body with Elegant Content -->
+                                        <div class="form-description-body">
+                                            <!-- Description Text -->
+                                            <div class="description-content">
+                                                <div class="description-text-wrapper">
+                                                    <div class="description-text">
+                                                        {{ form.description|safe|nl2br }}
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- More Information Button -->
+                                                <div class="info-button-container">
+                                                    <button type="button" class="btn-more-info" data-bs-toggle="modal" data-bs-target="#formInfoModal">
+                                                        <i class="bi bi-info-circle"></i>
+                                                        More Information
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Quick Tips Section -->
+                                            <div class="tips-section">
+                                                <div class="tips-header">
+                                                    <i class="bi bi-lightbulb"></i>
+                                                    <h6>Quick Tips</h6>
+                                                </div>
+                                                <ul class="tips-list">
+                                                    <li>All responses are securely stored and encrypted</li>
+                                                    <li>You can submit multiple responses if allowed</li>
+                                                    <li>Required fields are marked with <span class="required-marker">*</span></li>
+                                                    <li>Contact the creator if you have questions</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Card Footer -->
+                                        <div class="form-description-footer">
+                                            <div class="footer-content">
+                                                <div class="security-badge">
+                                                    <i class="bi bi-shield-check"></i>
+                                                    <span>Secure Submission</span>
+                                                </div>
+                                                <div class="update-info">
+                                                    {% if form.updated_at %}
+                                                    <small>Last updated {{ form.updated_at|format_date }}</small>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                
+                                <form method="POST" action="{{ url_for('submit_form', form_id=form.id) }}" enctype="multipart/form-data" id="mainForm">
+                                    {% for question in form.questions %}
+                                    <div class="mb-4">
+                                        <label class="form-label">
+                                            {{ question.text }}
+                                            {% if question.required %}<span class="text-danger">*</span>{% endif %}
+                                        </label>
+                                        
+                                        {% if question.type == 'text' %}
+                                        <input type="text" class="form-control form-control-modern" name="q_{{ question.id }}" 
+                                               {% if question.required %}required{% endif %}
+                                               placeholder="Enter your answer">
+                                        
+                                        {% elif question.type == 'number' %}
+                                        <input type="number" class="form-control form-control-modern" name="q_{{ question.id }}"
+                                               {% if question.required %}required{% endif %}
+                                               placeholder="Enter a number">
+                                        
+                                        {% elif question.type == 'email' %}
+                                        <input type="email" class="form-control form-control-modern" name="q_{{ question.id }}"
+                                               {% if question.required %}required{% endif %}
+                                               placeholder="name@example.com">
+                                        
+                                        {% elif question.type == 'date' %}
+                                        <input type="date" class="form-control form-control-modern" name="q_{{ question.id }}"
+                                               {% if question.required %}required{% endif %}>
+                                        
+                                        {% elif question.type == 'textarea' %}
+                                        <textarea class="form-control form-control-modern" name="q_{{ question.id }}" rows="3"
+                                                  {% if question.required %}required{% endif %}
+                                                  placeholder="Enter detailed answer..."></textarea>
+                                        
+                                        {% elif question.type == 'radio' %}
+                                        <div class="list-group list-group-flush">
+                                            {% for option in question.options %}
+                                            <label class="list-group-item list-group-item-action border-0 px-0 py-2">
+                                                <input class="form-check-input me-2" type="radio" name="q_{{ question.id }}" 
+                                                       value="{{ option }}" id="q{{ question.id }}_{{ loop.index }}"
+                                                       {% if question.required %}required{% endif %}>
+                                                {{ option }}
+                                            </label>
+                                            {% endfor %}
+                                        </div>
+                                        
+                                        {% elif question.type == 'checkbox' %}
+                                        <div class="list-group list-group-flush">
+                                            {% for option in question.options %}
+                                            <label class="list-group-item list-group-item-action border-0 px-0 py-2">
+                                                <input class="form-check-input me-2" type="checkbox" name="q_{{ question.id }}" 
+                                                       value="{{ option }}" id="q{{ question.id }}_{{ loop.index }}">
+                                                {{ option }}
+                                            </label>
+                                            {% endfor %}
+                                        </div>
+                                        
+                                        {% elif question.type == 'dropdown' %}
+                                        <select class="form-select form-control-modern" name="q_{{ question.id }}"
+                                                {% if question.required %}required{% endif %}>
+                                            <option value="" selected disabled>Select an option</option>
+                                            {% for option in question.options %}
+                                            <option value="{{ option }}">{{ option }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        
+                                        {% elif question.type == 'file' %}
+                                            {% set file_settings = question.get('file_settings', {}) %}
+                                            {% set allowed_types = file_settings.get('allowed_types', []) %}
+                                            {% set max_size = file_settings.get('max_size_mb', 16) %}
+                                            {% set multiple = file_settings.get('multiple', false) %}
+                                            
+                                            {% if multiple %}
+                                                <input type="file" class="form-control form-control-modern" name="file_{{ question.id }}" multiple
+                                                       {% if question.required %}required{% endif %}
+                                                       accept="{% if allowed_types %}{% for type_id in allowed_types %}{% if type_id == 'images' %}.png,.jpg,.jpeg,.gif,.bmp,.svg,.webp,.tiff{% endif %}{% if type_id == 'pdf' %}.pdf{% endif %}{% if type_id == 'documents' %}.doc,.docx,.txt,.rtf,.odt,.pages{% endif %}{% if type_id == 'spreadsheets' %}.xls,.xlsx,.csv,.ods,.numbers{% endif %}{% if type_id == 'presentations' %}.ppt,.pptx,.odp,.key{% endif %}{% if type_id == 'archives' %}.zip,.rar,.7z,.tar,.gz{% endif %}{% if type_id == 'audio' %}.mp3,.wav,.ogg,.m4a,.flac,.aac{% endif %}{% if type_id == 'video' %}.mp4,.mov,.avi,.mkv,.webm,.wmv,.flv{% endif %}{% if type_id == 'code' %}.py,.js,.html,.css,.java,.cpp,.c,.php,.json,.xml{% endif %}{% if not loop.last %},{% endif %}{% endfor %}{% else %}.png,.jpg,.jpeg,.gif,.pdf,.doc,.docx,.txt,.csv,.xls,.xlsx,.ppt,.pptx,.zip,.rar{% endif %}">
+                                            {% else %}
+                                                <input type="file" class="form-control form-control-modern" name="file_{{ question.id }}"
+                                                       {% if question.required %}required{% endif %}
+                                                       accept="{% if allowed_types %}{% for type_id in allowed_types %}{% if type_id == 'images' %}.png,.jpg,.jpeg,.gif,.bmp,.svg,.webp,.tiff{% endif %}{% if type_id == 'pdf' %}.pdf{% endif %}{% if type_id == 'documents' %}.doc,.docx,.txt,.rtf,.odt,.pages{% endif %}{% if type_id == 'spreadsheets' %}.xls,.xlsx,.csv,.ods,.numbers{% endif %}{% if type_id == 'presentations' %}.ppt,.pptx,.odp,.key{% endif %}{% if type_id == 'archives' %}.zip,.rar,.7z,.tar,.gz{% endif %}{% if type_id == 'audio' %}.mp3,.wav,.ogg,.m4a,.flac,.aac{% endif %}{% if type_id == 'video' %}.mp4,.mov,.avi,.mkv,.webm,.wmv,.flv{% endif %}{% if type_id == 'code' %}.py,.js,.html,.css,.java,.cpp,.c,.php,.json,.xml{% endif %}{% if not loop.last %},{% endif %}{% endfor %}{% else %}.png,.jpg,.jpeg,.gif,.pdf,.doc,.docx,.txt,.csv,.xls,.xlsx,.ppt,.pptx,.zip,.rar{% endif %}">
+                                            {% endif %}
+                                            
+                                            <div class="file-upload-info mt-2">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="bi bi-info-circle me-2 text-primary"></i>
+                                                    <div>
+                                                        <strong>File Requirements:</strong>
+                                                        <div class="mt-1">
+                                                            {% if allowed_types %}
+                                                                {% set type_names = {
+                                                                    'images': 'Images',
+                                                                    'pdf': 'PDF Documents',
+                                                                    'documents': 'Documents',
+                                                                    'spreadsheets': 'Spreadsheets',
+                                                                    'presentations': 'Presentations',
+                                                                    'archives': 'Archives',
+                                                                    'audio': 'Audio Files',
+                                                                    'video': 'Video Files',
+                                                                    'code': 'Code Files'
+                                                                } %}
+                                                                
+                                                                <div class="d-flex flex-wrap gap-1 mb-2">
+                                                                    {% for type_id in allowed_types %}
+                                                                        <span class="file-type-badge">{{ type_names[type_id] }}</span>
+                                                                    {% endfor %}
+                                                                </div>
+                                                            {% else %}
+                                                                <span class="file-type-badge">Any file type</span>
+                                                            {% endif %}
+                                                            
+                                                            <div class="d-flex gap-3">
+                                                                <span class="text-muted small">
+                                                                    <i class="bi bi-hdd me-1"></i> Max size: {{ max_size }}MB
+                                                                </span>
+                                                                
+                                                                {% if multiple %}
+                                                                    <span class="text-primary small">
+                                                                        <i class="bi bi-files me-1"></i> Multiple files allowed
+                                                                    </span>
+                                                                {% else %}
+                                                                    <span class="text-muted small">
+                                                                        <i class="bi bi-file-earmark me-1"></i> Single file only
+                                                                    </span>
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    {% endfor %}
+                                    
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-shield-check me-2"></i>
+                                        <small>
+                                            Your information is secure. Uploaded files are only accessible to the event organizer.
+                                            {% if form.schedule and form.schedule.enabled and form.schedule.end_datetime %}
+                                            <br>This form closes on {{ form.schedule.end_datetime|format_date }}.
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                    
+                                    <!-- ========== HONEYPOT FIELD (BOT DETECTION) ========== -->
+    <!-- This field is hidden from humans but bots will fill it -->
+    <div style="display: none !important; position: absolute; left: -9999px; top: -9999px;" aria-hidden="true">
+        <label for="human_check">If you're human, leave this field empty:</label>
+        <input type="text" 
+               name="human_check" 
+               id="human_check" 
+               tabindex="-1" 
+               autocomplete="off"
+               aria-hidden="true">
+    </div>
+    <!-- ========== END HONEYPOT ========== -->
+                            <div class="alert alert-info" id="submission-wait" style="display: none;">
+        <i class="bi bi-clock"></i> Please wait a moment before submitting...
+    </div>        
+                                    <div class="d-grid position-relative">
+                                        <button type="submit" class="submit-button" id="animatedSubmitBtn">
+                                            <span class="submit-icon">
+                                                <i class="bi bi-send"></i>
+                                            </span>
+                                            <span class="button-text">Submit Form</span>
+                                            <div class="progress-bar"></div>
+                                            <div class="particles" id="buttonParticles"></div>
+                                            <div class="button-confetti" id="buttonConfetti"></div>
+                                        </button>
+                                    </div>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- About Card -->
+                        <div class="form-card fade-in" style="animation-delay: 0.2s;">
+                            <div class="form-body text-center">
+                                <h6 class="mb-3">About This Form</h6>
+                                <p class="text-muted small mb-0">
+                                    This form was created using EventFlow Registration System. 
+                                    All responses are collected securely and only shared with the event organizer.
+                                    {% if creator_info and creator_info.email_verified %}
+                                    <br>The form creator is a verified user.
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <div class="footer-logo">
+                        <img src="/static/logo/icon.png" alt="EventFlow Logo">
+                        <span class="brand-name">EventFlow</span>
+                    </div>
+                    <p class="text-white-50 mb-4">
+                        Professional event management made simple. Free tools for modern organizers.
+                    </p>
+                    <div class="social-links">
+                        <a href="https://www.instagram.com/eventflow.app2026/">
+                            <i class="bi bi-instagram"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-2 col-md-4 mb-4">
+                    <h5>Product</h5>
+                    <ul class="footer-links">
+                        <li><a href="/#features">Features</a></li>
+                        <li><a href="/how-it-works">How It Works</a></li>
+                        <li><a href="/feedback">Feedback</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-lg-2 col-md-4 mb-4">
+                    <h5>Legal</h5>
+                    <ul class="footer-links">
+                        <li><a href="{{ url_for('privacy_policy') }}">Privacy Policy</a></li>
+                        <li><a href="{{ url_for('terms') }}">Terms of Service</a></li>
+                        <li><a href="mailto:eventflow.app2026@gmail.com">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-lg-4 col-md-4 mb-4">
+                    <h5>Get Started</h5>
+                    <p class="text-white-50 mb-3">
+                        Start creating professional events today.
+                    </p>
+                    {% if 'user_id' not in session %}
+                    <a href="{{ url_for('signup') }}" class="btn btn-outline-light">Sign Up Free</a>
+                    {% else %}
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-light">Go to Dashboard</a>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <hr class="bg-light opacity-25 my-4">
+            
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="mb-0 text-white-50">
+                        © 2024 EventFlow. All rights reserved.
+                    </p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0 text-white-50">
+                        Contact: <a href="mailto:eventflow.app2026@gmail.com" class="text-white-50">eventflow.app2026@gmail.com</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modals -->
+    <!-- Form Information Modal (Opens when clicking More Information) -->
+    <div class="modal fade" id="formInfoModal" tabindex="-1" aria-labelledby="formInfoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="formInfoModalLabel">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Detailed Form Information
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Form Information Grid -->
+                    <div class="form-info-grid">
+                        <div class="info-card">
+                            <div class="info-icon primary">
+                                <i class="bi bi-calendar3"></i>
+                            </div>
+                            <div>
+                                <span class="info-label">Created On</span>
+                                <span class="info-value">{{ form.created_at|format_date if form.created_at else 'Recently' }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="info-card">
+                            <div class="info-icon success">
+                                <i class="bi bi-question-circle"></i>
+                            </div>
+                            <div>
+                                <span class="info-label">Total Questions</span>
+                                <span class="info-value">{{ form.questions|length }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="info-card">
+                            <div class="info-icon warning">
+                                <i class="bi bi-clock-history"></i>
+                            </div>
+                            <div>
+                                <span class="info-label">Status</span>
+                                {% if form.schedule and form.schedule.enabled %}
+                                    {% if form.schedule.is_active %}
+                                    <span class="info-value active">Active</span>
+                                    {% else %}
+                                    <span class="info-value inactive">Inactive</span>
+                                    {% endif %}
+                                {% else %}
+                                <span class="info-value active">Always Open</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="info-card">
+                            <div class="info-icon secondary">
+                                <i class="bi bi-eye"></i>
+                            </div>
+                            <div>
+                                <span class="info-label">Visibility</span>
+                                {% if form.is_private %}
+                                <span class="info-value private">Private</span>
+                                {% else %}
+                                <span class="info-value public">Public</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Schedule Information -->
+                    {% if form.schedule and form.schedule.enabled %}
+                    <div class="stats-section">
+                        <h6 class="mb-4"><i class="bi bi-calendar-week me-2"></i>Schedule Details</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="info-card">
+                                    <div class="info-icon primary">
+                                        <i class="bi bi-calendar-plus"></i>
+                                    </div>
+                                    <div>
+                                        <span class="info-label">Starts</span>
+                                        <span class="info-value">{{ form.schedule.start_datetime|format_date if form.schedule.start_datetime else 'Immediately' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="info-card">
+                                    <div class="info-icon warning">
+                                        <i class="bi bi-calendar-x"></i>
+                                    </div>
+                                    <div>
+                                        <span class="info-label">Ends</span>
+                                        <span class="info-value">{{ form.schedule.end_datetime|format_date if form.schedule.end_datetime else 'No end date' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% if form.schedule.end_datetime %}
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            This form will close automatically on <strong>{{ form.schedule.end_datetime|format_date }}</strong>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Question Statistics -->
+                    <div class="stats-section">
+                        <h6 class="mb-4"><i class="bi bi-bar-chart me-2"></i>Question Statistics</h6>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-value">{{ form.questions|length }}</div>
+                                <div class="stat-label">Total Questions</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">{{ form.questions|selectattr('required', 'equalto', true)|list|length }}</div>
+                                <div class="stat-label">Required</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">{{ form.questions|selectattr('type', 'equalto', 'file')|list|length }}</div>
+                                <div class="stat-label">File Uploads</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">{{ form.questions|selectattr('type', 'in', ['radio', 'checkbox', 'dropdown'])|list|length }}</div>
+                                <div class="stat-label">Multiple Choice</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- File Upload Information -->
+                    {% set file_questions = form.questions|selectattr('type', 'equalto', 'file')|list %}
+                    {% if file_questions %}
+                    <div class="stats-section">
+                        <h6 class="mb-4"><i class="bi bi-file-earmark-arrow-up me-2"></i>File Upload Information</h6>
+                        <div class="row">
+                            {% for question in file_questions %}
+                            {% set file_settings = question.get('file_settings', {}) %}
+                            <div class="col-md-6 mb-3">
+                                <div class="info-card">
+                                    <div class="info-icon success">
+                                        <i class="bi bi-file-earmark"></i>
+                                    </div>
+                                    <div>
+                                        <span class="info-label">{{ question.text[:30] }}...</span>
+                                        <div class="info-value">
+                                            Max: {{ file_settings.get('max_size_mb', 16) }}MB
+                                            {% if file_settings.get('multiple', false) %}
+                                            <span class="badge bg-primary bg-opacity-25 text-primary ms-2">Multiple</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Security Information -->
+                    <div class="alert alert-success">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-shield-check fs-4 me-3"></i>
+                            <div>
+                                <h6 class="mb-1">Security & Privacy</h6>
+                                <p class="mb-0 small">All form responses are encrypted and stored securely. Only the form creator and authorized personnel can access submitted data.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="window.print()">
+                        <i class="bi bi-printer"></i> Print Info
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Form Modal -->
+    <div class="modal fade" id="reportFormModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-flag me-2"></i>Report This Form</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info mb-4">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Reporting helps keep EventFlow safe.</strong> Please select the most appropriate reason for your report.
+                        False reports may result in account restrictions.
+                    </div>
+                    
+                    <form id="reportForm">
+                        <input type="hidden" name="form_id" value="{{ form.id }}">
+                        <input type="hidden" name="event_id" value="{{ event.id }}">
+                        <input type="hidden" name="form_title" value="{{ form.title }}">
+                        <input type="hidden" name="creator_id" value="{{ creator_info.user_id if creator_info else '' }}">
+                        
+                        <div class="mb-4">
+                            <h6 class="mb-3">Select Reason for Report</h6>
+                            <div class="list-group">
+                                <label class="list-group-item list-group-item-action border-0 rounded-3 mb-2">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="report_reason" 
+                                                   value="inappropriate_content" id="reason1" required>
+                                            <label class="form-check-label fw-semibold" for="reason1">
+                                                <i class="bi bi-exclamation-octagon text-danger me-2"></i>
+                                                Inappropriate Content
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">Contains offensive, harmful, or explicit material</small>
+                                </label>
+                                
+                                <label class="list-group-item list-group-item-action border-0 rounded-3 mb-2">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="report_reason" 
+                                                   value="spam_scam" id="reason2">
+                                            <label class="form-check-label fw-semibold" for="reason2">
+                                                <i class="bi bi-shield-slash text-warning me-2"></i>
+                                                Spam or Scam
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">Promotes fraud, phishing, or deceptive practices</small>
+                                </label>
+                                
+                                <label class="list-group-item list-group-item-action border-0 rounded-3 mb-2">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="report_reason" 
+                                                   value="privacy_violation" id="reason3">
+                                            <label class="form-check-label fw-semibold" for="reason3">
+                                                <i class="bi bi-eye-slash text-primary me-2"></i>
+                                                Privacy Violation
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">Collects excessive or unnecessary personal information</small>
+                                </label>
+                                
+                                <label class="list-group-item list-group-item-action border-0 rounded-3 mb-2">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="report_reason" 
+                                                   value="impersonation" id="reason4">
+                                            <label class="form-check-label fw-semibold" for="reason4">
+                                                <i class="bi bi-person-x text-danger me-2"></i>
+                                                Impersonation
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">Pretends to be someone else or a legitimate organization</small>
+                                </label>
+                                
+                                <label class="list-group-item list-group-item-action border-0 rounded-3">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="report_reason" 
+                                                   value="other" id="reason5">
+                                            <label class="form-check-label fw-semibold" for="reason5">
+                                                <i class="bi bi-question-circle text-secondary me-2"></i>
+                                                Other Issue
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">Another problem not listed above</small>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-chat-left-text me-2"></i>Additional Details (Optional)
+                            </label>
+                            <textarea class="form-control form-control-modern" name="report_details" rows="4" 
+                                      placeholder="Please provide any additional information that might help us understand the issue..."></textarea>
+                            <small class="text-muted">Maximum 500 characters</small>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-envelope me-2"></i>Your Contact Email (Optional)
+                            </label>
+                            <input type="email" class="form-control form-control-modern" name="reporter_email"
+                                   placeholder="your.email@example.com"
+                                   value="{{ session.email if session.get('email') else '' }}">
+                            <small class="text-muted">Only used if we need more information about your report</small>
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="confirmReport" required>
+                                <label class="form-check-label" for="confirmReport">
+                                    <strong>I confirm that this report is accurate and made in good faith.</strong>
+                                    I understand that false reports may violate EventFlow's Terms of Service.
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" onclick="submitReport()" id="submitReportBtn">
+                        <i class="bi bi-send"></i> Submit Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Creator Info Modal -->
+    <div class="modal fade" id="creatorModal" tabindex="-1" aria-labelledby="creatorModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="creatorModalLabel">About the Creator</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-4">
+                        <div class="creator-avatar mx-auto mb-3" style="width: 80px; height: 80px; font-size: 2rem;">
+                            <span>{{ creator_info.name[0] if creator_info and creator_info.name else 'U' }}</span>
+                        </div>
+                        <h4>{{ creator_info.name if creator_info else 'Unknown User' }}</h4>
+                        {% if creator_info and creator_info.verified %}
+                            <span class="badge badge-success">
+                                <i class="bi bi-check-circle-fill"></i> Verified User
+                            </span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row">
+                        {% if creator_info %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card border">
+                                <div class="card-body text-center">
+                                    <h6 class="text-muted">Email Verified</h6>
+                                    {% if creator_info.verified %}
+                                        <p class="text-success mb-0">
+                                            <i class="bi bi-check-circle-fill"></i> Yes
+                                        </p>
+                                    {% else %}
+                                        <p class="text-danger mb-0">
+                                            <i class="bi bi-x-circle-fill"></i> No
+                                        </p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="card border">
+                                <div class="card-body text-center">
+                                    <h6 class="text-muted">Events Created</h6>
+                                    <p class="mb-0">{{ creator_info.events_created }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle"></i> Creator information is not available.
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Close</button>
+                    {% if creator_info and creator_info.email %}
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#contactCreatorModal">
+                            <i class="bi bi-envelope"></i> Contact Creator
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Creator Modal -->
+    <div class="modal fade" id="contactCreatorModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Contact Form Creator</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="contactCreatorForm">
+                        <div class="mb-3">
+                            <label class="form-label">Your Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-modern" name="name" 
+                                   value="{{ session.username if session.get('user_id') else '' }}" 
+                                   required placeholder="Enter your name">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Your Email <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control form-control-modern" name="email"
+                                   value="{{ session.email if session.get('email') else '' }}" 
+                                   required placeholder="your.email@example.com">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Subject <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-modern" name="subject" 
+                                   value="Question about form: {{ form.title }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Message <span class="text-danger">*</span></label>
+                            <textarea class="form-control form-control-modern" name="message" rows="4" required 
+                                      placeholder="Your message to the form creator..."></textarea>
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="bi bi-shield-check me-2"></i>
+                            <small>Your message will be sent via EventFlow's secure email system.</small>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="sendContactMessage()">
+                        <i class="bi bi-send"></i> Send Message
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Check if form was just submitted (using URL parameter)
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const submitted = urlParams.get('submitted');
+            
+            if (submitted === 'true') {
+                // Show success message and hide form
+                showSuccessMessage();
+                
+                // Fire confetti
+                if (typeof confetti !== 'undefined') {
+                    confetti({
+                        particleCount: 200,
+                        spread: 100,
+                        origin: { y: 0.6 }
+                    });
+                    
+                    // Additional confetti after delay
+                    setTimeout(() => {
+                        confetti({
+                            particleCount: 100,
+                            angle: 60,
+                            spread: 80,
+                            origin: { x: 0 }
+                        });
+                        confetti({
+                            particleCount: 100,
+                            angle: 120,
+                            spread: 80,
+                            origin: { x: 1 }
+                        });
+                    }, 250);
+                }
+            }
+            
+            // Add fade-in animation to elements
+            const fadeElements = document.querySelectorAll('.fade-in');
+            fadeElements.forEach((el, index) => {
+                el.style.animationDelay = `${index * 0.1}s`;
+            });
+
+            // Schedule countdown if form has end date
+            {% if form.schedule and form.schedule.enabled and form.schedule.end_datetime %}
+            const endDate = new Date('{{ form.schedule.end_datetime|replace(" ", "T") }}');
+            const now = new Date();
+            
+            if (endDate > now) {
+                const timeDiff = endDate - now;
+                const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                
+                const headerBadge = document.querySelector('.form-header .badge');
+                if (headerBadge) {
+                    let timeText = '';
+                    if (days > 0) {
+                        timeText = `${days}d ${hours}h remaining`;
+                    } else if (hours > 0) {
+                        timeText = `${hours}h remaining`;
+                    } else {
+                        timeText = 'Less than 1 hour remaining';
+                    }
+                    headerBadge.innerHTML += ` • ${timeText}`;
+                }
+            }
+            {% endif %}
+            
+            // Initialize enhanced button animations
+            initButtonAnimations();
+        });
+
+        // Enhanced button interaction effects
+        function initButtonAnimations() {
+            const submitBtn = document.getElementById('animatedSubmitBtn');
+            const particlesContainer = document.getElementById('buttonParticles');
+            const confettiContainer = document.getElementById('buttonConfetti');
+            
+            if (submitBtn) {
+                // Create particles on hover
+                submitBtn.addEventListener('mouseenter', function() {
+                    createParticles();
+                    createSparkles();
+                });
+                
+                // Create ripple effect on click
+                submitBtn.addEventListener('click', function(e) {
+                    createRipple(e);
+                    createMiniConfetti();
+                });
+                
+                // Add keyboard interaction
+                submitBtn.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        createRipple(e);
+                        createMiniConfetti();
+                    }
+                });
+                
+                // Touch interaction for mobile
+                submitBtn.addEventListener('touchstart', function(e) {
+                    createRipple(e.touches[0]);
+                    createParticles();
+                    this.style.transform = 'scale(0.95)';
+                });
+                
+                submitBtn.addEventListener('touchend', function() {
+                    this.style.transform = '';
+                });
+                
+                // Add shake animation on form validation error
+                const form = document.getElementById('mainForm');
+                if (form) {
+                    form.addEventListener('invalid', function(e) {
+                        if (e.target === submitBtn) {
+                            submitBtn.style.animation = 'wiggle 0.5s ease';
+                            setTimeout(() => {
+                                submitBtn.style.animation = '';
+                            }, 500);
+                        }
+                    }, true);
+                }
+            }
+            
+            // Particle creation function
+            function createParticles() {
+                if (!particlesContainer) return;
+                
+                // Clear existing particles
+                particlesContainer.innerHTML = '';
+                
+                // Create 15 particles
+                for (let i = 0; i < 15; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    
+                    // Random properties
+                    const size = Math.random() * 4 + 2;
+                    const x = Math.random() * 100;
+                    const y = Math.random() * 100;
+                    const tx = (Math.random() - 0.5) * 100;
+                    const ty = (Math.random() - 0.5) * 100;
+                    const delay = Math.random() * 0.5;
+                    
+                    particle.style.cssText = `
+                        width: ${size}px;
+                        height: ${size}px;
+                        left: ${x}%;
+                        top: ${y}%;
+                        --tx: ${tx}px;
+                        --ty: ${ty}px;
+                        animation-delay: ${delay}s;
+                        background: ${getRandomParticleColor()};
+                    `;
+                    
+                    particlesContainer.appendChild(particle);
+                    
+                    // Remove particle after animation
+                    setTimeout(() => {
+                        if (particle.parentNode) {
+                            particle.remove();
+                        }
+                    }, 3000);
+                }
+            }
+            
+            document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('registration-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const waitMsg = document.getElementById('submission-wait');
+    let lastSubmitTime = 0;
+    
+    // Disable form submission for 30 seconds after page load
+    submitBtn.disabled = true;
+    waitMsg.style.display = 'block';
+    
+    setTimeout(function() {
+        submitBtn.disabled = false;
+        waitMsg.style.display = 'none';
+    }, 30000); // 30 seconds
+    
+    // Track submission time
+    form.addEventListener('submit', function(e) {
+        const now = Date.now();
+        
+        // Check if at least 10 seconds passed since last submission
+        if (now - lastSubmitTime < 10000) { // 10 seconds
+            e.preventDefault();
+            alert('Please wait at least 10 seconds between submissions');
+            return false;
+        }
+        
+        lastSubmitTime = now;
+        
+        // Add loading state
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Submitting...';
+        
+        return true;
+    });
+});
+            
+            
+            // Ripple effect function
+            function createRipple(event) {
+                const btn = event.currentTarget || submitBtn;
+                const circle = document.createElement('div');
+                const diameter = Math.max(btn.clientWidth, btn.clientHeight);
+                const radius = diameter / 2;
+                
+                circle.style.width = circle.style.height = `${diameter}px`;
+                circle.style.left = `${event.clientX - btn.getBoundingClientRect().left - radius}px`;
+                circle.style.top = `${event.clientY - btn.getBoundingClientRect().top - radius}px`;
+                circle.className = 'ripple';
+                
+                const ripple = btn.getElementsByClassName('ripple')[0];
+                if (ripple) {
+                    ripple.remove();
+                }
+                
+                btn.appendChild(circle);
+                
+                // Remove ripple after animation
+                setTimeout(() => {
+                    if (circle.parentNode) {
+                        circle.remove();
+                    }
+                }, 600);
+            }
+            
+            // Sparkle effect function
+            function createSparkles() {
+                if (!submitBtn) return;
+                
+                for (let i = 0; i < 8; i++) {
+                    const sparkle = document.createElement('div');
+                    sparkle.className = 'sparkle';
+                    
+                    const size = Math.random() * 6 + 2;
+                    const x = Math.random() * 100;
+                    const y = Math.random() * 100;
+                    const delay = Math.random() * 0.3;
+                    
+                    sparkle.style.cssText = `
+                        width: ${size}px;
+                        height: ${size}px;
+                        left: ${x}%;
+                        top: ${y}%;
+                        animation-delay: ${delay}s;
+                        background: ${getRandomSparkleColor()};
+                    `;
+                    
+                    submitBtn.appendChild(sparkle);
+                    
+                    // Remove sparkle after animation
+                    setTimeout(() => {
+                        if (sparkle.parentNode) {
+                            sparkle.remove();
+                        }
+                    }, 1000);
+                }
+            }
+            
+            // Mini confetti for button click
+            function createMiniConfetti() {
+                if (!confettiContainer || typeof confetti !== 'function') return;
+                
+                confettiContainer.innerHTML = '';
+                
+                // Create mini confetti effect
+                confetti({
+                    particleCount: 30,
+                    spread: 30,
+                    origin: { 
+                        x: 0.5,
+                        y: 0.5
+                    },
+                    colors: ['#2563EB', '#7C3AED', '#059669', '#10B981', '#F59E0B'],
+                    ticks: 100,
+                    gravity: 0.8,
+                    scalar: 0.5
+                });
+            }
+            
+            // Helper function for random colors
+            function getRandomParticleColor() {
+                const colors = [
+                    'rgba(255, 255, 255, 0.8)',
+                    'rgba(37, 99, 235, 0.6)',
+                    'rgba(124, 58, 237, 0.6)',
+                    'rgba(5, 150, 105, 0.6)'
+                ];
+                return colors[Math.floor(Math.random() * colors.length)];
+            }
+            
+            function getRandomSparkleColor() {
+                const colors = [
+                    '#ffffff',
+                    '#93c5fd',
+                    '#c4b5fd',
+                    '#6ee7b7',
+                    '#fde68a'
+                ];
+                return colors[Math.floor(Math.random() * colors.length)];
+            }
+            
+            // Add form submission loading animation
+            const mainForm = document.getElementById('mainForm');
+            if (mainForm && submitBtn) {
+                mainForm.addEventListener('submit', function() {
+                    submitBtn.classList.add('loading');
+                    submitBtn.disabled = true;
+                    
+                    // Add special loading animation
+                    const loadingInterval = setInterval(() => {
+                        createParticles();
+                    }, 300);
+                    
+                    // Store interval ID for cleanup
+                    submitBtn.dataset.loadingInterval = loadingInterval;
+                });
+            }
+            
+            // Add periodic attraction animation (every 30 seconds)
+            setInterval(() => {
+                if (document.visibilityState === 'visible' && 
+                    submitBtn && 
+                    !submitBtn.classList.contains('loading')) {
+                    
+                    // Gentle pulse animation to attract attention
+                    submitBtn.style.animation = 'pulse 1s ease-in-out, glow 1s ease-in-out';
+                    
+                    setTimeout(() => {
+                        if (submitBtn) {
+                            submitBtn.style.animation = '';
+                        }
+                    }, 1000);
+                    
+                    // Small confetti burst
+                    if (typeof confetti === 'function') {
+                        confetti({
+                            particleCount: 10,
+                            spread: 20,
+                            origin: { y: 0.6 },
+                            colors: ['#2563EB', '#7C3AED'],
+                            ticks: 50,
+                            gravity: 1,
+                            scalar: 0.5
+                        });
+                    }
+                }
+            }, 30000); // Every 30 seconds
+        }
+
+        // Show success message function
+        function showSuccessMessage() {
+            document.getElementById('formContent').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'block';
+            
+            // Hide report button if visible
+            const reportBtn = document.querySelector('.report-btn');
+            if (reportBtn) {
+                reportBtn.style.display = 'none';
+            }
+            
+            // Scroll to top of success message
+            document.getElementById('successMessage').scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }
+
+        // Show form again function
+        function showFormAgain() {
+            document.getElementById('successMessage').style.display = 'none';
+            document.getElementById('formContent').style.display = 'block';
+            
+            // Show report button again
+            const reportBtn = document.querySelector('.report-btn');
+            if (reportBtn) {
+                reportBtn.style.display = 'block';
+            }
+            
+            // Clear form fields
+            const mainForm = document.getElementById('mainForm');
+            if (mainForm) {
+                mainForm.reset();
+                
+                // Clear validation states
+                mainForm.querySelectorAll('.is-invalid').forEach(el => {
+                    el.classList.remove('is-invalid');
+                });
+                
+                // Clear radio/checkbox validation
+                mainForm.querySelectorAll('label.text-danger').forEach(el => {
+                    el.classList.remove('text-danger');
+                });
+            }
+            
+            // Remove file previews
+            document.querySelectorAll('.file-upload-info .alert-success, .file-upload-info .alert-danger').forEach(alert => {
+                alert.remove();
+            });
+            
+            // Reset submit button
+            const submitBtn = document.getElementById('animatedSubmitBtn');
+            if (submitBtn) {
+                submitBtn.classList.remove('loading');
+                submitBtn.disabled = false;
+                
+                const intervalId = submitBtn.dataset.loadingInterval;
+                if (intervalId) {
+                    clearInterval(intervalId);
+                    delete submitBtn.dataset.loadingInterval;
+                }
+            }
+            
+            // Scroll to top of form
+            document.getElementById('formContent').scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+
+        // Modify form submission to show success message on same page
+        document.addEventListener('DOMContentLoaded', function() {
+            const mainForm = document.getElementById('mainForm');
+            if (mainForm) {
+                mainForm.addEventListener('submit', function(e) {
+                    // Prevent default form submission (we'll handle it with AJAX)
+                    e.preventDefault();
+                    
+                    // Validate required fields
+                    let isValid = true;
+                    const requiredFields = this.querySelectorAll('[required]');
+                    
+                    // Clear previous invalid states
+                    this.querySelectorAll('.is-invalid').forEach(el => {
+                        el.classList.remove('is-invalid');
+                    });
+                    
+                    // Clear radio/checkbox validation
+                    this.querySelectorAll('label.text-danger').forEach(el => {
+                        el.classList.remove('text-danger');
+                    });
+                    
+                    // Validate each required field
+                    for (let field of requiredFields) {
+                        if (field.type === 'file') {
+                            // File validation
+                            if (!field.files || field.files.length === 0) {
+                                isValid = false;
+                                field.classList.add('is-invalid');
+                            }
+                        } else if (field.type === 'radio' || field.type === 'checkbox') {
+                            // Radio/checkbox group validation
+                            const groupName = field.name;
+                            const groupFields = this.querySelectorAll(`[name="${groupName}"]`);
+                            const isChecked = Array.from(groupFields).some(f => f.checked);
+                            
+                            if (!isChecked) {
+                                isValid = false;
+                                groupFields.forEach(f => {
+                                    f.classList.add('is-invalid');
+                                    const parentLabel = f.closest('label');
+                                    if (parentLabel) {
+                                        parentLabel.classList.add('text-danger');
+                                    }
+                                });
+                            }
+                        } else {
+                            // Text input validation
+                            if (!field.value.trim()) {
+                                isValid = false;
+                                field.classList.add('is-invalid');
+                            }
+                        }
+                    }
+                    
+                    if (!isValid) {
+                        showAlert('Please fill in all required fields', 'warning');
+                        return;
+                    }
+                    
+                    // Show loading state
+                    const submitBtn = this.querySelector('.submit-button');
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Submitting...';
+                    submitBtn.disabled = true;
+                    
+                    // Collect form data
+                    const formData = new FormData(this);
+                    
+                    // Submit via AJAX
+                    fetch(this.action, {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            // Show success message
+                            showSuccessMessage();
+                            
+                            // Fire confetti
+                            if (typeof confetti !== 'undefined') {
+                                confetti({
+                                    particleCount: 200,
+                                    spread: 100,
+                                    origin: { y: 0.6 }
+                                });
+                                
+                                // Additional confetti after delay
+                                setTimeout(() => {
+                                    confetti({
+                                        particleCount: 100,
+                                        angle: 60,
+                                        spread: 80,
+                                        origin: { x: 0 }
+                                    });
+                                    confetti({
+                                        particleCount: 100,
+                                        angle: 120,
+                                        spread: 80,
+                                        origin: { x: 1 }
+                                    });
+                                }, 250);
+                            }
+                            
+                            // Add submitted parameter to URL without reloading
+                            const url = new URL(window.location);
+                            url.searchParams.set('submitted', 'true');
+                            window.history.pushState({}, '', url);
+                            
+                            // Show success alert
+                            showAlert('Form submitted successfully!', 'success');
+                        } else {
+                            return response.json().then(data => {
+                                throw new Error(data.error || 'Submission failed');
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Form submission error:', error);
+                        showAlert('Error submitting form: ' + error.message, 'danger');
+                    })
+                    .finally(() => {
+                        // Reset button state
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                        submitBtn.classList.remove('loading');
+                        
+                        const intervalId = submitBtn.dataset.loadingInterval;
+                        if (intervalId) {
+                            clearInterval(intervalId);
+                            delete submitBtn.dataset.loadingInterval;
+                        }
+                    });
+                });
+            }
+        });
+
+        // Report form submission
+        function submitReport() {
+            const form = document.getElementById('reportForm');
+            const submitBtn = document.getElementById('submitReportBtn');
+            const originalText = submitBtn.innerHTML;
+            
+            // Validate form
+            if (!form.report_reason.value) {
+                showAlert('Please select a reason for your report', 'warning');
+                return;
+            }
+            
+            if (!document.getElementById('confirmReport').checked) {
+                showAlert('Please confirm that your report is accurate and made in good faith', 'warning');
+                return;
+            }
+            
+            // Show loading state
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Submitting...';
+            submitBtn.disabled = true;
+            
+            // Prepare form data
+            const formData = new FormData(form);
+            
+            // Add user info if available
+            {% if session.user_id %}
+            formData.append('reporter_id', '{{ session.user_id }}');
+            {% endif %}
+            
+            fetch('/report_form', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Reset button
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                
+                if (data.success) {
+                    // Show success message
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('reportFormModal'));
+                    modal.hide();
+                    
+                    // Show success alert
+                    showAlert('Report submitted successfully!', 'success');
+                    
+                    // Check if form should be blocked
+                    if (data.blocked) {
+                        // Reload page to show blocked message
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 2000);
+                    }
+                } else {
+                    showAlert('Error: ' + data.error, 'danger');
+                }
+            })
+            .catch(error => {
+                // Reset button
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                showAlert('Network error: ' + error.message, 'danger');
+            });
+        }
+
+        // Contact creator function
+        function sendContactMessage() {
+            const form = document.getElementById('contactCreatorForm');
+            const formData = new FormData(form);
+            
+            // Validate form
+            if (!form.name.value.trim() || !form.email.value.trim() || 
+                !form.subject.value.trim() || !form.message.value.trim()) {
+                showAlert('Please fill in all required fields', 'warning');
+                return;
+            }
+            
+            // Add additional data
+            formData.append('creator_email', '{{ creator_info.email if creator_info else "" }}');
+            formData.append('form_title', '{{ form.title }}');
+            formData.append('event_name', '{{ event.name }}');
+            formData.append('form_id', '{{ form.id }}');
+            formData.append('event_id', '{{ event.id }}');
+            
+            // Show loading state
+            const sendBtn = document.querySelector('#contactCreatorModal .btn-primary');
+            const originalText = sendBtn.innerHTML;
+            sendBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Sending...';
+            sendBtn.disabled = true;
+            
+            fetch('/contact_creator', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Reset button
+                sendBtn.innerHTML = originalText;
+                sendBtn.disabled = false;
+                
+                if (data.success) {
+                    showAlert('Message sent successfully!', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('contactCreatorModal')).hide();
+                    form.reset();
+                } else {
+                    showAlert('Error: ' + data.error, 'danger');
+                }
+            })
+            .catch(error => {
+                // Reset button
+                sendBtn.innerHTML = originalText;
+                sendBtn.disabled = false;
+                showAlert('Network error: ' + error.message, 'danger');
+            });
+        }
+
+        // Helper function to show alerts
+        function showAlert(message, type) {
+            // Remove any existing alerts
+            document.querySelectorAll('.global-alert').forEach(alert => {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+            
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `global-alert alert alert-${type} alert-dismissible fade show`;
+            alertDiv.style.zIndex = '9999';
+            alertDiv.innerHTML = `
+                <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    const bsAlert = new bootstrap.Alert(alertDiv);
+                    bsAlert.close();
+                }
+            }, 5000);
+        }
+
+        // File upload validation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add file validation to all file inputs
+            document.querySelectorAll('input[type="file"]').forEach(input => {
+                input.addEventListener('change', function(e) {
+                    const files = e.target.files;
+                    if (files.length > 0) {
+                        const questionDiv = this.closest('.mb-4');
+                        const fileInfo = questionDiv.querySelector('.file-upload-info');
+                        
+                        if (fileInfo) {
+                            // Get max size from the info text
+                            let maxSize = 16;
+                            const sizeText = fileInfo.textContent.match(/Max size: (\d+)MB/);
+                            if (sizeText) {
+                                maxSize = parseInt(sizeText[1]);
+                            }
+                            
+                            // Get multiple files info
+                            const multipleInfo = fileInfo.querySelector('.file-multiple-info');
+                            const allowMultiple = multipleInfo !== null;
+                            
+                            // Validate each file
+                            let isValid = true;
+                            let errorMessage = '';
+                            
+                            for (let file of files) {
+                                // Check file size
+                                const fileSizeMB = file.size / (1024 * 1024);
+                                if (fileSizeMB > maxSize) {
+                                    isValid = false;
+                                    errorMessage = `File "${file.name}" exceeds maximum size of ${maxSize}MB`;
+                                    break;
+                                }
+                                
+                                // Check file extension (basic check)
+                                const extension = '.' + file.name.split('.').pop().toLowerCase();
+                                const acceptString = this.accept;
+                                const allowedExtensions = acceptString.split(',').map(ext => ext.trim());
+                                
+                                if (acceptString && acceptString !== '*/*' && !allowedExtensions.some(ext => {
+                                    if (ext.startsWith('.')) {
+                                        return ext.toLowerCase() === extension;
+                                    } else if (ext.includes('/*')) {
+                                        const mimeType = ext.split('/')[0];
+                                        return file.type.startsWith(mimeType);
+                                    }
+                                    return false;
+                                })) {
+                                    isValid = false;
+                                    errorMessage = `File "${file.name}" has unsupported file type`;
+                                    break;
+                                }
+                            }
+                            
+                            // Show error if validation fails
+                            if (!isValid) {
+                                showAlert(`❌ ${errorMessage}`, 'warning');
+                                this.value = ''; // Clear the file input
+                                
+                                // Show error in the file info area
+                                const errorDiv = document.createElement('div');
+                                errorDiv.className = 'alert alert-danger mt-2 py-1';
+                                errorDiv.innerHTML = `<i class="bi bi-exclamation-triangle me-1"></i> ${errorMessage}`;
+                                
+                                // Remove any existing error
+                                const existingError = fileInfo.querySelector('.alert-danger');
+                                if (existingError) {
+                                    existingError.remove();
+                                }
+                                
+                                fileInfo.appendChild(errorDiv);
+                                
+                                // Remove error after 5 seconds
+                                setTimeout(() => {
+                                    if (errorDiv.parentNode) {
+                                        errorDiv.remove();
+                                    }
+                                }, 5000);
+                            } else {
+                                // Remove any existing error
+                                const existingError = fileInfo.querySelector('.alert-danger');
+                                if (existingError) {
+                                    existingError.remove();
+                                }
+                                
+                                // Show success message
+                                const successDiv = document.createElement('div');
+                                successDiv.className = 'alert alert-success mt-2 py-1';
+                                if (files.length === 1) {
+                                    successDiv.innerHTML = `<i class="bi bi-check-circle me-1"></i> File "${files[0].name}" selected (${(files[0].size / (1024 * 1024)).toFixed(2)}MB)`;
+                                } else {
+                                    successDiv.innerHTML = `<i class="bi bi-check-circle me-1"></i> ${files.length} files selected`;
+                                }
+                                
+                                // Remove any existing success
+                                const existingSuccess = fileInfo.querySelector('.alert-success');
+                                if (existingSuccess) {
+                                    existingSuccess.remove();
+                                }
+                                
+                                fileInfo.appendChild(successDiv);
+                            }
+                        }
+                    }
+                });
+            });
+        });
+
+        // Form validation for required fields
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('mainForm');
+            if (form) {
+                // Add invalid feedback to required fields
+                form.querySelectorAll('[required]').forEach(field => {
+                    if (!field.parentNode.querySelector('.invalid-feedback')) {
+                        const feedback = document.createElement('div');
+                        feedback.className = 'invalid-feedback';
+                        feedback.textContent = 'This field is required';
+                        field.parentNode.appendChild(feedback);
+                    }
+                    
+                    // Validate on blur
+                    field.addEventListener('blur', function() {
+                        if (this.hasAttribute('required')) {
+                            if (this.type === 'file') {
+                                if (!this.files || this.files.length === 0) {
+                                    this.classList.add('is-invalid');
+                                } else {
+                                    this.classList.remove('is-invalid');
+                                }
+                            } else if (!this.value.trim()) {
+                                this.classList.add('is-invalid');
+                            } else {
+                                this.classList.remove('is-invalid');
+                            }
+                        }
+                    });
+                    
+                    // Remove invalid state on input
+                    if (field.type !== 'file') {
+                        field.addEventListener('input', function() {
+                            if (this.value.trim()) {
+                                this.classList.remove('is-invalid');
+                            }
+                        });
+                    }
+                });
+                
+                // Special handling for radio and checkbox groups
+                form.querySelectorAll('input[type="radio"][required], input[type="checkbox"][required]').forEach(field => {
+                    const groupName = field.name;
+                    const groupFields = form.querySelectorAll(`[name="${groupName}"]`);
+                    
+                    groupFields.forEach(radio => {
+                        radio.addEventListener('change', function() {
+                            const isChecked = Array.from(groupFields).some(f => f.checked);
+                            groupFields.forEach(f => {
+                                f.classList.remove('is-invalid');
+                                const parentLabel = f.closest('label');
+                                if (parentLabel) {
+                                    parentLabel.classList.remove('text-danger');
+                                }
+                            });
+                            
+                            if (!isChecked) {
+                                groupFields.forEach(f => {
+                                    f.classList.add('is-invalid');
+                                    const parentLabel = f.closest('label');
+                                    if (parentLabel) {
+                                        parentLabel.classList.add('text-danger');
+                                    }
+                                });
+                            }
+                        });
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>

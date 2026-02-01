@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% block title %}Migration Tools - Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-tools me-2"></i>Migration Tools</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        These tools help migrate existing data to new formats. Use with caution.
+                    </div>
+                    
+                    <div class="row">
+                        <!-- CSV Migration Card -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card border-primary">
+                                <div class="card-header bg-primary bg-opacity-10">
+                                    <h5 class="mb-0"><i class="bi bi-file-spreadsheet me-2"></i>CSV Migration</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text">
+                                        Add IP Address column to all existing CSV files.
+                                        This will insert "IP Address" as the 3rd column and set existing entries to "N/A".
+                                    </p>
+                                    <div class="alert alert-warning">
+                                        <i class="bi bi-exclamation-triangle me-2"></i>
+                                        <strong>Warning:</strong> This operation cannot be undone. Make sure to backup your data first.
+                                    </div>
+                                    <button class="btn btn-primary" onclick="migrateAllCSVs()">
+                                        <i class="bi bi-arrow-clockwise me-2"></i> Migrate All CSV Files
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Statistics Card -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card border-info">
+                                <div class="card-header bg-info bg-opacity-10">
+                                    <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Migration Statistics</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="migrationStats">
+                                        <p class="text-muted">Click "Migrate All CSV Files" to see statistics</p>
+                                    </div>
+                                    <div id="migrationProgress" style="display: none;">
+                                        <div class="progress mb-3">
+                                            <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                                 role="progressbar" style="width: 0%"></div>
+                                        </div>
+                                        <p id="migrationStatus" class="text-center mb-0"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Migration Log -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-list-check me-2"></i>Migration Log</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="migrationLog" class="small" style="max-height: 300px; overflow-y: auto;">
+                                <div class="text-muted">No migration operations yet.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function migrateAllCSVs() {
+    if (!confirm('Are you sure you want to migrate all CSV files? This will add IP Address column to all existing response files.')) {
+        return;
+    }
+    
+    const progressBar = document.querySelector('#migrationProgress .progress-bar');
+    const migrationStatus = document.getElementById('migrationStatus');
+    const migrationProgress = document.getElementById('migrationProgress');
+    const migrationLog = document.getElementById('migrationLog');
+    const migrationStats = document.getElementById('migrationStats');
+    
+    // Show progress bar
+    migrationProgress.style.display = 'block';
+    progressBar.style.width = '0%';
+    migrationStatus.textContent = 'Starting migration...';
+    
+    // Clear log
+    migrationLog.innerHTML = '';
+    addToLog('Starting migration process...', 'info');
+    
+    fetch('/admin/migrate_all_csvs', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            progressBar.style.width = '100%';
+            migrationStatus.textContent = 'Migration complete!';
+            progressBar.classList.remove('progress-bar-animated');
+            progressBar.classList.remove('progress-bar-striped');
+            progressBar.classList.add('bg-success');
+            
+            // Update statistics
+            migrationStats.innerHTML = `
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="display-4 text-success fw-bold">${data.migrated}</div>
+                        <small class="text-muted">Files Migrated</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="display-4 ${data.failed > 0 ? 'text-danger' : 'text-muted'} fw-bold">${data.failed}</div>
+                        <small class="text-muted">Files Failed</small>
+                    </div>
+                </div>
+            `;
+            
+            addToLog(`✅ Migration complete: ${data.migrated} files migrated, ${data.failed} failed`, 'success');
+            
+            // Auto-hide progress after 5 seconds
+            setTimeout(() => {
+                migrationProgress.style.display = 'none';
+            }, 5000);
+            
+        } else {
+            progressBar.classList.add('bg-danger');
+            migrationStatus.textContent = 'Migration failed!';
+            addToLog(`❌ Migration failed: ${data.error}`, 'danger');
+        }
+    })
+    .catch(error => {
+        progressBar.classList.add('bg-danger');
+        migrationStatus.textContent = 'Migration failed!';
+        addToLog(`❌ Migration error: ${error.message}`, 'danger');
+    });
+}
+
+function addToLog(message, type) {
+    const migrationLog = document.getElementById('migrationLog');
+    const timestamp = new Date().toLocaleTimeString();
+    
+    const logEntry = document.createElement('div');
+    logEntry.className = `mb-1 p-2 rounded ${type === 'success' ? 'bg-success bg-opacity-10' : 
+                                              type === 'danger' ? 'bg-danger bg-opacity-10' : 
+                                              type === 'info' ? 'bg-info bg-opacity-10' : 'bg-light'}`;
+    logEntry.innerHTML = `<strong>[${timestamp}]</strong> ${message}`;
+    
+    migrationLog.appendChild(logEntry);
+    migrationLog.scrollTop = migrationLog.scrollHeight;
+}
+</script>
+{% endblock %}

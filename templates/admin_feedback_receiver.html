@@ -1,0 +1,1037 @@
+{% extends "base.html" %}
+{% block title %}Feedback Management - Admin{% endblock %}
+
+{% block page_title %}Feedback Management{% endblock %}
+{% block page_subtitle %}
+<p class="text-muted mb-0">Review and manage user feedback submissions</p>
+{% endblock %}
+
+{% block content %}
+<style>
+/* Custom styles for feedback management */
+.feedback-card {
+    transition: all 0.2s ease;
+    border-left: 4px solid transparent;
+}
+
+.feedback-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.feedback-new {
+    border-left-color: #dc3545;
+}
+
+.feedback-read {
+    border-left-color: #28a745;
+}
+
+.feedback-responded {
+    border-left-color: #0d6efd;
+}
+
+.feedback-resolved {
+    border-left-color: #198754;
+    background-color: #f8fff9 !important;
+}
+
+.feedback-resolved:hover {
+    background-color: #e8f7ed !important;
+}
+
+.rating-stars {
+    color: #ffc107;
+    font-size: 18px;
+}
+
+.badge-type {
+    font-size: 12px;
+}
+
+.feedback-message {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 10px;
+    white-space: pre-wrap;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    border: 1px solid #e9ecef;
+}
+
+.feedback-actions {
+    position: sticky;
+    top: 20px;
+}
+
+.feedback-checkbox {
+    cursor: pointer;
+}
+
+.badge-resolved {
+    background-color: #198754;
+    color: white;
+}
+
+.badge-responded {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.type-badge-suggestion {
+    background: #e0e7ff;
+    color: #4f46e5;
+}
+
+.type-badge-bug {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.type-badge-praise {
+    background: #d1fae5;
+    color: #059669;
+}
+
+.type-badge-general {
+    background: #f3f4f6;
+    color: #4b5563;
+}
+
+.type-badge-question {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.status-new {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.status-read {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.status-responded {
+    color: #0d6efd;
+    font-weight: bold;
+}
+
+.status-resolved {
+    color: #198754;
+    font-weight: bold;
+}
+
+.pagination-link {
+    padding: 8px 16px;
+    margin: 0 4px;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #4361ee;
+    border: 1px solid #dee2e6;
+    transition: all 0.2s;
+}
+
+.pagination-link:hover {
+    background-color: #4361ee;
+    color: white;
+    border-color: #4361ee;
+}
+
+.pagination-link.active {
+    background-color: #4361ee;
+    color: white;
+    border-color: #4361ee;
+}
+
+/* Filters */
+.filter-badge {
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-badge:hover {
+    transform: scale(1.05);
+    opacity: 0.9;
+}
+
+.filter-badge.active {
+    box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.3);
+}
+</style>
+
+<div class="row mb-4">
+    <!-- Statistics Cards -->
+    <div class="col-md-3 mb-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <h1 class="display-5 text-primary">{{ stats.total_feedback }}</h1>
+                <p class="text-muted mb-0">Total Feedback</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <h1 class="display-5 text-warning">{{ stats.unread_count }}</h1>
+                <p class="text-muted mb-0">Unread</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <h1 class="display-5 text-success">{{ "%.1f"|format(stats.average_rating) if stats.average_rating > 0 else "0.0" }}</h1>
+                <p class="text-muted mb-0">Avg Rating</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <h1 class="display-5 text-info">{{ stats.this_month }}</h1>
+                <p class="text-muted mb-0">This Month</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Main Content -->
+    <div class="col-lg-8 mb-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Feedback List</h5>
+                    <div>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="refreshFeedback()">
+                            <i class="bi bi-arrow-clockwise"></i> Refresh
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#filtersModal">
+                            <i class="bi bi-funnel"></i> Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bulk Actions -->
+            <div class="card-body border-bottom bg-light">
+                <div class="d-flex align-items-center">
+                    <div class="form-check me-3">
+                        <input class="form-check-input" type="checkbox" id="selectAllCheckbox" onclick="toggleSelectAll()">
+                        <label class="form-check-label" for="selectAllCheckbox">
+                            Select All
+                        </label>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-outline-primary" onclick="markSelectedFeedbackRead()">
+                            <i class="bi bi-check-square"></i> Mark Read
+                        </button>
+                        <button class="btn btn-sm btn-outline-success" onclick="markSelectedFeedbackResolved()">
+                            <i class="bi bi-check-circle"></i> Mark Resolved
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteSelectedFeedback()">
+                            <i class="bi bi-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Feedback List -->
+            <div class="card-body p-0">
+                {% if feedback_list %}
+                <div class="list-group list-group-flush">
+                    {% for fb in feedback_list %}
+                    <div class="list-group-item list-group-item-action feedback-card {% if fb.status == 'new' %}feedback-new{% elif fb.status == 'resolved' %}feedback-resolved{% elif fb.status == 'responded' %}feedback-responded{% else %}feedback-read{% endif %}">
+                        <div class="d-flex align-items-start">
+                            <!-- Checkbox -->
+                            <div class="me-3 pt-1">
+                                <input type="checkbox" class="form-check-input feedback-checkbox" value="{{ fb.id }}">
+                            </div>
+                            
+                            <!-- Content -->
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <h6 class="mb-1">
+                                            {{ fb.name }}
+                                            {% if fb.email %}
+                                            <small class="text-muted ms-2">{{ fb.email }}</small>
+                                            {% endif %}
+                                        </h6>
+                                        
+                                        <!-- Badges -->
+                                        <div class="d-flex flex-wrap gap-1 mb-2">
+                                            <span class="badge type-badge-{{ fb.type }} badge-type">
+                                                {{ fb.type|replace('_', ' ')|title }}
+                                            </span>
+                                            
+                                            <span class="badge {% if fb.status == 'resolved' %}badge-resolved{% elif fb.status == 'responded' %}badge-responded{% elif fb.status == 'new' %}bg-danger{% else %}bg-success{% endif %} badge-type">
+                                                {{ fb.status|upper }}
+                                            </span>
+                                            
+                                            <div class="rating-stars">
+                                                {% for i in range(fb.rating) %}★{% endfor %}
+                                                {% for i in range(5-fb.rating) %}☆{% endfor %}
+                                            </div>
+                                            
+                                            {% if fb.can_contact %}
+                                            <span class="badge bg-info badge-type">Can Contact</span>
+                                            {% endif %}
+                                            
+                                            {% if fb.source %}
+                                            <span class="badge bg-secondary badge-type">{{ fb.source }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="text-end">
+                                        <small class="text-muted d-block">
+                                            {{ fb.timestamp|relative_time }}
+                                        </small>
+                                    </div>
+                                </div>
+                                
+                                <!-- Message Preview -->
+                                {% if fb.message %}
+                                <div class="feedback-message mb-3">
+                                    {{ fb.message[:200] }}{% if fb.message|length > 200 %}...{% endif %}
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Action Buttons -->
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        {% if fb.context %}
+                                        <small class="text-muted">
+                                            <i class="bi bi-info-circle me-1"></i>
+                                            {{ fb.context }}
+                                        </small>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary" onclick="viewFeedbackDetails('{{ fb.id }}')">
+                                            <i class="bi bi-eye"></i> View
+                                        </button>
+                                        
+                                        {% if fb.status == 'new' %}
+                                        <button class="btn btn-outline-success" onclick="markFeedbackRead('{{ fb.id }}')">
+                                            <i class="bi bi-check-square"></i> Mark Read
+                                        </button>
+                                        {% endif %}
+                                        
+                                        {% if fb.status != 'resolved' %}
+                                        <button class="btn btn-outline-success" onclick="markFeedbackResolved('{{ fb.id }}')">
+                                            <i class="bi bi-check-circle"></i> Resolve
+                                        </button>
+                                        {% endif %}
+                                        
+                                        <button class="btn btn-outline-danger" onclick="deleteFeedback('{{ fb.id }}')">
+                                            <i class="bi bi-trash"></i> Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Pagination -->
+                {% if total_pages > 1 %}
+                <div class="card-footer">
+                    <nav aria-label="Feedback pagination">
+                        <ul class="pagination justify-content-center mb-0">
+                            <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                                <a class="page-link" href="?page={{ page-1 }}&status={{ request.args.get('status', '') }}&type={{ request.args.get('type', '') }}&rating={{ request.args.get('rating', '') }}" 
+                                   aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            
+                            {% for p in range(1, total_pages+1) %}
+                                {% if p >= page-2 and p <= page+2 %}
+                                <li class="page-item {% if p == page %}active{% endif %}">
+                                    <a class="page-link" href="?page={{ p }}&status={{ request.args.get('status', '') }}&type={{ request.args.get('type', '') }}&rating={{ request.args.get('rating', '') }}">
+                                        {{ p }}
+                                    </a>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+                                <a class="page-link" href="?page={{ page+1 }}&status={{ request.args.get('status', '') }}&type={{ request.args.get('type', '') }}&rating={{ request.args.get('rating', '') }}"
+                                   aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+                {% endif %}
+                
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-chat-square-text display-4 text-muted mb-3"></i>
+                    <h5>No Feedback Found</h5>
+                    <p class="text-muted">No feedback submissions match your current filters.</p>
+                    <button class="btn btn-primary" onclick="clearFilters()">
+                        <i class="bi bi-funnel"></i> Clear Filters
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar Actions -->
+    <div class="col-lg-4 mb-4">
+        <div class="card border-0 shadow-sm feedback-actions">
+            <div class="card-header bg-white border-bottom">
+                <h5 class="mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2 mb-4">
+                    <button class="btn btn-primary mb-2" onclick="markAllFeedbackRead()">
+                        <i class="bi bi-check-all me-2"></i> Mark All as Read
+                    </button>
+                    <button class="btn btn-success mb-2" onclick="viewResolvedFeedback()">
+                        <i class="bi bi-check-circle me-2"></i> View Resolved
+                    </button>
+                    <button class="btn btn-warning mb-2" onclick="exportFeedback()">
+                        <i class="bi bi-download me-2"></i> Export as CSV
+                    </button>
+                    <button class="btn btn-info mb-2" data-bs-toggle="modal" data-bs-target="#statsModal">
+                        <i class="bi bi-bar-chart me-2"></i> View Statistics
+                    </button>
+                    <button class="btn btn-danger mb-2" onclick="clearAllFeedback()">
+                        <i class="bi bi-trash me-2"></i> Clear All Feedback
+                    </button>
+                </div>
+                
+                <hr>
+                
+                <div class="mb-3">
+                    <h6>Active Filters</h6>
+                    <div id="activeFilters" class="d-flex flex-wrap gap-1 mb-2">
+                        {% if request.args.get('status') %}
+                        <span class="badge bg-primary filter-badge">
+                            Status: {{ request.args.get('status')|upper }}
+                            <i class="bi bi-x ms-1" onclick="removeFilter('status')"></i>
+                        </span>
+                        {% endif %}
+                        
+                        {% if request.args.get('type') %}
+                        <span class="badge bg-info filter-badge">
+                            Type: {{ request.args.get('type')|title }}
+                            <i class="bi bi-x ms-1" onclick="removeFilter('type')"></i>
+                        </span>
+                        {% endif %}
+                        
+                        {% if request.args.get('rating') %}
+                        <span class="badge bg-warning filter-badge">
+                            Rating: {{ request.args.get('rating') }}★
+                            <i class="bi bi-x ms-1" onclick="removeFilter('rating')"></i>
+                        </span>
+                        {% endif %}
+                        
+                        {% if not request.args.get('status') and not request.args.get('type') and not request.args.get('rating') %}
+                        <span class="badge bg-secondary">No active filters</span>
+                        {% endif %}
+                    </div>
+                    
+                    <button class="btn btn-sm btn-outline-secondary w-100" onclick="clearFilters()">
+                        <i class="bi bi-x-circle me-1"></i> Clear All Filters
+                    </button>
+                </div>
+                
+                <hr>
+                
+                <div class="mb-3">
+                    <h6>Feedback Guidelines</h6>
+                    <ul class="small text-muted ps-3 mb-0">
+                        <li>Review new feedback within 24 hours</li>
+                        <li>Respond to users when appropriate</li>
+                        <li>Mark resolved feedback appropriately</li>
+                        <li>Use filters to manage feedback efficiently</li>
+                        <li>Export data for analysis when needed</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters Modal -->
+<div class="modal fade" id="filtersModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Filter Feedback</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="filterForm" action="{{ url_for('admin_feedback_receiver') }}" method="GET">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" name="status">
+                            <option value="">All Status</option>
+                            <option value="new" {% if request.args.get('status') == 'new' %}selected{% endif %}>New</option>
+                            <option value="read" {% if request.args.get('status') == 'read' %}selected{% endif %}>Read</option>
+                            <option value="responded" {% if request.args.get('status') == 'responded' %}selected{% endif %}>Responded</option>
+                            <option value="resolved" {% if request.args.get('status') == 'resolved' %}selected{% endif %}>Resolved</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Type</label>
+                        <select class="form-select" name="type">
+                            <option value="">All Types</option>
+                            <option value="bug" {% if request.args.get('type') == 'bug' %}selected{% endif %}>Bug Report</option>
+                            <option value="suggestion" {% if request.args.get('type') == 'suggestion' %}selected{% endif %}>Suggestion</option>
+                            <option value="praise" {% if request.args.get('type') == 'praise' %}selected{% endif %}>Praise</option>
+                            <option value="general" {% if request.args.get('type') == 'general' %}selected{% endif %}>General</option>
+                            <option value="question" {% if request.args.get('type') == 'question' %}selected{% endif %}>Question</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Minimum Rating</label>
+                        <select class="form-select" name="rating">
+                            <option value="">Any Rating</option>
+                            <option value="5" {% if request.args.get('rating') == '5' %}selected{% endif %}>5 Stars</option>
+                            <option value="4" {% if request.args.get('rating') == '4' %}selected{% endif %}>4+ Stars</option>
+                            <option value="3" {% if request.args.get('rating') == '3' %}selected{% endif %}>3+ Stars</option>
+                            <option value="2" {% if request.args.get('rating') == '2' %}selected{% endif %}>2+ Stars</option>
+                            <option value="1" {% if request.args.get('rating') == '1' %}selected{% endif %}>1+ Stars</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Date Range</label>
+                        <input type="date" class="form-control mb-2" name="date_from" value="{{ request.args.get('date_from', '') }}">
+                        <input type="date" class="form-control" name="date_to" value="{{ request.args.get('date_to', '') }}">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Apply Filters</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Modal -->
+<div class="modal fade" id="statsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Feedback Statistics</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="statsContent">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-3">Loading statistics...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Feedback Details Modal -->
+<div class="modal fade" id="feedbackDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Feedback Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="feedbackDetailsContent">
+                <!-- Content loaded via JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <div id="feedbackDetailsActions">
+                    <!-- Actions loaded via JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ==================== FEEDBACK MANAGEMENT FUNCTIONS ====================
+
+function viewFeedbackDetails(feedbackId) {
+    const modalContent = document.getElementById('feedbackDetailsContent');
+    const modalActions = document.getElementById('feedbackDetailsActions');
+    
+    modalContent.innerHTML = `
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3">Loading feedback details...</p>
+        </div>
+    `;
+    
+    fetch(`/admin/get_feedback_detail/${feedbackId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                renderFeedbackDetails(data.feedback, modalContent, modalActions);
+            } else {
+                modalContent.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Error: ${data.error}
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            modalContent.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Network error: ${error.message}
+                </div>
+            `;
+        });
+    
+    const modal = new bootstrap.Modal(document.getElementById('feedbackDetailsModal'));
+    modal.show();
+}
+
+function renderFeedbackDetails(feedback, contentEl, actionsEl) {
+    let content = `
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h6>${feedback.name} ${feedback.email ? `<small class="text-muted">(${feedback.email})</small>` : ''}</h6>
+                <div class="d-flex flex-wrap gap-1 mb-3">
+                    <span class="badge type-badge-${feedback.type}">
+                        ${feedback.type.replace('_', ' ').toUpperCase()}
+                    </span>
+                    <span class="badge ${feedback.status === 'resolved' ? 'badge-resolved' : feedback.status === 'responded' ? 'badge-responded' : feedback.status === 'new' ? 'bg-danger' : 'bg-success'}">
+                        ${feedback.status.toUpperCase()}
+                    </span>
+                    <div class="rating-stars">
+                        ${'★'.repeat(feedback.rating)}${'☆'.repeat(5 - feedback.rating)}
+                    </div>
+                    ${feedback.can_contact ? '<span class="badge bg-info">Can Contact</span>' : ''}
+                </div>
+                <p><strong>Submitted:</strong> ${new Date(feedback.timestamp).toLocaleString()}</p>
+                ${feedback.source ? `<p><strong>Source:</strong> ${feedback.source}</p>` : ''}
+                ${feedback.context ? `<p><strong>Context:</strong> ${feedback.context}</p>` : ''}
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header bg-light">
+                <h6 class="mb-0">Message</h6>
+            </div>
+            <div class="card-body">
+                <div class="feedback-message">
+                    ${feedback.message || 'No message provided'}
+                </div>
+            </div>
+        </div>
+        
+        ${feedback.reviewed_at ? `
+        <div class="mt-3">
+            <p><strong>Reviewed:</strong> ${new Date(feedback.reviewed_at).toLocaleString()} by ${feedback.reviewed_by || 'Admin'}</p>
+        </div>
+        ` : ''}
+        
+        ${feedback.responded_at ? `
+        <div class="mt-3">
+            <p><strong>Responded:</strong> ${new Date(feedback.responded_at).toLocaleString()} by ${feedback.responded_by || 'Admin'}</p>
+            ${feedback.response_message ? `<div class="alert alert-info mt-2">${feedback.response_message}</div>` : ''}
+        </div>
+        ` : ''}
+        
+        ${feedback.resolved_at ? `
+        <div class="mt-3">
+            <p><strong>Resolved:</strong> ${new Date(feedback.resolved_at).toLocaleString()} by ${feedback.resolved_by_name || feedback.resolved_by || 'Admin'}</p>
+        </div>
+        ` : ''}
+    `;
+    
+    contentEl.innerHTML = content;
+    
+    let actions = '';
+    
+    if (feedback.status !== 'resolved') {
+        actions += `
+            <button class="btn btn-success me-2" onclick="markFeedbackResolved('${feedback.id}')">
+                <i class="bi bi-check-circle me-1"></i> Mark Resolved
+            </button>
+        `;
+    }
+    
+    if (feedback.status === 'new') {
+        actions += `
+            <button class="btn btn-primary me-2" onclick="markFeedbackRead('${feedback.id}')">
+                <i class="bi bi-check-square me-1"></i> Mark Read
+            </button>
+        `;
+    }
+    
+    if (feedback.email) {
+        actions += `
+            <button class="btn btn-info me-2" onclick="replyToFeedback('${feedback.id}')">
+                <i class="bi bi-reply me-1"></i> Reply
+            </button>
+        `;
+    }
+    
+    actions += `
+        <button class="btn btn-danger" onclick="deleteFeedback('${feedback.id}')">
+            <i class="bi bi-trash me-1"></i> Delete
+        </button>
+    `;
+    
+    actionsEl.innerHTML = actions;
+}
+
+// ==================== MARK AS RESOLVED FUNCTIONS ====================
+
+function markFeedbackResolved(feedbackId) {
+    if (!confirm('Mark this feedback as resolved?\n\nThis will change the status to "resolved" and remove it from active lists.')) {
+        return;
+    }
+    
+    const modalContent = document.getElementById('feedbackDetailsContent');
+    if (modalContent) {
+        modalContent.innerHTML = `
+            <div class="text-center py-4">
+                <div class="spinner-border text-success" role="status">
+                    <span class="visually-hidden">Processing...</span>
+                </div>
+                <p class="mt-3">Marking feedback as resolved...</p>
+            </div>
+        `;
+    }
+    
+    fetch(`/admin/mark_feedback_resolved/${feedbackId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            if (modalContent) {
+                modalContent.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="bi bi-check-circle display-4 text-success mb-3"></i>
+                        <h5>Feedback Marked as Resolved</h5>
+                        <p>The feedback has been marked as resolved.</p>
+                        <button class="btn btn-primary mt-3" onclick="location.reload()">
+                            <i class="bi bi-arrow-clockwise"></i> Refresh Page
+                        </button>
+                    </div>
+                `;
+            } else {
+                alert('✅ Feedback marked as resolved!');
+                location.reload();
+            }
+        } else {
+            alert('❌ Error: ' + data.error);
+            if (modalContent) {
+                modalContent.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Error: ${data.error}
+                    </div>
+                `;
+            }
+        }
+    })
+    .catch(error => {
+        alert('❌ Network error: ' + error.message);
+        if (modalContent) {
+            modalContent.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Network error: ${error.message}
+                </div>
+            `;
+        }
+    });
+}
+
+function markSelectedFeedbackResolved() {
+    const selectedIds = getSelectedFeedbackIds();
+    
+    if (selectedIds.length === 0) {
+        alert('Please select at least one feedback item.');
+        return;
+    }
+    
+    if (!confirm(`Mark ${selectedIds.length} feedback item(s) as resolved?`)) {
+        return;
+    }
+    
+    fetch('/admin/bulk_mark_feedback_resolved', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            feedback_ids: selectedIds
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`✅ ${data.resolved_count} feedback item(s) marked as resolved!`);
+            location.reload();
+        } else {
+            alert('❌ Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('❌ Network error: ' + error.message);
+    });
+}
+
+// ==================== UTILITY FUNCTIONS ====================
+
+function getSelectedFeedbackIds() {
+    const checkboxes = document.querySelectorAll('.feedback-checkbox:checked');
+    return Array.from(checkboxes).map(cb => cb.value);
+}
+
+function toggleSelectAll() {
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    const checkboxes = document.querySelectorAll('.feedback-checkbox');
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = selectAllCheckbox.checked;
+    });
+}
+
+function viewResolvedFeedback() {
+    window.location.href = window.location.pathname + '?status=resolved';
+}
+
+function refreshFeedback() {
+    location.reload();
+}
+
+function clearFilters() {
+    window.location.href = window.location.pathname;
+}
+
+function removeFilter(filterName) {
+    const url = new URL(window.location.href);
+    url.searchParams.delete(filterName);
+    window.location.href = url.toString();
+}
+
+function exportFeedback() {
+    alert('Feature coming soon: Export feedback to CSV');
+}
+
+function clearAllFeedback() {
+    if (!confirm('⚠️ WARNING: This will delete ALL feedback!\n\nAre you absolutely sure?')) {
+        return;
+    }
+    
+    fetch('/admin/clear_all_feedback', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ All feedback cleared!');
+            location.reload();
+        } else {
+            alert('❌ Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('❌ Network error: ' + error.message);
+    });
+}
+
+function markAllFeedbackRead() {
+    if (!confirm('Mark all feedback as read?')) {
+        return;
+    }
+    
+    fetch('/admin/mark_all_feedback_read', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ All feedback marked as read!');
+            location.reload();
+        } else {
+            alert('❌ Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('❌ Network error: ' + error.message);
+    });
+}
+
+// Load statistics when stats modal is shown
+document.getElementById('statsModal').addEventListener('show.bs.modal', function () {
+    fetch('/admin/get_feedback_stats')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const stats = data.stats;
+                const content = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">Feedback Distribution</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Total:</strong> ${stats.total}</p>
+                                    <p><strong>New:</strong> ${stats.new}</p>
+                                    <p><strong>Read:</strong> ${stats.read}</p>
+                                    <p><strong>Responded:</strong> ${stats.responded}</p>
+                                    <p><strong>Resolved:</strong> ${stats.resolved}</p>
+                                    <p><strong>Today:</strong> ${stats.today}</p>
+                                    <p><strong>Avg Rating:</strong> ${stats.average_rating.toFixed(1)}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">By Type</h6>
+                                </div>
+                                <div class="card-body">
+                                    ${Object.entries(stats.type_counts || {}).map(([type, count]) => `
+                                        <p><strong>${type.replace('_', ' ').toUpperCase()}:</strong> ${count}</p>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('statsContent').innerHTML = content;
+            }
+        });
+});
+
+// ==================== OTHER EXISTING FUNCTIONS ====================
+
+function markFeedbackRead(feedbackId) {
+    fetch(`/admin/mark_feedback_read/${feedbackId}`, {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ Feedback marked as read!');
+            location.reload();
+        } else {
+            alert('❌ Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('❌ Network error: ' + error.message);
+    });
+}
+
+function markSelectedFeedbackRead() {
+    const selectedIds = getSelectedFeedbackIds();
+    
+    if (selectedIds.length === 0) {
+        alert('Please select at least one feedback item.');
+        return;
+    }
+    
+    // Mark each selected feedback as read
+    Promise.all(selectedIds.map(id => 
+        fetch(`/admin/mark_feedback_read/${id}`, { method: 'POST' })
+    )).then(() => {
+        alert(`✅ ${selectedIds.length} feedback item(s) marked as read!`);
+        location.reload();
+    });
+}
+
+function deleteFeedback(feedbackId) {
+    if (!confirm('Are you sure you want to delete this feedback?')) {
+        return;
+    }
+    
+    fetch(`/admin/delete_feedback/${feedbackId}`, {
+        method: 'DELETE'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ Feedback deleted successfully!');
+            location.reload();
+        } else {
+            alert('❌ Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('❌ Network error: ' + error.message);
+    });
+}
+
+function deleteSelectedFeedback() {
+    const selectedIds = getSelectedFeedbackIds();
+    
+    if (selectedIds.length === 0) {
+        alert('Please select at least one feedback item.');
+        return;
+    }
+    
+    if (!confirm(`Delete ${selectedIds.length} feedback item(s)?`)) {
+        return;
+    }
+    
+    fetch('/admin/bulk_delete_feedback', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            feedback_ids: selectedIds
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`✅ ${data.deleted_count} feedback item(s) deleted!`);
+            location.reload();
+        } else {
+            alert('❌ Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('❌ Network error: ' + error.message);
+    });
+}
+
+function replyToFeedback(feedbackId) {
+    alert('Feature coming soon: Reply to feedback via email');
+}
+
+// Auto-refresh every 10 minutes
+setTimeout(refreshFeedback, 10 * 60 * 1000);
+</script>
+{% endblock %}

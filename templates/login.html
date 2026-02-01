@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+
+{% block page_title %}Welcome Back{% endblock %}
+{% block page_subtitle %}
+<p class="text-muted mb-0">Sign in to your account to continue</p>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card-modern">
+            <div class="card-header-modern">
+                <h4 class="mb-0"><i class="bi bi-box-arrow-in-right me-2"></i>Login</h4>
+            </div>
+            <div class="card-body-modern">
+                <form method="POST" action="{{ url_for('login') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Email or Mobile Number</label>
+                        <input type="text" class="form-control form-control-modern" name="identifier" required 
+                               placeholder="Enter your email or mobile number">
+                        <div class="form-text">Use the email or mobile number you registered with</div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Password</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control form-control-modern" name="password" required 
+                                   placeholder="Enter your password" id="password">
+                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="rememberMe">
+                            <label class="form-check-label" for="rememberMe">
+                                Remember me
+                            </label>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-outline-primary btn-modern">
+                        <i class="bi bi-box-arrow-in-right"></i> Sign In
+                    </button>
+                </form>
+                <div class="text-center mt-4">
+                    <p class="text-muted mb-2">Don't have an account?</p>
+                    <a href="{{ url_for('signup') }}" class="btn btn-primary-modern btn-modern w-100">
+                        <i class="bi bi-person-plus"></i> Create Account
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Toggle password visibility
+    document.getElementById('togglePassword').addEventListener('click', function() {
+        const passwordInput = document.getElementById('password');
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        this.innerHTML = type === 'password' ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>';
+    });
+</script>
+{% endblock %}

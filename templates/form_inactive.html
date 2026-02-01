@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ form.title }} - Not Available | EventFlow</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/static/logo/icon.png">
+    
+    <style>
+        /* Elegant Design System - Matching form_blocked.html */
+        :root {
+            --primary: #2563EB;
+            --primary-dark: #1D4ED8;
+            --primary-light: #DBEAFE;
+            --secondary: #7C3AED;
+            --accent: #059669;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --danger-light: #FEE2E2;
+            --danger-dark: #B91C1C;
+            --dark: #111827;
+            --light: #FFFFFF;
+            --surface: #F9FAFB;
+            --border: #E5E7EB;
+            --text-primary: #1F2937;
+            --text-secondary: #6B7280;
+            
+            /* Elegant Gradients */
+            --gradient-primary: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%);
+            --gradient-secondary: linear-gradient(135deg, #059669 0%, #0D9488 100%);
+            --gradient-danger: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+            --gradient-warning: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+            --gradient-dark: linear-gradient(135deg, #111827 0%, #1F2937 100%);
+            
+            /* Sophisticated Spacing */
+            --space-xs: 0.5rem;
+            --space-sm: 0.75rem;
+            --space-md: 1.25rem;
+            --space-lg: 2rem;
+            --space-xl: 3rem;
+            
+            /* Refined Radius */
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --radius-2xl: 1.5rem;
+            --radius-full: 9999px;
+            
+            /* Premium Shadows */
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --shadow-danger: 0 10px 15px -3px rgba(239, 68, 68, 0.1);
+            
+            /* Smooth Transitions */
+            --transition-fast: 150ms ease;
+            --transition-base: 250ms ease;
+            --transition-slow: 400ms ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--light);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            min-height: 100vh;
+        }
+
+        /* Navigation */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(229, 231, 235, 0.8);
+            padding: 1rem 0;
+            transition: all var(--transition-base);
+        }
+
+        .navbar.scrolled {
+            box-shadow: var(--shadow-md);
+            padding: 0.75rem 0;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .navbar-brand img {
+            height: 40px;
+            width: auto;
+            transition: transform var(--transition-fast);
+        }
+
+        .navbar-brand:hover img {
+            transform: scale(1.05);
+        }
+
+        .brand-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: -0.01em;
+        }
+
+        .nav-link {
+            font-weight: 500;
+            color: var(--text-secondary) !important;
+            padding: 0.5rem 1rem !important;
+            border-radius: var(--radius-md);
+            transition: all var(--transition-fast);
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: var(--primary) !important;
+            background: var(--primary-light);
+        }
+
+        /* Main Content */
+        .main-content {
+            min-height: 100vh;
+            padding-top: 120px;
+            background: linear-gradient(135deg,
+                rgba(249, 250, 251, 0.9) 0%,
+                rgba(241, 245, 249, 0.9) 50%,
+                rgba(226, 232, 240, 0.9) 100%
+            );
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .hero-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0.4;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 40%);
+        }
+
+        /* Main Card */
+        .unavailable-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: var(--space-xl) 0;
+        }
+
+        .unavailable-card {
+            background: var(--light);
+            border-radius: var(--radius-2xl);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .unavailable-header {
+            background: var(--gradient-warning);
+            color: white;
+            padding: var(--space-xl);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .unavailable-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><path d="M0,0Q250,150,500,150Q750,150,1000,0L1000,1000L0,1000Z" fill="rgba(255,255,255,0.1)"/></svg>') bottom center no-repeat;
+            background-size: cover;
+        }
+
+        .status-icon {
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto var(--space-lg);
+            font-size: 3.5rem;
+            color: white;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .unavailable-body {
+            padding: var(--space-xl);
+        }
+
+        /* Status Specific Styling */
+        .status-upcoming .unavailable-header {
+            background: var(--gradient-warning);
+        }
+
+        .status-closed .unavailable-header {
+            background: var(--gradient-danger);
+        }
+
+        .status-unavailable .unavailable-header {
+            background: linear-gradient(135deg, #6B7280 0%, #4B5563 100%);
+        }
+
+        /* Info Cards */
+        .info-card {
+            background: var(--surface);
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border);
+            padding: var(--space-lg);
+            box-shadow: var(--shadow-sm);
+            transition: all var(--transition-base);
+            margin-bottom: var(--space-md);
+        }
+
+        .info-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .info-card-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+            color: var(--text-primary);
+        }
+
+        .info-card-header i {
+            font-size: 1.25rem;
+            color: var(--primary);
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-full);
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: var(--space-sm);
+        }
+
+        .status-badge.upcoming {
+            background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+            color: #92400E;
+        }
+
+        .status-badge.closed {
+            background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%);
+            color: #7F1D1D;
+        }
+
+        .status-badge.unavailable {
+            background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%);
+            color: #374151;
+        }
+
+        /* Timeline Items */
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            padding: var(--space-md);
+            background: var(--light);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--space-md);
+            border: 1px solid var(--border);
+            transition: all var(--transition-base);
+        }
+
+        .timeline-item:hover {
+            border-color: var(--primary-light);
+            background: var(--primary-light);
+        }
+
+        .timeline-number {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.125rem;
+            flex-shrink: 0;
+        }
+
+        /* Creator Avatar */
+        .creator-avatar {
+            width: 48px;
+            height: 48px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        /* Countdown Timer */
+        .countdown-display {
+            text-align: center;
+            padding: var(--space-lg);
+            background: var(--surface);
+            border-radius: var(--radius-xl);
+            border: 2px solid var(--border);
+            margin: var(--space-md) 0;
+        }
+
+        #countdown-timer {
+            font-family: 'Inter', monospace;
+            font-weight: 800;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 3.5rem;
+            margin-bottom: var(--space-sm);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1.75rem;
+            font-weight: 600;
+            border-radius: var(--radius-md);
+            border: none;
+            transition: all var(--transition-base);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: var(--gradient-danger);
+            color: white;
+            box-shadow: var(--shadow-danger);
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-sm);
+            margin-top: var(--space-lg);
+        }
+
+        /* Alerts */
+        .alert {
+            border-radius: var(--radius-lg);
+            border: none;
+            padding: var(--space-md);
+            margin-bottom: var(--space-md);
+        }
+
+        .alert-warning {
+            background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+            color: #92400E;
+            border-left: 4px solid var(--warning);
+        }
+
+        .alert-danger {
+            background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%);
+            color: #7F1D1D;
+            border-left: 4px solid var(--danger);
+        }
+
+        .alert-info {
+            background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
+            color: #1E40AF;
+            border-left: 4px solid var(--primary);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: rgba(255, 255, 255, 0.8);
+            padding: var(--space-xl) 0 var(--space-lg);
+            position: relative;
+            margin-top: auto;
+        }
+
+        footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: var(--space-md);
+        }
+
+        .footer-logo img {
+            height: 32px;
+            width: auto;
+        }
+
+        .footer-links h5 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--space-md);
+        }
+
+        .footer-links ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: all var(--transition-fast);
+        }
+
+        .footer-links a:hover {
+            color: white;
+            padding-left: 0.25rem;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: var(--space-md);
+        }
+
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-md);
+            color: white;
+            text-decoration: none;
+            transition: all var(--transition-fast);
+        }
+
+        .social-links a:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        /* Modal Styling */
+        .modal-content {
+            border-radius: var(--radius-2xl);
+            border: none;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .modal-header {
+            background: var(--gradient-primary);
+            color: white;
+            border-top-left-radius: var(--radius-xl);
+            border-top-right-radius: var(--radius-xl);
+            padding: 1.5rem;
+        }
+
+        .modal-header .btn-close {
+            filter: invert(1);
+            opacity: 0.8;
+        }
+
+        .modal-body {
+            padding: var(--space-lg);
+        }
+
+        .form-control {
+            border-radius: var(--radius-md);
+            border: 2px solid var(--border);
+            padding: 0.75rem 1rem;
+            transition: all var(--transition-base);
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .unavailable-header {
+                padding: var(--space-lg);
+            }
+            
+            .unavailable-body {
+                padding: var(--space-lg);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding-top: 100px;
+            }
+            
+            .unavailable-header {
+                padding: var(--space-md);
+            }
+            
+            .unavailable-body {
+                padding: var(--space-md);
+            }
+            
+            .status-icon {
+                width: 80px;
+                height: 80px;
+                font-size: 2.5rem;
+            }
+            
+            #countdown-timer {
+                font-size: 2.5rem;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .button-group .btn {
+                width: 100%;
+            }
+            
+            .timeline-item {
+                flex-direction: column;
+                text-align: center;
+                gap: var(--space-sm);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .unavailable-header {
+                padding: var(--space-sm);
+            }
+            
+            .unavailable-body {
+                padding: var(--space-sm);
+            }
+            
+            .btn {
+                padding: 0.875rem 1.5rem;
+            }
+            
+            .info-card {
+                padding: var(--space-md);
+            }
+            
+            #countdown-timer {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <img src="/static/logo/icon.png" alt="EventFlow Logo">
+                <span class="brand-name">EventFlow</span>
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a href="/#features" class="nav-link">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/how-it-works" class="nav-link">How It Works</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/feedback" class="nav-link">Feedback</a>
+                    </li>
+                    
+                    {% if 'user_id' in session %}
+                    <li class="nav-item ms-3">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline">Dashboard</a>
+                    </li>
+                    <li class="nav-item ms-2">
+                        <a href="{{ url_for('logout') }}" class="btn btn-primary">Logout</a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item ms-3">
+                        <a href="{{ url_for('login') }}" class="btn btn-outline">Login</a>
+                    </li>
+                    <li class="nav-item ms-2">
+                        <a href="{{ url_for('signup') }}" class="btn btn-primary">Get Started Free</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="hero-pattern"></div>
+        <div class="container">
+            <div class="unavailable-container fade-in">
+                <!-- Main Card with Status Class -->
+                <div class="unavailable-card 
+                    {% if message.startswith('Form opens in') or 'opens in' in message.lower() %}
+                        status-upcoming
+                    {% elif message == 'Form has closed' or 'closed' in message.lower() %}
+                        status-closed
+                    {% else %}
+                        status-unavailable
+                    {% endif %}">
+                    
+                    <!-- Header -->
+                    <div class="unavailable-header">
+                        <div class="status-icon">
+                            {% if message.startswith("Form opens in") or "opens in" in message.lower() %}
+                                <i class="bi bi-clock-fill"></i>
+                            {% elif message == "Form has closed" or "closed" in message.lower() %}
+                                <i class="bi bi-calendar-x-fill"></i>
+                            {% else %}
+                                <i class="bi bi-slash-circle-fill"></i>
+                            {% endif %}
+                        </div>
+                        <h1 class="display-5 fw-bold mb-3">
+                            {% if message.startswith("Form opens in") or "opens in" in message.lower() %}
+                                Coming Soon!
+                            {% elif message == "Form has closed" or "closed" in message.lower() %}
+                                Form Closed
+                            {% else %}
+                                Form Not Available
+                            {% endif %}
+                        </h1>
+                        <p class="lead mb-0 opacity-90">
+                            {% if message.startswith("Form opens in") or "opens in" in message.lower() %}
+                                This form is not yet available for submissions
+                            {% elif message == "Form has closed" or "closed" in message.lower() %}
+                                This form is no longer accepting submissions
+                            {% else %}
+                                This form is currently not available for submissions
+                            {% endif %}
+                        </p>
+                    </div>
+                    
+                    <!-- Body -->
+                    <div class="unavailable-body">
+                        <!-- Status Alert -->
+                        <div class="alert fade-in" style="animation-delay: 0.1s;
+                            {% if message.startswith('Form opens in') or 'opens in' in message.lower() %}
+                                alert-warning
+                            {% elif message == 'Form has closed' or 'closed' in message.lower() %}
+                                alert-danger
+                            {% else %}
+                                alert-info
+                            {% endif %}">
+                            <div class="d-flex align-items-center">
+                                <i class="bi 
+                                    {% if message.startswith('Form opens in') or 'opens in' in message.lower() %}
+                                        bi-info-circle-fill
+                                    {% elif message == 'Form has closed' or 'closed' in message.lower() %}
+                                        bi-exclamation-triangle-fill
+                                    {% else %}
+                                        bi-info-circle-fill
+                                    {% endif %}
+                                    me-3 fs-4"></i>
+                                <div>
+                                    <h5 class="alert-heading mb-2">
+                                        {% if message.startswith("Form opens in") or "opens in" in message.lower() %}
+                                            Scheduled Form
+                                        {% elif message == "Form has closed" or "closed" in message.lower() %}
+                                            Form Closed
+                                        {% else %}
+                                            Unavailable
+                                        {% endif %}
+                                    </h5>
+                                    <p class="mb-0"><strong>{{ message }}</strong></p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Status Badge -->
+                        <div class="status-badge fade-in" style="animation-delay: 0.15s;
+                            {% if message.startswith('Form opens in') or 'opens in' in message.lower() %}
+                                upcoming
+                            {% elif message == 'Form has closed' or 'closed' in message.lower() %}
+                                closed
+                            {% else %}
+                                unavailable
+                            {% endif %}">
+                            <i class="bi 
+                                {% if message.startswith('Form opens in') or 'opens in' in message.lower() %}
+                                    bi-clock
+                                {% elif message == 'Form has closed' or 'closed' in message.lower() %}
+                                    bi-calendar-x
+                                {% else %}
+                                    bi-slash-circle
+                                {% endif %}"></i>
+                            STATUS: 
+                            {% if message.startswith("Form opens in") or "opens in" in message.lower() %}
+                                UPCOMING
+                            {% elif message == "Form has closed" or "closed" in message.lower() %}
+                                CLOSED
+                            {% else %}
+                                UNAVAILABLE
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Countdown Timer -->
+                        {% if message.startswith("Form opens in") or "opens in" in message.lower() %}
+                            {% if form.schedule and form.schedule.start_datetime %}
+                            <div class="info-card fade-in" style="animation-delay: 0.2s;">
+                                <div class="info-card-header">
+                                    <i class="bi bi-clock-history"></i>
+                                    <h5 class="mb-0">Countdown to Opening</h5>
+                                </div>
+                                <div class="countdown-display">
+                                    <div id="countdown-timer" class="display-1 fw-bold">00:00:00</div>
+                                    <small class="text-muted">The form will automatically become available</small>
+                                </div>
+                            </div>
+                            {% endif %}
+                        {% endif %}
+                        
+                        <!-- Form Details -->
+                        <div class="info-card fade-in" style="animation-delay: 0.3s;">
+                            <div class="info-card-header">
+                                <i class="bi bi-file-text"></i>
+                                <h5 class="mb-0">Form Details</h5>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <p class="text-muted small mb-1">Form Title</p>
+                                    <h5 class="mb-0">{{ form.title }}</h5>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <p class="text-muted small mb-1">Event</p>
+                                    <p class="mb-0">{{ event.name }}</p>
+                                </div>
+                            </div>
+                            
+                            {% if form.description %}
+                            <div class="mb-3">
+                                <p class="text-muted small mb-1">Description</p>
+                                <p class="mb-0">{{ form.description }}</p>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-2">
+                                    <p class="text-muted small mb-1">Form ID</p>
+                                    <div class="bg-dark text-light p-2 rounded font-monospace small">
+                                        {{ form.id[:8] }}...
+                                    </div>
+                                </div>
+                                
+                                {% if event.id %}
+                                <div class="col-md-6 mb-2">
+                                    <p class="text-muted small mb-1">Event ID</p>
+                                    <div class="bg-light p-2 rounded small">
+                                        {{ event.id[:8] }}...
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Creator Information -->
+                        {% if creator_info and creator_info.name %}
+                        <div class="info-card fade-in" style="animation-delay: 0.4s;">
+                            <div class="info-card-header">
+                                <i class="bi bi-person"></i>
+                                <h5 class="mb-0">Form Creator</h5>
+                            </div>
+                            
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="creator-avatar me-3">
+                                    <span>{{ creator_info.name[0] }}</span>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">{{ creator_info.name }}</h6>
+                                    {% if creator_info.verified %}
+                                    <span class="badge bg-success mt-1" style="
+                                        padding: 0.25rem 0.75rem;
+                                        font-size: 0.75rem;
+                                    ">
+                                        <i class="bi bi-check-circle-fill me-1"></i> Verified
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                                
+                                {% if creator_info.events_created %}
+                                <div class="col-md-6 mb-2">
+                                    <p class="text-muted small mb-1">Events Created</p>
+                                    <p class="mb-0">{{ creator_info.events_created }}</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            {% if creator_info.join_date %}
+                            <div class="mt-2">
+                                <p class="text-muted small mb-1">Member Since</p>
+                                <p class="mb-0">
+                                    {% set join_date = creator_info.join_date|fromisoformat %}
+                                    {{ join_date.strftime('%B %d, %Y') if join_date else creator_info.join_date }}
+                                </p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Schedule Information -->
+                        {% if form.schedule %}
+                        <div class="info-card fade-in" style="animation-delay: 0.5s;">
+                            <div class="info-card-header">
+                                <i class="bi bi-calendar-event"></i>
+                                <h5 class="mb-0">Form Schedule</h5>
+                            </div>
+                            
+                            <div class="row">
+                                {% if form.schedule.start_datetime %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="schedule-item">
+                                        <div class="schedule-label text-muted small mb-1">Opens:</div>
+                                        <div class="fw-semibold">
+                                            <i class="bi bi-calendar-plus me-2"></i>
+                                            {{ form.schedule.start_datetime|format_date }}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                
+                                {% if form.schedule.end_datetime %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="schedule-item">
+                                        <div class="schedule-label text-muted small mb-1">Closes:</div>
+                                        <div class="fw-semibold">
+                                            <i class="bi bi-calendar-x me-2"></i>
+                                            {{ form.schedule.end_datetime|format_date }}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="current-time text-center mt-3">
+                                <small class="text-muted">
+                                    <i class="bi bi-clock-history me-1"></i>
+                                    Current server time: {{ now.strftime('%Y-%m-%d %H:%M:%S') }}
+                                </small>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Why Form is Unavailable -->
+                        <div class="info-card fade-in" style="animation-delay: 0.6s;">
+                            <div class="info-card-header">
+                                <i class="bi bi-question-circle"></i>
+                                <h5 class="mb-0">
+                                    Why is this form not available?
+                                </h5>
+                            </div>
+                            
+                            <p class="text-muted mb-4">
+                                Forms may be unavailable due to scheduling, closure, or temporary restrictions.
+                                This ensures organizers can manage responses effectively and maintain form integrity.
+                            </p>
+                            
+                            <div class="timeline-item">
+                                <div class="timeline-number">1</div>
+                                <div>
+                                    <h6 class="mb-2">Scheduled Access</h6>
+                                    <p class="text-muted mb-0 small">Forms open and close based on the organizer's schedule</p>
+                                </div>
+                            </div>
+                            
+                            <div class="timeline-item">
+                                <div class="timeline-number">2</div>
+                                <div>
+                                    <h6 class="mb-2">Response Management</h6>
+                                    <p class="text-muted mb-0 small">Organizers can review and process submissions in batches</p>
+                                </div>
+                            </div>
+                            
+                            <div class="timeline-item">
+                                <div class="timeline-number">3</div>
+                                <div>
+                                    <h6 class="mb-2">Quality Control</h6>
+                                    <p class="text-muted mb-0 small">Temporary closures allow for updates and improvements</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="button-group fade-in" style="animation-delay: 0.7s;">
+                            <a href="/" class="btn btn-primary">
+                                <i class="bi bi-house me-2"></i> Return to Home
+                            </a>
+                            
+                            {% if creator_info and creator_info.email %}
+                            <button type="button" class="btn btn-outline" data-bs-toggle="modal" data-bs-target="#contactCreatorModal">
+                                <i class="bi bi-envelope me-2"></i> Contact Creator
+                            </button>
+                            {% endif %}
+                            
+                            <button onclick="window.history.back()" class="btn btn-outline">
+                                <i class="bi bi-arrow-left me-2"></i> Go Back
+                            </button>
+                        </div>
+                        
+                        <!-- Help Text -->
+                        <div class="text-center mt-4 fade-in" style="animation-delay: 0.8s;">
+                            <p class="text-muted small mb-0">
+                                <i class="bi bi-shield-check me-1"></i>
+                                Form scheduling helps organizers manage submissions effectively.
+                                Need assistance? Contact 
+                                <a href="mailto:eventflow.app2026@gmail.com">eventflow.app2026@gmail.com</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Additional Help Card -->
+                <div class="info-card mt-4 fade-in" style="animation-delay: 0.9s;">
+                    <div class="text-center">
+                        <h5 class="mb-3">
+                            <i class="bi bi-life-preserver text-primary me-2"></i>
+                            Need More Help?
+                        </h5>
+                        <p class="text-muted mb-4">
+                            If you believe there's an issue with the form availability or need further assistance,
+                            our support team is here to help.
+                        </p>
+                        <div class="button-group justify-content-center">
+                            <a href="mailto:eventflow.app2026@gmail.com?subject=Form%20Availability:%20{{ form.title }}" 
+                               class="btn btn-danger">
+                                <i class="bi bi-envelope-paper me-2"></i> Contact Support
+                            </a>
+                            <a href="/feedback" class="btn btn-outline">
+                                <i class="bi bi-chat-dots me-2"></i> Send Feedback
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <div class="footer-logo">
+                        <img src="/static/logo/icon.png" alt="EventFlow Logo">
+                        <span class="brand-name">EventFlow</span>
+                    </div>
+                    <p class="text-white-50 mb-4">
+                        Professional event management made simple. Free tools for modern organizers.
+                    </p>
+                    <div class="social-links">
+                        <a href="https://www.instagram.com/eventflow.app2026/">
+                            <i class="bi bi-instagram"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-2 col-md-4 mb-4">
+                    <h5>Product</h5>
+                    <ul class="footer-links">
+                        <li><a href="/#features">Features</a></li>
+                        <li><a href="/how-it-works">How It Works</a></li>
+                        <li><a href="/feedback">Feedback</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-lg-2 col-md-4 mb-4">
+                    <h5>Legal</h5>
+                    <ul class="footer-links">
+                        <li><a href="{{ url_for('privacy_policy') }}">Privacy Policy</a></li>
+                        <li><a href="{{ url_for('terms') }}">Terms of Service</a></li>
+                        <li><a href="mailto:eventflow.app2026@gmail.com">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-lg-4 col-md-4 mb-4">
+                    <h5>Get Started</h5>
+                    <p class="text-white-50 mb-3">
+                        Start creating professional events today.
+                    </p>
+                    {% if 'user_id' not in session %}
+                    <a href="{{ url_for('signup') }}" class="btn btn-outline-light">Sign Up Free</a>
+                    {% else %}
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-light">Go to Dashboard</a>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <hr class="bg-light opacity-25 my-4">
+            
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="mb-0 text-white-50">
+                        © 2024 EventFlow. All rights reserved.
+                    </p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0 text-white-50">
+                        Contact: <a href="mailto:eventflow.app2026@gmail.com" class="text-white-50">eventflow.app2026@gmail.com</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Contact Creator Modal -->
+    <div class="modal fade" id="contactCreatorModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">
+                        <i class="bi bi-envelope me-2"></i> Contact Form Creator
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="contactCreatorForm">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Your Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="name" 
+                                   value="{{ session.username if session.get('user_id') else '' }}" 
+                                   required placeholder="Enter your name">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Your Email <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" name="email"
+                                   value="{{ session.email if session.get('email') else '' }}" 
+                                   required placeholder="your.email@example.com">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Subject <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="subject" 
+                                   value="Question about form: {{ form.title }}" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Message <span class="text-danger">*</span></label>
+                            <textarea class="form-control" name="message" rows="4" required 
+                                      placeholder="Your message to the form creator..."></textarea>
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="bi bi-shield-check me-2"></i>
+                            <small>Your message will be sent via EventFlow's secure email system. The creator will receive your email address to reply back.</small>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="sendContactMessage()">
+                        <i class="bi bi-send me-2"></i> Send Message
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Initialize animations and functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add fade-in animation to elements
+            const fadeElements = document.querySelectorAll('.fade-in');
+            fadeElements.forEach((el, index) => {
+                el.style.animationDelay = `${index * 0.1}s`;
+            });
+
+            // Add hover effect to cards
+            const cards = document.querySelectorAll('.info-card, .timeline-item');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-4px)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+
+            // Smooth scrolling for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
+                    
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+
+            // Logo fallback handling
+            const logoImages = document.querySelectorAll('img[src*="logo"]');
+            logoImages.forEach(img => {
+                img.addEventListener('error', function() {
+                    const parent = this.parentElement;
+                    const textFallback = parent.querySelector('.brand-name');
+                    if (textFallback) {
+                        this.style.display = 'none';
+                        textFallback.style.display = 'block';
+                    }
+                });
+            });
+
+            // Countdown Timer for upcoming forms
+            {% if message.startswith("Form opens in") or "opens in" in message.lower() %}
+                {% if form.schedule and form.schedule.start_datetime %}
+                    const startTimeStr = "{{ form.schedule.start_datetime }}";
+                    
+                    function parseDateTime(datetimeStr) {
+                        datetimeStr = datetimeStr.trim();
+                        
+                        if (datetimeStr.includes('T')) {
+                            return new Date(datetimeStr);
+                        }
+                        
+                        if (datetimeStr.includes(' ')) {
+                            return new Date(datetimeStr.replace(' ', 'T'));
+                        }
+                        
+                        return new Date(datetimeStr);
+                    }
+                    
+                    const startTime = parseDateTime(startTimeStr);
+                    const countdownElement = document.getElementById('countdown-timer');
+                    
+                    if (countdownElement) {
+                        function updateCountdown() {
+                            const now = new Date();
+                            const diff = startTime - now;
+                            
+                            if (diff <= 0) {
+                                countdownElement.innerHTML = 'Form is now open!';
+                                countdownElement.classList.add('text-success');
+                                setTimeout(() => {
+                                    location.reload();
+                                }, 2000);
+                                return;
+                            }
+                            
+                            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                            
+                            let countdownText = '';
+                            if (days > 0) {
+                                countdownText = `${days}d ${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
+                            } else if (hours > 0) {
+                                countdownText = `${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
+                            } else {
+                                countdownText = `${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
+                            }
+                            
+                            countdownElement.innerHTML = countdownText;
+                        }
+                        
+                        updateCountdown();
+                        setInterval(updateCountdown, 1000);
+                    }
+                {% endif %}
+            {% endif %}
+        });
+
+        function sendContactMessage() {
+            const form = document.getElementById('contactCreatorForm');
+            const formData = new FormData(form);
+            
+            // Validate form
+            if (!form.name.value.trim() || !form.email.value.trim() || 
+                !form.subject.value.trim() || !form.message.value.trim()) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            // Add additional data
+            formData.append('creator_email', '{{ creator_info.email if creator_info else "" }}');
+            formData.append('form_title', '{{ form.title }}');
+            formData.append('event_name', '{{ event.name }}');
+            formData.append('form_id', '{{ form.id }}');
+            formData.append('event_id', '{{ event.id }}');
+            
+            // Show loading state
+            const sendBtn = document.querySelector('#contactCreatorModal .btn-primary');
+            const originalText = sendBtn.innerHTML;
+            sendBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Sending...';
+            sendBtn.disabled = true;
+            
+            fetch('/contact_creator', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Reset button
+                sendBtn.innerHTML = originalText;
+                sendBtn.disabled = false;
+                
+                if (data.success) {
+                    alert('✅ Message sent successfully!');
+                    bootstrap.Modal.getInstance(document.getElementById('contactCreatorModal')).hide();
+                    
+                    // Clear form
+                    form.reset();
+                } else {
+                    alert('❌ Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                // Reset button
+                sendBtn.innerHTML = originalText;
+                sendBtn.disabled = false;
+                
+                alert('❌ Network error: ' + error.message);
+            });
+        }
+    </script>
+</body>
+</html>

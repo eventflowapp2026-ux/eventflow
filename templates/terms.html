@@ -1,0 +1,332 @@
+<!-- terms.html -->
+{% extends "base.html" %}
+{% block title %}Terms of Service{% endblock %}
+
+{% block page_title %}Terms of Service{% endblock %}
+{% block page_subtitle %}
+<p class="text-muted mb-0">Last Updated: {{ now.strftime('%B %d, %Y') }}</p>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card-modern">
+            <div class="card-header-modern">
+                <h4 class="mb-0">
+                    <i class="bi bi-journal-text me-2"></i>Terms of Service
+                </h4>
+            </div>
+
+            <div class="card-body-modern" style="max-height: 600px; overflow-y: auto;">
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">1. Acceptance of Terms</h5>
+                    <p>
+                        By accessing or using EventFlow ("the Service"), you agree to be bound by these
+                        Terms of Service. If you do not agree to all terms, you may not access or use the Service.
+                    </p>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">2. Service Description</h5>
+                    <p>
+                        EventFlow is an event registration platform that allows users to:
+                    </p>
+                    <ul>
+                        <li>Create and manage events</li>
+                        <li>Build custom registration forms with various question types</li>
+                        <li>Collect and manage form responses</li>
+                        <li>Send email invitations and notifications</li>
+                        <li>Generate QR codes for form sharing and response verification</li>
+                        <li>Schedule form availability with start/end dates</li>
+                        <li>Upload and manage files through form submissions</li>
+                        <li>Export response data in CSV format</li>
+                    </ul>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">3. Account Registration</h5>
+                    <p>
+                        To use certain features of the Service, you must register for an account.
+                        You agree to:
+                    </p>
+                    <ul>
+                        <li>Provide accurate, current, and complete information</li>
+                        <li>Maintain the security of your password and account</li>
+                        <li>Accept responsibility for all activities under your account</li>
+                        <li>Complete email verification using OTP (One-Time Password)</li>
+                        <li>Update your information to keep it accurate and current</li>
+                    </ul>
+                    <p class="mt-2">
+                        We reserve the right to suspend or terminate accounts that violate these terms.
+                    </p>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">4. User Responsibilities</h5>
+                    
+                    <h6 class="text-secondary mb-2">A. Form Creation and Management</h6>
+                    <ul>
+                        <li>You are responsible for all content in your forms</li>
+                        <li>Forms must comply with all applicable laws and regulations</li>
+                        <li>You must obtain necessary consents from form respondents</li>
+                        <li>You are responsible for data collected through your forms</li>
+                    </ul>
+                    
+                    <h6 class="text-secondary mb-2 mt-3">B. Prohibited Content</h6>
+                    <ul>
+                        <li>Content that violates any law or regulation</li>
+                        <li>Infringing, fraudulent, or deceptive content</li>
+                        <li>Malicious software, viruses, or harmful code</li>
+                        <li>Spam, unsolicited communications, or pyramid schemes</li>
+                        <li>Content that promotes violence, hatred, or discrimination</li>
+                        <li>Adult content or sexually explicit material</li>
+                    </ul>
+                    
+                    <h6 class="text-secondary mb-2 mt-3">C. File Upload Restrictions</h6>
+                    <ul>
+                        <li>Maximum file size: 100MB per file</li>
+                        <li>Allowed file types: Images, PDFs, documents, spreadsheets, presentations, archives</li>
+                        <li>Prohibited: Executable files, scripts, or harmful content</li>
+                        <li>You are responsible for scanning uploaded files for viruses</li>
+                    </ul>
+                    
+                    <h6 class="text-secondary mb-2 mt-3">D. Sensitive Information</h6>
+                    <p>
+                        <strong>You agree not to collect or request:</strong>
+                    </p>
+                    <ul>
+                        <li>Passwords or authentication credentials</li>
+                        <li>Full credit/debit card numbers</li>
+                        <li>Bank account information</li>
+                        <li>Government-issued IDs (Aadhaar, PAN, Social Security numbers)</li>
+                        <li>Health information or medical records</li>
+                        <li>Biometric data</li>
+                        <li>Racial or ethnic origin information</li>
+                    </ul>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">5. Email Communication</h5>
+                    <p>
+                        By using the email invitation feature, you agree to:
+                    </p>
+                    <ul>
+                        <li>Only send emails to recipients who have consented to receive them</li>
+                        <li>Include an opt-out mechanism in your communications</li>
+                        <li>Comply with anti-spam laws (CAN-SPAM Act, GDPR, etc.)</li>
+                        <li>Not send bulk emails to purchased or harvested lists</li>
+                        <li>Accept responsibility for email content you send</li>
+                    </ul>
+                    <p class="mt-2">
+                        EventFlow provides email functionality but does not guarantee delivery.
+                        We are not responsible for emails marked as spam or blocked by recipients.
+                    </p>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">6. Intellectual Property</h5>
+                    <p>
+                        <strong>A. Your Content:</strong> You retain ownership of all content you create,
+                        upload, or submit through the Service.
+                    </p>
+                    <p>
+                        <strong>B. Our Content:</strong> EventFlow and its licensors own all rights to the
+                        Service, including software, design, logos, and documentation.
+                    </p>
+                    <p>
+                        <strong>C. License Grant:</strong> You grant EventFlow a worldwide, non-exclusive,
+                        royalty-free license to use, reproduce, and display your content solely to provide
+                        the Service.
+                    </p>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">7. Data Protection and Privacy</h5>
+                    <p>
+                        <strong>A. Form Creators:</strong> When you collect data through forms, you act as
+                        a data controller and must:
+                    </p>
+                    <ul>
+                        <li>Provide a privacy notice to respondents</li>
+                        <li>Obtain necessary consents</li>
+                        <li>Respond to data subject requests</li>
+                        <li>Implement appropriate security measures</li>
+                    </ul>
+                    
+                    <p class="mt-2">
+                        <strong>B. EventFlow's Role:</strong> We act as a data processor for form response
+                        data and will:
+                    </p>
+                    <ul>
+                        <li>Process data only as instructed by you</li>
+                        <li>Implement security measures as described in our Privacy Policy</li>
+                        <li>Assist with data subject requests where possible</li>
+                    </ul>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">8. Content Moderation and Reporting</h5>
+                    <p>
+                        EventFlow includes a content moderation system. Users can report forms that violate
+                        these terms. We reserve the right to:
+                    </p>
+                    <ul>
+                        <li>Review reported content</li>
+                        <li>Temporarily or permanently block forms</li>
+                        <li>Suspend or terminate accounts of repeat offenders</li>
+                        <li>Remove content that violates these terms</li>
+                    </ul>
+                    <p class="mt-2">
+                        Reports are handled according to our moderation policies. Form creators will be
+                        notified of actions taken against their content.
+                    </p>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">9. Service Availability and Limitations</h5>
+                    <ul>
+                        <li>We strive for 99% uptime but do not guarantee uninterrupted service</li>
+                        <li>Scheduled maintenance may cause temporary downtime</li>
+                        <li>Free accounts may have limitations on forms, responses, or storage</li>
+                        <li>We reserve the right to modify or discontinue features</li>
+                    </ul>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">10. Fees and Payments</h5>
+                    <p>
+                        Currently, EventFlow is offered as a free service. We reserve the right to:
+                    </p>
+                    <ul>
+                        <li>Introduce paid features or tiers in the future</li>
+                        <li>Change pricing with 30 days notice</li>
+                        <li>Offer trial periods for paid features</li>
+                    </ul>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">11. Termination</h5>
+                    <p>
+                        We may terminate or suspend your account if you:
+                    </p>
+                    <ul>
+                        <li>Violate these Terms of Service</li>
+                        <li>Use the Service for illegal activities</li>
+                        <li>Create risk or possible legal exposure</li>
+                        <li>Abuse system resources or other users</li>
+                    </ul>
+                    <p class="mt-2">
+                        Upon termination:
+                    </p>
+                    <ul>
+                        <li>Your right to use the Service immediately ceases</li>
+                        <li>We may delete your account and associated data</li>
+                        <li>You may request data export before deletion</li>
+                    </ul>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">12. Disclaimers and Limitations of Liability</h5>
+                    
+                    <h6 class="text-secondary mb-2">A. Service "As Is"</h6>
+                    <p>
+                        The Service is provided "as is" without warranties of any kind.
+                        We do not guarantee that the Service will be error-free or uninterrupted.
+                    </p>
+                    
+                    <h6 class="text-secondary mb-2 mt-3">B. Limitation of Liability</h6>
+                    <p>
+                        To the maximum extent permitted by law, EventFlow shall not be liable for:
+                    </p>
+                    <ul>
+                        <li>Indirect, incidental, or consequential damages</li>
+                        <li>Loss of data, revenue, or profits</li>
+                        <li>Damages resulting from use or inability to use the Service</li>
+                        <li>Content submitted by users</li>
+                        <li>Email delivery failures</li>
+                        <li>Security breaches beyond our reasonable control</li>
+                    </ul>
+                    
+                    <h6 class="text-secondary mb-2 mt-3">C. User Responsibility for Data</h6>
+                    <p>
+                        You are solely responsible for:
+                    </p>
+                    <ul>
+                        <li>Backing up your data</li>
+                        <li>Ensuring the accuracy of collected data</li>
+                        <li>Complying with data protection laws for collected data</li>
+                        <li>Obtaining necessary consents from form respondents</li>
+                    </ul>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">13. Indemnification</h5>
+                    <p>
+                        You agree to indemnify and hold harmless EventFlow from any claims,
+                        damages, losses, or expenses arising from:
+                    </p>
+                    <ul>
+                        <li>Your use of the Service</li>
+                        <li>Content you submit or collect</li>
+                        <li>Violation of these terms</li>
+                        <li>Violation of any laws or third-party rights</li>
+                    </ul>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">14. Governing Law and Dispute Resolution</h5>
+                    <ul>
+                        <li>These terms are governed by the laws of India</li>
+                        <li>Disputes will be resolved in courts located in India</li>
+                        <li>We prefer to resolve disputes amicably before legal action</li>
+                    </ul>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">15. Changes to Terms</h5>
+                    <p>
+                        We may modify these terms at any time. We will provide notice of
+                        significant changes by:
+                    </p>
+                    <ul>
+                        <li>Posting the updated terms on our website</li>
+                        <li>Sending email notifications to registered users</li>
+                        <li>Updating the "Last Updated" date</li>
+                    </ul>
+                    <p class="mt-2">
+                        Continued use after changes constitutes acceptance of new terms.
+                    </p>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="text-primary mb-3">16. Contact Information</h5>
+                    <p>
+                        For questions about these Terms of Service, contact:
+                    </p>
+                    <p>
+                        <strong>EventFlow Support</strong><br>
+                        Email: eventflow.app2026@gmail.com
+                    </p>
+                </div>
+
+                <div class="alert alert-warning mt-4">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>Important:</strong> By using EventFlow, you acknowledge that you have read,
+                    understood, and agree to be bound by these Terms of Service and our Privacy Policy.
+                </div>
+
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="{{ url_for('signup') }}" class="btn btn-outline-primary btn-modern me-2">
+                <i class="bi bi-arrow-left"></i> Back to Sign Up
+            </a>
+            <a href="{{ url_for('privacy_policy') }}" class="btn btn-primary-modern btn-modern">
+                <i class="bi bi-shield-check"></i> View Privacy Policy
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
