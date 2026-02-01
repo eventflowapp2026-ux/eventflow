@@ -1,3 +1,6 @@
+import eventlet
+eventlet.monkey_patch()
+
 import os
 import json
 import csv
@@ -15,7 +18,6 @@ import flask
 import ipaddress
 import secrets
 import time
-from datetime import datetime
 from datetime import datetime, timedelta
 from flask import Flask, render_template, request, redirect, url_for, flash, session, send_file, send_from_directory, make_response, jsonify, Response, abort, current_app
 from functools import wraps
@@ -40,19 +42,9 @@ from weasyprint import HTML
 from weasyprint.text.fonts import FontConfiguration
 import tempfile
 
-def get_data_path(subpath=''):
-    """Get absolute path to data directory"""
-    base_dir = os.path.join(os.getcwd(), 'data')
-    if subpath:
-        return os.path.join(base_dir, subpath)
-    return base_dir
-    
-class CreateEventForm(FlaskForm):
-    event_name = StringField(validators=[DataRequired()])
-    description = TextAreaField(validators=[DataRequired()])
-
 # Load environment variables
 load_dotenv()
+
 
 # ========== DEBUG CODE - ADD THIS ==========
 print("=" * 60)
